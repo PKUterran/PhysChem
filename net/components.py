@@ -26,7 +26,7 @@ class MLP(nn.Module):
         elif activation == 'softmax':
             self.activate = nn.Softmax(dim=-1)
         else:
-            assert False, 'Undefined activation {} in net.layers.MLP'.format(activation)
+            assert False, 'Undefined activation {} in net.components.MLP'.format(activation)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         for linear in self.linears:
@@ -45,30 +45,52 @@ class NaiveDynMessage(nn.Module):
         super(NaiveDynMessage, self).__init__()
         self.use_cuda = use_cuda
 
-        self.neighbor = nn.Linear(p_dim + q_dim + he_dim + hv_dim, mv_dim)
-        self.n_relu = nn.LeakyReLU()
-        self.a_relu = nn.ELU()
+        self.attend = nn.Linear(hv_dim, mv_dim)
+        self.at_act = nn.LeakyReLU()
+        self.align = nn.Linear(p_dim + q_dim + he_dim, 1)
+        self.al_act = nn.Softmax(dim=-1)
+        self.ag_act = nn.ELU()
         self.link = nn.Linear(hv_dim + p_dim + q_dim + hv_dim, me_dim)
-        self.l_relu = nn.LeakyReLU()
+        self.l_act = nn.LeakyReLU()
 
     def forward(self, hv_ftr: torch.Tensor, he_ftr: torch.Tensor, p_ftr: torch.Tensor, q_ftr: torch.Tensor,
                 mask_matrices: MaskMatrices
                 ) -> Tuple[torch.Tensor, torch.Tensor]:
-        vew1 = mask_matrices.vertex_edge_w1
-        vew2 = mask_matrices.vertex_edge_w2
+        """
+        naive message passing with dynamic properties
+        :param hv_ftr: hidden vertex features with shape [n_vertex, hv_dim]
+        :param he_ftr: hidden edge features with shape [n_edge, he_dim]
+        :param p_ftr: atom momentum features with shape [n_vertex, p_dim]
+        :param q_ftr: atom position features with shape [n_vertex, q_dim]
+        :param mask_matrices: mask matrices
+        :return: vertex message, edge message
+        """
+        vew1 = mask_matrices.vertex_edge_w1  # shape [n_vertex, n_edge]
+        vew2 = mask_matrices.vertex_edge_w2  # shape [n_vertex, n_edge]
+        veb1 = mask_matrices.vertex_edge_b1  # shape [n_vertex, n_edge]
+        veb2 = mask_matrices.vertex_edge_b2  # shape [n_vertex, n_edge]
+        vew_u = torch.cat([vew1, vew2], dim=1)  # shape [n_vertex, 2 * n_edge]
+        vew_v = torch.cat([vew2, vew1], dim=1)  # shape [n_vertex, 2 * n_edge]
+        veb_v = torch.cat([veb2, veb1], dim=1)  # shape [n_vertex, 2 * n_edge]
+        hv_u_ftr = vew_u.t() @ hv_ftr  # shape [2 * n_edge, hv_dim]
+        hv_v_ftr = vew_v.t() @ hv_ftr  # shape [2 * n_edge, hv_dim]
+        p_u_ftr = vew_u.t() @ p_ftr  # shape [2 * n_edge, p_dim]
+        p_v_ftr = vew_v.t() @ p_ftr  # shape [2 * n_edge, p_dim]
+        q_u_ftr = vew_u.t() @ q_ftr  # shape [2 * n_edge, q_dim]
+        q_v_ftr = vew_v.t() @ q_ftr  # shape [2 * n_edge, q_dim]
+        p_uv_ftr = p_v_ftr - p_u_ftr  # shape [2 * n_edge, p_dim]
+        q_uv_ftr = q_v_ftr - q_u_ftr  # shape [2 * n_edge, q_dim]
+        he2_ftr = torch.cat([he_ftr, he_ftr])  # shape [2 * n_edge, he_dim]
 
-        rv1_ftr = vew1.t() @ hv_ftr
-        rv2_ftr = vew2.t() @ hv_ftr
-        rp1_ftr = vew1.t() @ p_ftr
-        rp2_ftr = vew2.t() @ p_ftr
-        rq1_ftr = vew1.t() @ q_ftr
-        rq2_ftr = vew2.t() @ q_ftr
+        attend_ftr = self.attend(hv_v_ftr)  # shape [2 * n_edge, mv_dim]
+        attend_ftr = self.at_act(attend_ftr)
+        align_ftr = self.align(torch.cat([p_uv_ftr, q_uv_ftr, he2_ftr], dim=1))  # shape [2 * n_edge, 1]
+        align_ftr = vew_v @ torch.diag(torch.reshape(align_ftr, [-1])) + veb_v  # shape [n_vertex, 2 * n_edge]
+        align_ftr = self.al_act(align_ftr)
+        mv_ftr = self.ag_act(align_ftr @ attend_ftr)  # shape [n_vertex, mv_dim]
 
-        n1_ftr = self.neighbor(torch.cat())
-        mv_ftr = None
-
-        me_ftr = self.link(torch.cat([rv1_ftr, rp1_ftr - rp2_ftr, rq1_ftr - rq2_ftr, rv2_ftr]))
-        me_ftr = self.l_relu(me_ftr)
+        me_ftr = self.link(torch.cat([hv_u_ftr, p_uv_ftr, q_uv_ftr, hv_v_ftr], dim=1))  # shape [2 * n_edge, me_dim]
+        me_ftr = self.l_act(me_ftr)
 
         return mv_ftr, me_ftr
 
@@ -80,18 +102,59 @@ class NaiveUnion(nn.Module):
         self.linear = nn.Linear(h_dim + m_dim, h_dim, bias=bias)
         self.activate = nn.LeakyReLU()
 
-    def forward(self, h: torch.Tensor, m: torch.Tensor) -> torch.Tensor:
-        h = self.linear(torch.cat([h, m]))
-        h = self.activate(h)
-        return h
+    def forward(self, h_ftr: torch.Tensor, m_ftr: torch.Tensor) -> torch.Tensor:
+        h_ftr = self.linear(torch.cat([h_ftr, m_ftr]))
+        h_ftr = self.activate(h_ftr)
+        return h_ftr
 
 
+class GRUUnion(nn.Module):
+    def __init__(self, h_dim: int, m_dim: int,
+                 use_cuda=False, bias=True):
+        super(GRUUnion, self).__init__()
+        self.gru_cell = nn.GRUCell(m_dim, h_dim, bias=bias)
+
+    def forward(self, h_ftr: torch.Tensor, m_ftr: torch.Tensor) -> torch.Tensor:
+        h_ftr = self.gru_cell(m_ftr, h_ftr)
+        return h_ftr
 
 
+class GlobalDynReadout(nn.Module):
+    def __init__(self, hm_dim: int, hv_dim: int, mm_dim: int, p_dim: int, q_dim: int,
+                 use_cuda=False):
+        super(GlobalDynReadout, self).__init__()
+        self.use_cuda = use_cuda
 
+        self.attend = nn.Linear(p_dim + q_dim + hv_dim, mm_dim)
+        self.at_act = nn.LeakyReLU()
+        self.align = nn.Linear(hm_dim + hv_dim, 1)
+        self.al_act = nn.Softmax(dim=-1)
+        self.ag_act = nn.ELU()
 
+    def forward(self, hm_ftr: torch.Tensor, hv_ftr: torch.Tensor, p_ftr: torch.Tensor, q_ftr: torch.Tensor,
+                mask_matrices: MaskMatrices
+                ) -> torch.Tensor:
+        """
+        molecule message readout with global attention and dynamic properties
+        :param hm_ftr: molecule features with shape [n_mol, hm_dim]
+        :param hv_ftr: vertex features with shape [n_vertex, hv_dim]
+        :param p_ftr: atom momentum features with shape [n_vertex, p_dim]
+        :param q_ftr: atom position features with shape [n_vertex, q_dim]
+        :param mask_matrices: mask matrices
+        :return: molecule message
+        """
+        mvw = mask_matrices.mol_vertex_w  # shape [n_mol, n_vertex]
+        mvb = mask_matrices.mol_vertex_b  # shape [n_mol, n_vertex]
+        hm_v_ftr = mvw.t() @ hm_ftr  # shape [n_vertex, hm_dim]
 
+        attend_ftr = self.attend(torch.cat([p_ftr, q_ftr, hv_ftr], dim=1))  # shape [n_vertex, mm_dim]
+        attend_ftr = self.at_act(attend_ftr)
+        align_ftr = self.align(torch.cat([hm_v_ftr, hv_ftr], dim=1))  # shape [n_vertex, 1]
+        align_ftr = mvw @ torch.diag(torch.reshape(align_ftr, [-1])) + mvb  # shape [n_mol, n_vertex]
+        align_ftr = self.al_act(align_ftr)
+        mm_ftr = self.ag_act(align_ftr @ attend_ftr)  # shape [n_mol, mm_dim]
 
+        return mm_ftr
 
 
 
