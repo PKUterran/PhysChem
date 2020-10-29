@@ -1,5 +1,7 @@
 import torch
 
+from net.utils.model_utils import normalize_adj_r
+
 # This is a sample Python script.
 
 # Press Shift+F10 to execute it or replace it with your code.
@@ -24,9 +26,17 @@ def print_hi(name):
     # print(d.numpy())
 
     # normalize
-    w = torch.tensor([[1, 1, 0], [0, 0, 1]], dtype=torch.float32)
-    norm_w = w / torch.sum(w, dim=-1, keepdim=True)
-    print(norm_w.numpy())
+    # w = torch.tensor([[1, 1, 0], [0, 0, 1]], dtype=torch.float32)
+    # norm_w = w / torch.sum(w, dim=-1, keepdim=True)
+    # print(norm_w.numpy())
+
+    # normalize_adj_rc
+    a1 = torch.tensor([[1, 1], [1, 0]], dtype=torch.float32)
+    a2 = torch.tensor([[0, 0], [1, 2]], dtype=torch.float32)
+    na1 = normalize_adj_r(a1)
+    na2 = normalize_adj_r(a2)
+    print(na1.numpy())
+    print(na2.numpy())
 
 
 # Press the green button in the gutter to run the script.

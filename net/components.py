@@ -1,8 +1,10 @@
 import torch
 import torch.nn as nn
 from typing import Tuple
+from torch.nn.utils.rnn import pad_sequence
 
 from .utils.MaskMatrices import MaskMatrices
+from .utils.model_utils import activation_select
 
 
 class MLP(nn.Module):
@@ -17,26 +19,64 @@ class MLP(nn.Module):
         in_dims = [in_dim] + hidden_dims
         out_dims = hidden_dims + [out_dim]
         self.linears = nn.ModuleList([nn.Linear(i, o, bias=bias) for i, o in zip(in_dims, out_dims)])
-        if activation == 'no':
-            self.activate = lambda x: x
-        elif activation == 'sigmoid':
-            self.activate = nn.Sigmoid()
-        elif activation == 'tanh':
-            self.activate = nn.Tanh()
-        elif activation == 'softmax':
-            self.activate = nn.Softmax(dim=-1)
-        else:
-            assert False, 'Undefined activation {} in net.components.MLP'.format(activation)
+        self.layer_act = nn.LeakyReLU()
+        self.activate = activation_select(activation)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        for linear in self.linears:
+        for i, linear in enumerate(self.linears):
             x2 = linear(x)
+            if i < len(self.linears) - 1:
+                x2 = self.layer_act(x2)
             if self.residual:
                 x = torch.cat([x, x2])
             else:
                 x = x2
         x = self.activate(x)
         return x
+
+
+class GCN(nn.Module):
+    def __init__(self, in_dim: int, out_dim: int, hidden_dims: list = None, activation: str = 'no',
+                 use_cuda=False, residual=False):
+        super(GCN, self).__init__()
+        self.use_cuda = use_cuda
+        self.residual = residual
+
+        if not hidden_dims:
+            hidden_dims = []
+        in_dims = [in_dim] + hidden_dims
+        out_dims = hidden_dims + [out_dim]
+        self.linears = nn.ModuleList([nn.Linear(i, o, bias=True) for i, o in zip(in_dims, out_dims)])
+        self.layer_act = nn.LeakyReLU()
+        self.activate = activation_select(activation)
+
+    def forward(self, x: torch.Tensor, a: torch.Tensor) -> torch.Tensor:
+        assert x.shape[0] == a.shape[0]
+        for i, linear in enumerate(self.linears):
+            x2 = a @ linear(x)
+            if i < len(self.linears) - 1:
+                x2 = self.layer_act(x2)
+            if self.residual:
+                x = torch.cat([x, x2])
+            else:
+                x = x2
+        x = self.activate(x)
+        return x
+
+
+class LSTMEncoder(nn.Module):
+    def __init__(self, in_dim: int, out_dim: int, layers: int = 1):
+        super(LSTMEncoder, self).__init__()
+
+        self.rnn = nn.LSTM(in_dim, out_dim, layers)
+
+    def forward(self, hv_neighbor_ftr: torch.Tensor, mask_matrices: MaskMatrices) -> torch.Tensor:
+        seqs = [hv_neighbor_ftr[n == 1, :] for n in mask_matrices.mol_vertex_w]
+        lengths = [s.shape[0] for s in seqs]
+        m = pad_sequence(seqs)
+        output, _ = self.rnn(m)
+        pq_ftr = torch.cat([output[:lengths[i], i, :] for i in range(len(lengths))])
+        return pq_ftr
 
 
 class NaiveDynMessage(nn.Module):

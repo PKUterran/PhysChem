@@ -2,14 +2,44 @@ import torch
 import torch.nn as nn
 
 from .components import *
+from .utils.model_utils import normalize_adj_r
 
 
 class Initializer(nn.Module):
-    def __init__(self, ):
-        super(Initializer, self).__init__()
+    H_DIMS = [128]
+    OUT_DIM = 128
 
-    def forward(self, *input: Any, **kwargs: Any) -> T_co:
-        pass
+    def __init__(self, atom_dim: int, bond_dim: int, hv_dim: int, he_dim: int, p_dim: int, q_dim: int,
+                 use_cuda=False):
+        super(Initializer, self).__init__()
+        self.use_cuda = use_cuda
+        self.p_dim = p_dim
+
+        self.v_linear = nn.Linear(atom_dim, hv_dim, bias=True)
+        self.v_act = nn.Tanh()
+        self.e_linear = nn.Linear(bond_dim, he_dim, bias=True)
+        self.e_act = nn.Tanh()
+        self.a_linear = nn.Linear(he_dim, 1, bias=True)
+        self.a_act = nn.Sigmoid()
+        self.gcn = GCN(hv_dim, self.OUT_DIM, self.H_DIMS, use_cuda=use_cuda, residual=True)
+        self.lstm_encoder = LSTMEncoder(hv_dim + sum(self.H_DIMS) + self.OUT_DIM, p_dim + q_dim)
+
+    def forward(self, atom_ftr: torch.Tensor, bond_ftr: torch.Tensor,
+                mask_matrices: MaskMatrices
+                ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        vew1 = mask_matrices.vertex_edge_w1
+        vew2 = mask_matrices.vertex_edge_w2
+
+        hv_ftr = self.v_act(self.v_linear(atom_ftr))
+        he_ftr = self.e_act(self.e_linear(bond_ftr))
+        a = self.a_act(self.a_linear(he_ftr))
+        adj = vew1 @ torch.diag(torch.reshape(a, [-1])) @ vew2.t()
+        norm_adj = normalize_adj_r(adj)
+        hv_neighbor_ftr = self.gcn(hv_ftr, norm_adj)
+        pq_ftr = self.lstm_encoder(hv_neighbor_ftr, mask_matrices)
+        p_ftr, q_ftr = pq_ftr[:, :self.p_dim], pq_ftr[:, self.p_dim:]
+
+        return hv_ftr, he_ftr, p_ftr, q_ftr
 
 
 class ConfAwareMPNNKernel(nn.Module):
