@@ -5,6 +5,7 @@ from torch.nn.utils.rnn import pad_sequence
 
 from .utils.MaskMatrices import MaskMatrices
 from .utils.model_utils import activation_select
+from .dynamics.classic import DissipativeHamiltonianDerivation
 
 
 class MLP(nn.Module):
@@ -157,6 +158,15 @@ class GRUUnion(nn.Module):
     def forward(self, h_ftr: torch.Tensor, m_ftr: torch.Tensor) -> torch.Tensor:
         h_ftr = self.gru_cell(m_ftr, h_ftr)
         return h_ftr
+
+
+class HamiltonianEngine(nn.Module):
+    def __init__(self):
+        super(HamiltonianEngine, self).__init__()
+        self.ham_engine = DissipativeHamiltonianDerivation()
+
+    def forward(self, *input):
+        pass
 
 
 class GlobalDynReadout(nn.Module):

@@ -126,9 +126,9 @@ def encode_smiles(smiles: np.ndarray, return_mask=False):
                 continue
             else:
                 mask.append(cnt)
-        info['nf'] = np.stack([atom_features(a) for i, a in enumerate(mol.GetAtoms())])
+        info['af'] = np.stack([atom_features(a) for i, a in enumerate(mol.GetAtoms())])
 
-        info['ef'] = np.stack([bond_features(b) for b in mol.GetBonds()]
+        info['bf'] = np.stack([bond_features(b) for b in mol.GetBonds()]
                               # + [bond_features(b) for b in mol.GetBonds()]
                               ) if len(mol.GetBonds()) else np.zeros(shape=[0, 10], dtype=np.int)
         info['us'] = np.array([b.GetBeginAtomIdx() for b in mol.GetBonds()]
@@ -149,9 +149,9 @@ def encode_smiles(smiles: np.ndarray, return_mask=False):
 
 def get_features_from_smiles(smiles):
     mol = Chem.MolFromSmiles(smiles)
-    nf = np.stack([atom_features(a) for i, a in enumerate(mol.GetAtoms())])
-    ef = np.stack([bond_features(b) for b in mol.GetBonds()]) \
+    af = np.stack([atom_features(a) for i, a in enumerate(mol.GetAtoms())])
+    bf = np.stack([bond_features(b) for b in mol.GetBonds()]) \
         if len(mol.GetBonds()) else np.zeros(shape=[0, 10], dtype=np.int)
     us = np.array([b.GetBeginAtomIdx() for b in mol.GetBonds()], dtype=np.int)
     vs = np.array([b.GetEndAtomIdx() for b in mol.GetBonds()], dtype=np.int)
-    return nf, ef, us, vs
+    return af, bf, us, vs
