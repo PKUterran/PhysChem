@@ -53,38 +53,39 @@ def qm9_dict(start=0):
     f_dir = {}
     csv2json = {}
     for s in smiles:
-        flag = 0
         if s in k:
             # print(s)
             csv2json[s] = s
             hit += 1
-            continue
-        f1 = GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(s), 2048)
-        for s2 in k:
-            lll = len(f_dir.keys())
-            if lll % 1000 == 0:
-                print('cached:{:.2f}%'.format(100 * lll / k_len))
-            if s2 in f_dir.keys():
-                f2 = f_dir[s2]
-            else:
-                try:
-                    f2 = GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(s2), 2048)
-                except:
-                    f2 = None
-                f_dir[s2] = f2
-            if not f2:
-                continue
-            if compare(f1, f2):
-                hit += 1
-                # print(s, s2)
-                csv2json[s] = s2
-                flag = 1
-                break
-        if not flag:
-            # print(s, 'None')
-            csv2json[s] = ''
+        else:
+            flag = 0
+            f1 = GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(s), 2048)
+            for s2 in k:
+                lll = len(f_dir.keys())
+                if lll % 1000 == 0:
+                    print('cached:{:.2f}%'.format(100 * lll / k_len))
+                if s2 in f_dir.keys():
+                    f2 = f_dir[s2]
+                else:
+                    try:
+                        f2 = GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(s2), 2048)
+                    except:
+                        f2 = None
+                    f_dir[s2] = f2
+                if not f2:
+                    continue
+                if compare(f1, f2):
+                    hit += 1
+                    # print(s, s2)
+                    csv2json[s] = s2
+                    flag = 1
+                    break
+            if not flag:
+                # print(s, 'None')
+                csv2json[s] = ''
 
         total += 1
+        assert (total - 1) % 2000 == len(csv2json.items()) - 1
         if total % 100 == 0:
             print('processed:{:.2f}%'.format(100 * total / len(smiles)))
         if total % 2000 == 0:
@@ -99,4 +100,4 @@ def qm9_dict(start=0):
     print('hit rate: {:.1f}%'.format(hit * 100 / total))
 
 
-qm9_dict(5999)
+qm9_dict(60957)
