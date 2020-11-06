@@ -1,6 +1,11 @@
+import time
 import torch
+import rdkit.Chem as Chem
+import numpy as np
 
-from net.utils.model_utils import normalize_adj_r
+from data.qm9.load_qm9 import cache_qm9, load_qm9
+from net.utils.model_utils import normalize_adj_r, normalize_adj_rc
+from train.utils.loss_functions import distance_among
 
 # This is a sample Python script.
 
@@ -30,13 +35,51 @@ def print_hi(name):
     # norm_w = w / torch.sum(w, dim=-1, keepdim=True)
     # print(norm_w.numpy())
 
+    # w1 w2
+    # w1 = torch.tensor([[1, 1, 0], [0, 0, 0], [0, 0, 1], [0, 0, 0]], dtype=torch.float32)
+    # w2 = torch.tensor([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=torch.float32)
+    # adj_d = w1 @ w2.t()
+    # adj = adj_d + adj_d.t()
+    # print(adj)
+    # adj_1 = normalize_adj_rc(adj)
+    # print(adj_1)
+    # print(adj_1 @ adj_1)
+    # print(adj_1 @ adj_1 @ adj_1)
+    # print(adj.diag())
+    # print(adj.diagonal())
+
     # normalize_adj_rc
-    a1 = torch.tensor([[1, 1], [1, 0]], dtype=torch.float32)
-    a2 = torch.tensor([[0, 0], [1, 2]], dtype=torch.float32)
-    na1 = normalize_adj_r(a1)
-    na2 = normalize_adj_r(a2)
-    print(na1.numpy())
-    print(na2.numpy())
+    # a1 = torch.tensor([[1, 1], [1, 0]], dtype=torch.float32)
+    # a2 = torch.tensor([[0, 0], [1, 2]], dtype=torch.float32)
+    # na1 = normalize_adj_r(a1)
+    # na2 = normalize_adj_r(a2)
+    # print(na1.numpy())
+    # print(na2.numpy())
+
+    # utils qm9
+    # cache_qm9()
+
+    # load qm9
+    # t0 = time.time()
+    # m, n = load_qm9()
+    # t1 = time.time()
+    # print(t1 - t0)
+    # print(m[0])
+    # print(n[0])
+
+    # np.mean
+    # a = np.array([[1, 2], [3, 6], [6, 5]])
+    # m = np.mean(a, axis=0)
+    # sd = np.std(a, axis=0, ddof=1)
+    # print(a)
+    # print(a - m)
+    # print(sd)
+    # print((a - m) / sd)
+
+    # distance_among
+    a = torch.tensor([[1, 2], [3, 6], [6, 5]], dtype=torch.float32)
+    d = distance_among(a)
+    print(d)
 
 
 # Press the green button in the gutter to run the script.

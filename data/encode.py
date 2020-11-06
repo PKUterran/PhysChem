@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Union, List, Tuple, Dict
 from rdkit import Chem
 
 
@@ -48,6 +49,10 @@ def get_atoms_massive_matrix(atoms: list) -> np.ndarray:
 
 def get_default_atoms_massive_matrix() -> np.ndarray:
     return get_atoms_massive_matrix(ATOMS)
+
+
+def get_massive_from_atom_features(af: np.ndarray) -> np.ndarray:
+    return np.asmatrix(af) @ np.asmatrix(get_default_atoms_massive_matrix()) / 50
 
 
 def atom_features(atom,
@@ -111,15 +116,20 @@ def num_bond_features():
     return len(bond_features(simple_mol.GetBonds()[0]))
 
 
-def encode_smiles(smiles: np.ndarray, return_mask=False):
+def encode_smiles(smiles: np.ndarray, return_mask=False
+                  ) -> Union[List[Dict[str, np.ndarray]], Tuple[List[Dict[str, np.ndarray]], List[int]]]:
+    mols = [Chem.MolFromSmiles(smile) for smile in smiles]
+    return encode_mols(mols, return_mask=return_mask)
+
+
+def encode_mols(mols: list, return_mask=False
+                ) -> Union[List[Dict[str, np.ndarray]], Tuple[List[Dict[str, np.ndarray]], List[int]]]:
     ret = []
     mask = []
-    similar = 0
     print('Start encoding...')
     cnt = 0
-    for idx, smile in enumerate(smiles):
+    for idx, mol in enumerate(mols):
         info = {}
-        mol = Chem.MolFromSmiles(smile)
         if return_mask:
             if not mol:
                 cnt += 1

@@ -85,7 +85,7 @@ def qm9_dict(start=0):
                 csv2json[s] = ''
 
         total += 1
-        assert (total - 1) % 2000 == len(csv2json.items()) - 1
+        # assert (total - 1) % 2000 == len(csv2json.items()) - 1
         if total % 100 == 0:
             print('processed:{:.2f}%'.format(100 * total / len(smiles)))
         if total % 2000 == 0:
@@ -100,4 +100,4 @@ def qm9_dict(start=0):
     print('hit rate: {:.1f}%'.format(hit * 100 / total))
 
 
-qm9_dict(60957)
+qm9_dict(124957)

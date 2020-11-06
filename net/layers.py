@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 
 from .components import *
+from .dynamics.classic import DissipativeHamiltonianDerivation
 from .utils.model_utils import normalize_adj_r
 
 
@@ -33,7 +34,8 @@ class Initializer(nn.Module):
         hv_ftr = self.v_act(self.v_linear(atom_ftr))
         he_ftr = self.e_act(self.e_linear(bond_ftr))
         a = self.a_act(self.a_linear(he_ftr))
-        adj = vew1 @ torch.diag(torch.reshape(a, [-1])) @ vew2.t()
+        adj_d = vew1 @ torch.diag(torch.reshape(a, [-1])) @ vew2.t()
+        adj = adj_d + adj_d.t()
         norm_adj = normalize_adj_r(adj)
         hv_neighbor_ftr = self.gcn(hv_ftr, norm_adj)
         pq_ftr = self.lstm_encoder(hv_neighbor_ftr, mask_matrices)
@@ -74,17 +76,27 @@ class ConfAwareMPNNKernel(nn.Module):
 
 
 class InformedHamiltonianKernel(nn.Module):
-    def __init__(self):
+    def __init__(self, hv_dim: int, he_dim: int, p_dim: int, q_dim: int, tau: float,
+                 use_cuda=False, dropout=0.0):
         super(InformedHamiltonianKernel, self).__init__()
+        self.tau = tau
+        self.use_cuda = use_cuda
 
-    def forward(self, *input: Any, **kwargs: Any) -> T_co:
-        pass
+        self.derivation = DissipativeHamiltonianDerivation(p_dim, q_dim, use_cuda=use_cuda, dropout=dropout)
+
+    def forward(self, hv_ftr: torch.Tensor, he_ftr: torch.Tensor,
+                massive: torch.Tensor, p_ftr: torch.Tensor, q_ftr: torch.Tensor, mask_matrices: MaskMatrices
+                ) -> Tuple[torch.Tensor, torch.Tensor]:
+        dp, dq = self.derivation(massive, p_ftr, q_ftr, mask_matrices)
+        p_ftr = p_ftr + dp * self.tau
+        q_ftr = q_ftr + dq * self.tau
+        return p_ftr, q_ftr
 
 
-class ConfAwareRepresentation(nn.Module):
+class ConfAwareFingerprintGenerator(nn.Module):
     def __init__(self, hm_dim: int, hv_dim: int, mm_dim: int, p_dim: int, q_dim: int, iteration: int,
                  use_cuda=False):
-        super(ConfAwareRepresentation, self).__init__()
+        super(ConfAwareFingerprintGenerator, self).__init__()
         self.use_cuda = use_cuda
 
         self.vertex2mol = nn.Linear(hv_dim, hm_dim, bias=True)
@@ -110,8 +122,12 @@ class ConfAwareRepresentation(nn.Module):
 
 
 class ConformationGenerator(nn.Module):
-    def __init__(self):
+    def __init__(self, q_dim: int, h_dims: list,
+                 dropout=0.0):
         super(ConformationGenerator, self).__init__()
+        self.mlp = MLP(q_dim, 3, h_dims)
+        self.dropout = nn.Dropout(p=dropout)
 
-    def forward(self, *input: Any, **kwargs: Any) -> T_co:
-        pass
+    def forward(self, q_ftr: torch.Tensor) -> torch.Tensor:
+        conf3d = self.dropout(self.mlp(q_ftr))
+        return conf3d

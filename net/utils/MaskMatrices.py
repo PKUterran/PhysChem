@@ -11,7 +11,3 @@ class MaskMatrices:
         self.vertex_edge_w2 = vertex_edge_w2
         self.vertex_edge_b1 = vertex_edge_b1
         self.vertex_edge_b2 = vertex_edge_b2
-
-
-def from_() -> MaskMatrices:
-    pass
