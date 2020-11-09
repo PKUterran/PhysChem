@@ -17,10 +17,11 @@ def multi_mse_loss(source: torch.Tensor, target: torch.Tensor, explicit=False) -
 
 def multi_mae_loss(source: torch.Tensor, target: torch.Tensor, explicit=False) -> torch.Tensor:
     ae = torch.abs(source - target)
+    mae = torch.mean(ae, dim=0)
     if explicit:
-        return torch.mean(ae, dim=0)
+        return mae
     else:
-        return torch.mean(ae)
+        return torch.sum(mae)
 
 
 def mse_loss(source: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
@@ -44,6 +45,7 @@ def distance_among(positions: torch.Tensor) -> torch.Tensor:
 
 def adj3_loss(source: torch.Tensor, target: torch.Tensor, mask_matrices: MaskMatrices,
               use_cuda=False) -> torch.Tensor:
+    n_atom = mask_matrices.mol_vertex_w.shape[1]
     vew1 = mask_matrices.vertex_edge_w1
     vew2 = mask_matrices.vertex_edge_w2
     adj_d = vew1 @ vew2.t()
@@ -59,5 +61,19 @@ def adj3_loss(source: torch.Tensor, target: torch.Tensor, mask_matrices: MaskMat
     ds = distance_among(source)
     dt = distance_among(target)
     distance_2 = (ds - dt) ** 2
-    loss = distance_2 * mean_adj_3
+    loss = torch.sum(distance_2 * mean_adj_3) / n_atom
     return loss
+
+
+def distance_loss(source: torch.Tensor, target: torch.Tensor, mask_matrices: MaskMatrices,
+                  root_square=True) -> torch.Tensor:
+    n_mol = mask_matrices.mol_vertex_w.shape[0]
+    mvw = mask_matrices.mol_vertex_w
+    vv = mvw.t() @ mvw
+    norm_vv = vv / ((torch.sum(vv, dim=1) ** 2) * n_mol)
+    ds = distance_among(source)
+    dt = distance_among(target)
+    if root_square:
+        return torch.sum(torch.sqrt(((ds - dt) ** 2) * norm_vv))
+    else:
+        return torch.sum((ds - dt) * norm_vv)

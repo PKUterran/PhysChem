@@ -126,7 +126,7 @@ def encode_mols(mols: list, return_mask=False
                 ) -> Union[List[Dict[str, np.ndarray]], Tuple[List[Dict[str, np.ndarray]], List[int]]]:
     ret = []
     mask = []
-    print('Start encoding...')
+    print('\tStart encoding...')
     cnt = 0
     for idx, mol in enumerate(mols):
         info = {}
@@ -150,7 +150,7 @@ def encode_mols(mols: list, return_mask=False
         ret.append(info)
         cnt += 1
         if cnt % 10000 == 0:
-            print(cnt, 'encoded.')
+            print('\t', cnt, 'encoded.')
     print('Encoded:', len(ret))
     if return_mask:
         return ret, mask

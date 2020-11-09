@@ -10,7 +10,7 @@ from typing import Tuple, List
 
 from data.config import QM9_RDKIT_SUMMARY_PATH, RDKIT_FOLDER_DIR, QM9_CSV2JSON_PATH, QM9_CSV_PATH, QM9_PICKLE_PATH
 
-WEIGHT_GATE = 0.2
+WEIGHT_GATE = 0.1
 
 
 def get_mol_positions(mol: Molecule) -> np.ndarray:
@@ -42,7 +42,7 @@ def cache_qm9():
     csv: np.ndarray = df.values
 
     o_keys = csv[:, 1]
-    o_values = csv[:, -12:]
+    o_values = csv[:, 5:17]
 
     fp = open(QM9_CSV2JSON_PATH)
     csv2json: dict = json.load(fp)
@@ -74,6 +74,9 @@ def cache_qm9():
         if (i + 1) % 1000 == 0:
             print('\t{}/{} loaded'.format(i + 1, sum(mask)))
 
+    nonzero_mask = [i for i, list_weight_mol in enumerate(mol_list_weight_mol) if len(list_weight_mol)]
+    mol_list_weight_mol = [mol_list_weight_mol[i] for i in nonzero_mask]
+    mol_properties = mol_properties[nonzero_mask, :]
     assert len(mol_list_weight_mol) == mol_properties.shape[0]
     print('\tCaching QM9...')
     fp = open(QM9_PICKLE_PATH, 'wb+')
@@ -92,7 +95,7 @@ def load_qm9(max_num: int = -1) -> Tuple[List[List[Tuple[float, Molecule]]], np.
     if max_num != -1:
         assert max_num <= len(mol_list_weight_mol), \
             f'{len(mol_list_weight_mol)} smiles in QM9 while {max_num} are required'
-        mol_list_weight_mol = mol_properties[: max_num]
+        mol_list_weight_mol = mol_list_weight_mol[: max_num]
         mol_properties = mol_properties[:max_num, :]
 
     return mol_list_weight_mol, mol_properties

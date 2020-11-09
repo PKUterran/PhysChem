@@ -53,14 +53,16 @@ class GCN(nn.Module):
 
     def forward(self, x: torch.Tensor, a: torch.Tensor) -> torch.Tensor:
         assert x.shape[0] == a.shape[0]
+        xs = [x]
         for i, linear in enumerate(self.linears):
             x2 = a @ linear(x)
             if i < len(self.linears) - 1:
-                x2 = self.layer_act(x2)
-            if self.residual:
-                x = torch.cat([x, x2])
+                x = self.layer_act(x2)
             else:
                 x = x2
+            xs.append(x)
+        if self.residual:
+            x = torch.cat(xs, dim=1)
         x = self.activate(x)
         return x
 
@@ -106,6 +108,7 @@ class NaiveDynMessage(nn.Module):
         :param mask_matrices: mask matrices
         :return: vertex message, edge message
         """
+        n_edge = mask_matrices.vertex_edge_w1.shape[1]
         vew1 = mask_matrices.vertex_edge_w1  # shape [n_vertex, n_edge]
         vew2 = mask_matrices.vertex_edge_w2  # shape [n_vertex, n_edge]
         veb1 = mask_matrices.vertex_edge_b1  # shape [n_vertex, n_edge]
@@ -130,7 +133,8 @@ class NaiveDynMessage(nn.Module):
         align_ftr = self.al_act(align_ftr)
         mv_ftr = self.ag_act(align_ftr @ attend_ftr)  # shape [n_vertex, mv_dim]
 
-        me_ftr = self.link(torch.cat([hv_u_ftr, p_uv_ftr, q_uv_ftr, hv_v_ftr], dim=1))  # shape [2 * n_edge, me_dim]
+        me2_ftr = self.link(torch.cat([hv_u_ftr, p_uv_ftr, q_uv_ftr, hv_v_ftr], dim=1))  # shape [2 * n_edge, me_dim]
+        me_ftr = me2_ftr[:n_edge, :] + me2_ftr[n_edge:, :]  # shape [n_edge, me_dim]
         me_ftr = self.l_act(me_ftr)
 
         return mv_ftr, me_ftr
@@ -154,19 +158,12 @@ class GRUUnion(nn.Module):
                  use_cuda=False, bias=True):
         super(GRUUnion, self).__init__()
         self.gru_cell = nn.GRUCell(m_dim, h_dim, bias=bias)
+        self.relu = nn.LeakyReLU()
 
     def forward(self, h_ftr: torch.Tensor, m_ftr: torch.Tensor) -> torch.Tensor:
         h_ftr = self.gru_cell(m_ftr, h_ftr)
+        h_ftr = self.relu(h_ftr)
         return h_ftr
-
-
-class HamiltonianEngine(nn.Module):
-    def __init__(self):
-        super(HamiltonianEngine, self).__init__()
-        self.ham_engine = DissipativeHamiltonianDerivation()
-
-    def forward(self, *input):
-        pass
 
 
 class GlobalDynReadout(nn.Module):
