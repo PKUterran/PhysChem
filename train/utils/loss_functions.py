@@ -74,6 +74,6 @@ def distance_loss(source: torch.Tensor, target: torch.Tensor, mask_matrices: Mas
     ds = distance_among(source)
     dt = distance_among(target)
     if root_square:
-        return torch.sum(torch.sqrt(((ds - dt) ** 2) * norm_vv))
+        return torch.sqrt(torch.sum(((ds - dt) ** 2) * norm_vv))
     else:
         return torch.sum((ds - dt) * norm_vv)

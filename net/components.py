@@ -84,9 +84,10 @@ class LSTMEncoder(nn.Module):
 
 class NaiveDynMessage(nn.Module):
     def __init__(self, hv_dim: int, he_dim: int, mv_dim: int, me_dim: int, p_dim: int, q_dim: int,
-                 use_cuda=False):
+                 use_cuda=False, dropout=0.0):
         super(NaiveDynMessage, self).__init__()
         self.use_cuda = use_cuda
+        self.dropout = nn.Dropout(dropout)
 
         self.attend = nn.Linear(hv_dim, mv_dim)
         self.at_act = nn.LeakyReLU()
@@ -108,6 +109,7 @@ class NaiveDynMessage(nn.Module):
         :param mask_matrices: mask matrices
         :return: vertex message, edge message
         """
+        hv_ftr, he_ftr = self.dropout(hv_ftr), self.dropout(he_ftr)
         n_edge = mask_matrices.vertex_edge_w1.shape[1]
         vew1 = mask_matrices.vertex_edge_w1  # shape [n_vertex, n_edge]
         vew2 = mask_matrices.vertex_edge_w2  # shape [n_vertex, n_edge]
@@ -168,9 +170,10 @@ class GRUUnion(nn.Module):
 
 class GlobalDynReadout(nn.Module):
     def __init__(self, hm_dim: int, hv_dim: int, mm_dim: int, p_dim: int, q_dim: int,
-                 use_cuda=False):
+                 use_cuda=False, dropout=0.0):
         super(GlobalDynReadout, self).__init__()
         self.use_cuda = use_cuda
+        self.dropout = nn.Dropout(dropout)
 
         self.attend = nn.Linear(p_dim + q_dim + hv_dim, mm_dim)
         self.at_act = nn.LeakyReLU()
@@ -190,6 +193,7 @@ class GlobalDynReadout(nn.Module):
         :param mask_matrices: mask matrices
         :return: molecule message
         """
+        hm_ftr, hv_ftr = self.dropout(hm_ftr), self.dropout(hv_ftr)
         mvw = mask_matrices.mol_vertex_w  # shape [n_mol, n_vertex]
         mvb = mask_matrices.mol_vertex_b  # shape [n_mol, n_vertex]
         hm_v_ftr = mvw.t() @ hm_ftr  # shape [n_vertex, hm_dim]

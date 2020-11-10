@@ -42,7 +42,7 @@ def cache_qm9():
     csv: np.ndarray = df.values
 
     o_keys = csv[:, 1]
-    o_values = csv[:, 5:17]
+    o_values = csv[:, 5: 17]
 
     fp = open(QM9_CSV2JSON_PATH)
     csv2json: dict = json.load(fp)
@@ -77,6 +77,7 @@ def cache_qm9():
     nonzero_mask = [i for i, list_weight_mol in enumerate(mol_list_weight_mol) if len(list_weight_mol)]
     mol_list_weight_mol = [mol_list_weight_mol[i] for i in nonzero_mask]
     mol_properties = mol_properties[nonzero_mask, :]
+    print('\tProcessed: {:.2f}%'.format(100 * sum(nonzero_mask) / len(mask)))
     assert len(mol_list_weight_mol) == mol_properties.shape[0]
     print('\tCaching QM9...')
     fp = open(QM9_PICKLE_PATH, 'wb+')

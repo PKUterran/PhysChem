@@ -41,6 +41,7 @@ class GeomNN(nn.Module):
             p_dim=p_dim,
             q_dim=q_dim,
             use_cuda=use_cuda,
+            dropout=dropout,
             message_type=message_type,
             union_type=union_type
         ) for _ in range(self.n_layer)])
@@ -60,7 +61,8 @@ class GeomNN(nn.Module):
             p_dim=p_dim,
             q_dim=q_dim,
             iteration=n_global,
-            use_cuda=use_cuda
+            use_cuda=use_cuda,
+            dropout=dropout
         )
         self.conformation_gen = ConformationGenerator(
             q_dim=q_dim,

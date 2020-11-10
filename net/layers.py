@@ -46,14 +46,15 @@ class Initializer(nn.Module):
 
 class ConfAwareMPNNKernel(nn.Module):
     def __init__(self, hv_dim: int, he_dim: int, mv_dim: int, me_dim: int, p_dim: int, q_dim: int,
-                 use_cuda=False, message_type='naive', union_type='gru'):
+                 use_cuda=False, dropout=0.0,
+                 message_type='naive', union_type='gru'):
         super(ConfAwareMPNNKernel, self).__init__()
         self.use_cuda = use_cuda
         self.message_type = message_type
         self.union_type = union_type
 
         if message_type == 'naive':
-            self.message = NaiveDynMessage(hv_dim, he_dim, mv_dim, me_dim, p_dim, q_dim, use_cuda)
+            self.message = NaiveDynMessage(hv_dim, he_dim, mv_dim, me_dim, p_dim, q_dim, use_cuda, dropout)
         else:
             assert False, 'Undefined message type {} in net.layers.ConfAwareMPNNKernel'.format(message_type)
 
@@ -82,12 +83,13 @@ class InformedHamiltonianKernel(nn.Module):
         self.tau = tau
         self.use_cuda = use_cuda
 
-        self.derivation = DissipativeHamiltonianDerivation(p_dim, q_dim, use_cuda=use_cuda, dropout=dropout)
+        self.derivation = DissipativeHamiltonianDerivation(hv_dim, he_dim, p_dim, q_dim,
+                                                           use_cuda=use_cuda, dropout=dropout)
 
     def forward(self, hv_ftr: torch.Tensor, he_ftr: torch.Tensor,
                 massive: torch.Tensor, p_ftr: torch.Tensor, q_ftr: torch.Tensor, mask_matrices: MaskMatrices
                 ) -> Tuple[torch.Tensor, torch.Tensor]:
-        dp, dq = self.derivation(massive, p_ftr, q_ftr, mask_matrices)
+        dp, dq = self.derivation(hv_ftr, he_ftr, massive, p_ftr, q_ftr, mask_matrices)
         p_ftr = p_ftr + dp * self.tau
         q_ftr = q_ftr + dq * self.tau
         return p_ftr, q_ftr
@@ -95,13 +97,13 @@ class InformedHamiltonianKernel(nn.Module):
 
 class ConfAwareFingerprintGenerator(nn.Module):
     def __init__(self, hm_dim: int, hv_dim: int, mm_dim: int, p_dim: int, q_dim: int, iteration: int,
-                 use_cuda=False):
+                 use_cuda=False, dropout=0.0):
         super(ConfAwareFingerprintGenerator, self).__init__()
         self.use_cuda = use_cuda
 
         self.vertex2mol = nn.Linear(hv_dim, hm_dim, bias=True)
         self.vm_act = nn.LeakyReLU()
-        self.readout = GlobalDynReadout(hm_dim, hv_dim, mm_dim, p_dim, q_dim, use_cuda)
+        self.readout = GlobalDynReadout(hm_dim, hv_dim, mm_dim, p_dim, q_dim, use_cuda, dropout)
         self.union = GRUUnion(hm_dim, mm_dim, use_cuda)
         self.iteration = iteration
 

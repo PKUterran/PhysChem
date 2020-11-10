@@ -24,7 +24,7 @@ def train_qm9(special_config: dict = None,
     if special_config is not None:
         config.update(special_config)
     set_seed(seed, use_cuda=use_cuda)
-    np.set_printoptions(suppress=True, precision=3)
+    np.set_printoptions(suppress=True, precision=3, linewidth=200)
 
     # load dataset
     print('Loading:')

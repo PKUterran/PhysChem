@@ -8,13 +8,16 @@ from net.utils.MaskMatrices import MaskMatrices
 
 
 class KineticEnergy(nn.Module):
-    def __init__(self, p_dim, h_dim=128):
+    def __init__(self, v_dim, p_dim, h_dim=128, dropout=0.0):
         super(KineticEnergy, self).__init__()
-        self.W = nn.Linear(p_dim, h_dim, bias=False)
+        self.W = nn.Linear(v_dim + p_dim, h_dim, bias=False)
+        self.dropout = nn.Dropout(dropout)
 
-    def forward(self, p, m):
+    def forward(self, v, p, m):
         alpha = 1 / m
-        pw = self.W(p)
+        vp = torch.cat([v, p], dim=1)
+        pw = self.W(vp)
+        pw = self.dropout(pw)
         apwwp = alpha * (pw ** 2)
         if torch.isnan(apwwp.sum()):
             apwwp[torch.isnan(apwwp)] = 0
@@ -23,21 +26,24 @@ class KineticEnergy(nn.Module):
 
 
 class PotentialEnergy(nn.Module):
-    def __init__(self, q_dim, h_dim=32, dropout=0.0, use_cuda=False):
+    def __init__(self, v_dim, q_dim, h_dim=32, dropout=0.0, use_cuda=False):
         super(PotentialEnergy, self).__init__()
         self.use_cuda = use_cuda
-        self.linear1 = nn.Linear(q_dim, h_dim, bias=True)
+        self.linear1 = nn.Linear(v_dim + q_dim, h_dim, bias=True)
+        self.dropout = nn.Dropout(dropout)
         self.softplus = nn.Softplus()
 
-    def forward(self, m, q, vvm):
+    def forward(self, v, q, m, vvm):
         norm_m = m
         mm = norm_m * norm_m.reshape([1, -1])
         eye = torch.eye(vvm.shape[1], dtype=torch.float32)
         if self.use_cuda:
             eye = eye.cuda()
         mask = vvm * mm
-        delta_p = torch.unsqueeze(q, dim=0) - torch.unsqueeze(q, dim=1)
-        root = self.linear1(delta_p)
+        vq = torch.cat([v, q], dim=1)
+        delta_vq = torch.unsqueeze(vq, dim=0) - torch.unsqueeze(vq, dim=1)
+        root = self.linear1(delta_vq)
+        root = self.dropout(root)
         distance = (self.softplus(torch.sum(root ** 2, dim=2))) * (-eye + 1) + eye
         energy = mask * (distance ** -2 - distance ** -1)
         if torch.isnan(energy.sum()):
@@ -47,13 +53,15 @@ class PotentialEnergy(nn.Module):
 
 
 class DissipatedEnergy(nn.Module):
-    def __init__(self, p_dim, h_dim=32):
+    def __init__(self, p_dim, h_dim=32, dropout=0.0):
         super(DissipatedEnergy, self).__init__()
         self.W = nn.Linear(p_dim, h_dim, bias=False)
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, p, m):
         alpha2 = 1 / (m ** 2)
         pw = self.W(p)
+        pw = self.dropout(pw)
         a2pwwp = alpha2 * (pw ** 2)
         if torch.isnan(a2pwwp.sum()):
             a2pwwp[torch.isnan(a2pwwp)] = 0
@@ -62,20 +70,22 @@ class DissipatedEnergy(nn.Module):
 
 
 class DissipativeHamiltonianDerivation(nn.Module):
-    def __init__(self, p_dim: int, q_dim: int,
+    def __init__(self, v_dim: int, e_dim: int, p_dim: int, q_dim: int,
                  use_cuda=False, dropout=0.0):
         super(DissipativeHamiltonianDerivation, self).__init__()
-        self.T = KineticEnergy(p_dim)
-        self.U = PotentialEnergy(q_dim, dropout=dropout, use_cuda=use_cuda)
+        self.T = KineticEnergy(v_dim, p_dim)
+        self.U = PotentialEnergy(v_dim, q_dim, dropout=dropout, use_cuda=use_cuda)
         self.F = DissipatedEnergy(p_dim)
 
-    def forward(self, m: torch.Tensor, p: torch.Tensor, q: torch.Tensor, mask_matrices: MaskMatrices,
+    def forward(self, v: torch.Tensor, e: torch.Tensor, m: torch.Tensor, p: torch.Tensor, q: torch.Tensor,
+                mask_matrices: MaskMatrices,
                 return_energy=False, dissipate=True
                 ) -> Union[Tuple[torch.Tensor, torch.Tensor],
                            Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]:
         mvw = mask_matrices.mol_vertex_w
         vvm = mvw.t() @ mvw
-        hamiltonians = self.T(p, m) + self.U(m, q, vvm)
+        v, e = torch.sigmoid(v), torch.sigmoid(e)
+        hamiltonians = self.T(v, p, m) + self.U(v, q, m, vvm)
         dissipations = self.F(p, m)
         hamilton = hamiltonians.sum()
         dissipated = dissipations.sum()
