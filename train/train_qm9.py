@@ -60,6 +60,9 @@ def train_qm9(special_config: dict = None,
         use_cuda=use_cuda,
         bias=True
     )
+    if use_cuda:
+        model.cuda()
+        classifier.cuda()
 
     # initialize optimization
     parameters = list(chain(model.parameters(), classifier.parameters()))
