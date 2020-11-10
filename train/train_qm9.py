@@ -99,6 +99,7 @@ def train_qm9(special_config: dict = None,
     def evaluate(batches: List[Batch]):
         model.eval()
         classifier.eval()
+        optimizer.zero_grad()
         n_batch = len(batches)
         list_p_loss = []
         list_c_loss = []
@@ -116,23 +117,23 @@ def train_qm9(special_config: dict = None,
             p_loss = multi_mse_loss(pred_p, batch.properties)
             c_loss = adj3_loss(pred_c, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
             loss = p_loss + config['LAMBDA'] * c_loss
-            list_p_loss.append(p_loss)
-            list_c_loss.append(c_loss)
-            list_loss.append(loss)
+            list_p_loss.append(p_loss.cpu().item())
+            list_c_loss.append(c_loss.cpu().item())
+            list_loss.append(loss.cpu().item())
 
             p_multi_mae = multi_mae_loss(pred_p, batch.properties, explicit=True)
             p_total_mae = p_multi_mae.sum()
             rsd = distance_loss(pred_c, batch.conformation, batch.mask_matrices, root_square=True)
-            list_p_multi_mae.append(p_multi_mae)
-            list_p_total_mae.append(p_total_mae)
-            list_rsd.append(rsd)
+            list_p_multi_mae.append(p_multi_mae.cpu().detach().numpy())
+            list_p_total_mae.append(p_total_mae.cpu().item())
+            list_rsd.append(rsd.cpu().item())
 
-        print(f'\t\t\tP LOSS: {sum(list_p_loss).cpu().item() / n_batch}')
-        print(f'\t\t\tC LOSS: {sum(list_c_loss).cpu().item() / n_batch}')
-        print(f'\t\t\tTOTAL LOSS: {sum(list_loss).cpu().item() / n_batch}')
-        print(f'\t\t\tPROPERTIES MULTI-MAE: {sum(list_p_multi_mae).cpu().detach().numpy() * stddev_p / n_batch}')
-        print(f'\t\t\tPROPERTIES TOTAL MAE: {sum(list_p_total_mae).cpu().item() / n_batch}')
-        print(f'\t\t\tCONFORMATION RS-DL: {sum(list_rsd).cpu().item() / n_batch}')
+        print(f'\t\t\tP LOSS: {sum(list_p_loss) / n_batch}')
+        print(f'\t\t\tC LOSS: {sum(list_c_loss) / n_batch}')
+        print(f'\t\t\tTOTAL LOSS: {sum(list_loss) / n_batch}')
+        print(f'\t\t\tPROPERTIES MULTI-MAE: {sum(list_p_multi_mae) * stddev_p / n_batch}')
+        print(f'\t\t\tPROPERTIES TOTAL MAE: {sum(list_p_total_mae) / n_batch}')
+        print(f'\t\t\tCONFORMATION RS-DL: {sum(list_rsd) / n_batch}')
 
     for _ in range(config['EPOCH']):
         epoch += 1
