@@ -66,7 +66,7 @@ class GeomNN(nn.Module):
         )
         self.conformation_gen = ConformationGenerator(
             q_dim=q_dim,
-            h_dims=[128],
+            h_dims=[16],
             dropout=dropout
         )
 

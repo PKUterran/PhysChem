@@ -11,7 +11,7 @@ from data.qm9.load_qm9 import load_qm9
 from net.models import GeomNN
 from net.components import MLP
 from .config import QM9_CONFIG
-from .utils.cache_batch import Batch, BatchCache, load_batch_cache, load_encode_mols
+from .utils.cache_batch import Batch, BatchCache, load_batch_cache, load_encode_mols, batch_cuda_copy
 from .utils.seed import set_seed
 from .utils.loss_functions import multi_mse_loss, multi_mae_loss, adj3_loss, distance_loss
 
@@ -56,7 +56,7 @@ def train_qm9(special_config: dict = None,
     classifier = MLP(
         in_dim=config['HM_DIM'],
         out_dim=12,
-        hidden_dims=[128],
+        hidden_dims=[32],
         use_cuda=use_cuda,
         bias=True
     )
@@ -86,6 +86,8 @@ def train_qm9(special_config: dict = None,
         if use_tqdm:
             batches = tqdm(batches, total=n_batch)
         for batch in batches:
+            if use_cuda:
+                batch = batch_cuda_copy(batch)
             fp, pred_c = model(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices)
             pred_p = classifier(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
@@ -107,6 +109,8 @@ def train_qm9(special_config: dict = None,
         if use_tqdm:
             batches = tqdm(batches, total=n_batch)
         for batch in batches:
+            if use_cuda:
+                batch = batch_cuda_copy(batch)
             fp, pred_c = model(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices)
             pred_p = classifier(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)

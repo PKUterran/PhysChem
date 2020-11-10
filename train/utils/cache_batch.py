@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from data.encode import get_massive_from_atom_features, encode_mols
 from data.qm9.load_qm9 import get_mol_positions
-from net.utils.MaskMatrices import MaskMatrices
+from net.utils.MaskMatrices import MaskMatrices, cuda_copy
 
 CACHE_DIR = 'train/utils/cache'
 MOLS_DIR = 'train/utils/mols'
@@ -28,6 +28,17 @@ class Batch:
         self.mask_matrices = mask_matrices
         self.properties = properties
         self.conformation = conformation
+
+
+def batch_cuda_copy(batch: Batch) -> Batch:
+    return Batch(
+        atom_ftr=batch.atom_ftr.cuda(),
+        bond_ftr=batch.bond_ftr.cuda(),
+        massive=batch.massive.cuda(),
+        mask_matrices=cuda_copy(batch.mask_matrices),
+        properties=batch.properties.cuda() if batch.properties is not None else None,
+        conformation=batch.conformation.cuda() if batch.conformation is not None else None,
+    )
 
 
 class BatchCache:
@@ -92,9 +103,9 @@ class BatchCache:
             vertex_edge_w1, vertex_edge_b1 = self.produce_mask_matrix(sum(n_atoms), us)
             vertex_edge_w2, vertex_edge_b2 = self.produce_mask_matrix(sum(n_atoms), vs)
 
-            mp = self.mol_properties[mask, :].astype(np.float)
-            mc = np.vstack([get_mol_positions(self.mols[m]) for m in mask])
-            assert mc.shape[0] == sum(n_atoms)
+            properties = self.mol_properties[mask, :].astype(np.float)
+            conformation = np.vstack([get_mol_positions(self.mols[m]) for m in mask])
+            assert conformation.shape[0] == sum(n_atoms)
 
             atom_ftr = torch.from_numpy(atom_ftr).type(torch.float32)
             bond_ftr = torch.from_numpy(bond_ftr).type(torch.float32)
@@ -105,25 +116,25 @@ class BatchCache:
             vertex_edge_b1 = torch.from_numpy(vertex_edge_b1).type(torch.float32)
             vertex_edge_w2 = torch.from_numpy(vertex_edge_w2).type(torch.float32)
             vertex_edge_b2 = torch.from_numpy(vertex_edge_b2).type(torch.float32)
-            mp = torch.from_numpy(mp).type(torch.float32)
-            mc = torch.from_numpy(mc).type(torch.float32)
-            if self.use_cuda:
-                atom_ftr = atom_ftr.cuda()
-                bond_ftr = bond_ftr.cuda()
-                massive = massive.cuda()
-                mol_vertex_w = mol_vertex_w.cuda()
-                mol_vertex_b = mol_vertex_b.cuda()
-                vertex_edge_w1 = vertex_edge_w1.cuda()
-                vertex_edge_b1 = vertex_edge_b1.cuda()
-                vertex_edge_w2 = vertex_edge_w2.cuda()
-                vertex_edge_b2 = vertex_edge_b2.cuda()
-                mp = mp.cuda()
-                mc = mc.cuda()
+            properties = torch.from_numpy(properties).type(torch.float32)
+            conformation = torch.from_numpy(conformation).type(torch.float32)
+            # if self.use_cuda:
+            #     atom_ftr = atom_ftr.cuda()
+            #     bond_ftr = bond_ftr.cuda()
+            #     massive = massive.cuda()
+            #     mol_vertex_w = mol_vertex_w.cuda()
+            #     mol_vertex_b = mol_vertex_b.cuda()
+            #     vertex_edge_w1 = vertex_edge_w1.cuda()
+            #     vertex_edge_b1 = vertex_edge_b1.cuda()
+            #     vertex_edge_w2 = vertex_edge_w2.cuda()
+            #     vertex_edge_b2 = vertex_edge_b2.cuda()
+            #     properties = properties.cuda()
+            #     conformation = conformation.cuda()
 
             mask_matrices = MaskMatrices(mol_vertex_w, mol_vertex_b,
                                          vertex_edge_w1, vertex_edge_w2,
                                          vertex_edge_b1, vertex_edge_b2)
-            batch = Batch(atom_ftr, bond_ftr, massive, mask_matrices, mp, mc)
+            batch = Batch(atom_ftr, bond_ftr, massive, mask_matrices, properties, conformation)
             batches.append(batch)
 
         return batches
