@@ -45,6 +45,7 @@ def train_qm9(special_config: dict = None,
                                        use_cuda=use_cuda, use_tqdm=use_tqdm, force_save=True)
 
     # build model
+    print('Building Models...')
     atom_dim = batch_cache.atom_dim
     bond_dim = batch_cache.bond_dim
     model = GeomNN(

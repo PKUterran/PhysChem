@@ -12,12 +12,13 @@ class KineticEnergy(nn.Module):
         super(KineticEnergy, self).__init__()
         self.W = nn.Linear(v_dim + p_dim, h_dim, bias=False)
         self.dropout = nn.Dropout(dropout)
+        self.softplus = nn.Softplus()
 
     def forward(self, v, p, m):
         alpha = 1 / m
         vp = torch.cat([v, p], dim=1)
         pw = self.W(vp)
-        pw = self.dropout(pw)
+        pw = self.dropout(self.softplus(pw))
         apwwp = alpha * (pw ** 2)
         if torch.isnan(apwwp.sum()):
             apwwp[torch.isnan(apwwp)] = 0
@@ -57,11 +58,12 @@ class DissipatedEnergy(nn.Module):
         super(DissipatedEnergy, self).__init__()
         self.W = nn.Linear(p_dim, h_dim, bias=False)
         self.dropout = nn.Dropout(dropout)
+        self.softplus = nn.Softplus()
 
     def forward(self, p, m):
         alpha2 = 1 / (m ** 2)
         pw = self.W(p)
-        pw = self.dropout(pw)
+        pw = self.dropout(self.softplus(pw))
         a2pwwp = alpha2 * (pw ** 2)
         if torch.isnan(a2pwwp.sum()):
             a2pwwp[torch.isnan(a2pwwp)] = 0
