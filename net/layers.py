@@ -7,8 +7,8 @@ from .utils.model_utils import normalize_adj_r
 
 
 class Initializer(nn.Module):
-    H_DIMS = [128]
-    OUT_DIM = 128
+    H_DIMS = []
+    OUT_DIM = 32
 
     def __init__(self, atom_dim: int, bond_dim: int, hv_dim: int, he_dim: int, p_dim: int, q_dim: int,
                  use_cuda=False):

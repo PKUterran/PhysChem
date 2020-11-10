@@ -8,7 +8,7 @@ from net.utils.MaskMatrices import MaskMatrices
 
 
 class KineticEnergy(nn.Module):
-    def __init__(self, v_dim, p_dim, h_dim=128, dropout=0.0):
+    def __init__(self, v_dim, p_dim, h_dim=16, dropout=0.0):
         super(KineticEnergy, self).__init__()
         self.W = nn.Linear(v_dim + p_dim, h_dim, bias=False)
         self.dropout = nn.Dropout(dropout)
@@ -26,7 +26,7 @@ class KineticEnergy(nn.Module):
 
 
 class PotentialEnergy(nn.Module):
-    def __init__(self, v_dim, q_dim, h_dim=32, dropout=0.0, use_cuda=False):
+    def __init__(self, v_dim, q_dim, h_dim=16, dropout=0.0, use_cuda=False):
         super(PotentialEnergy, self).__init__()
         self.use_cuda = use_cuda
         self.linear1 = nn.Linear(v_dim + q_dim, h_dim, bias=True)
@@ -53,7 +53,7 @@ class PotentialEnergy(nn.Module):
 
 
 class DissipatedEnergy(nn.Module):
-    def __init__(self, p_dim, h_dim=32, dropout=0.0):
+    def __init__(self, p_dim, h_dim=16, dropout=0.0):
         super(DissipatedEnergy, self).__init__()
         self.W = nn.Linear(p_dim, h_dim, bias=False)
         self.dropout = nn.Dropout(dropout)
