@@ -3,7 +3,7 @@ from train.train_qm9 import train_qm9
 
 # cache_qm9()
 train_qm9(max_num=5000, name='QM9-5000',
-          use_tqdm=False, force_save=False,
+          use_tqdm=False, force_save=False, use_cuda=True,
           special_config={
               'HV_DIM': 16,
               'HE_DIM': 16,
