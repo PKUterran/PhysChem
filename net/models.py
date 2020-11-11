@@ -17,6 +17,7 @@ class GeomNN(nn.Module):
         p_dim = q_dim = config['PQ_DIM']
         self.n_layer = config['N_LAYER']
         self.n_iteration = config['N_ITERATION']
+        n_hop = config['N_HOP']
         n_global = config['N_GLOBAL']
         message_type = config['MESSAGE_TYPE']
         union_type = config['UNION_TYPE']
@@ -33,19 +34,20 @@ class GeomNN(nn.Module):
             q_dim=q_dim,
             use_cuda=use_cuda
         )
-        self.mp_kernels = nn.ModuleList([ConfAwareMPNNKernel(
+        self.mp_kernel = ConfAwareMPNNKernel(
             hv_dim=hv_dim,
             he_dim=he_dim,
             mv_dim=mv_dim,
             me_dim=me_dim,
             p_dim=p_dim,
             q_dim=q_dim,
+            hops=n_hop,
             use_cuda=use_cuda,
             dropout=dropout,
             message_type=message_type,
             union_type=union_type
-        ) for _ in range(self.n_layer)])
-        self.ham_kernels = nn.ModuleList([InformedHamiltonianKernel(
+        )
+        self.ham_kernel = InformedHamiltonianKernel(
             hv_dim=hv_dim,
             he_dim=he_dim,
             p_dim=p_dim,
@@ -53,7 +55,7 @@ class GeomNN(nn.Module):
             tau=tau,
             use_cuda=use_cuda,
             dropout=dropout
-        ) for _ in range(self.n_layer)])
+        )
         self.fingerprint_gen = ConfAwareFingerprintGenerator(
             hm_dim=hm_dim,
             hv_dim=hv_dim,
@@ -75,10 +77,10 @@ class GeomNN(nn.Module):
                 ) -> Tuple[torch.Tensor, torch.Tensor]:
         hv_ftr, he_ftr, p_ftr, q_ftr = self.initializer(atom_ftr, bond_ftr, mask_matrices)
         for i in range(self.n_layer):
-            t_hv_ftr, t_he_ftr = self.mp_kernels[i](hv_ftr, he_ftr, p_ftr, q_ftr, mask_matrices)
+            t_hv_ftr, t_he_ftr = self.mp_kernel(hv_ftr, he_ftr, p_ftr, q_ftr, mask_matrices)
 
             for j in range(self.n_iteration):
-                p_ftr, q_ftr = self.ham_kernels[i](hv_ftr, he_ftr, massive, p_ftr, q_ftr, mask_matrices)
+                p_ftr, q_ftr = self.ham_kernel(hv_ftr, he_ftr, massive, p_ftr, q_ftr, mask_matrices)
 
             hv_ftr, he_ftr = t_hv_ftr, t_he_ftr
 

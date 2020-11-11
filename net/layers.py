@@ -45,34 +45,38 @@ class Initializer(nn.Module):
 
 
 class ConfAwareMPNNKernel(nn.Module):
-    def __init__(self, hv_dim: int, he_dim: int, mv_dim: int, me_dim: int, p_dim: int, q_dim: int,
+    def __init__(self, hv_dim: int, he_dim: int, mv_dim: int, me_dim: int, p_dim: int, q_dim: int, hops: int,
                  use_cuda=False, dropout=0.0,
                  message_type='naive', union_type='gru'):
         super(ConfAwareMPNNKernel, self).__init__()
         self.use_cuda = use_cuda
         self.message_type = message_type
         self.union_type = union_type
+        self.hops = hops
 
         if message_type == 'naive':
-            self.message = NaiveDynMessage(hv_dim, he_dim, mv_dim, me_dim, p_dim, q_dim, use_cuda, dropout)
+            self.messages = nn.ModuleList([
+                NaiveDynMessage(hv_dim, he_dim, mv_dim, me_dim, p_dim, q_dim, use_cuda, dropout) for _ in range(hops)
+            ])
         else:
             assert False, 'Undefined message type {} in net.layers.ConfAwareMPNNKernel'.format(message_type)
 
         if union_type == 'naive':
-            self.union_v = NaiveUnion(hv_dim, mv_dim, use_cuda)
-            self.union_e = NaiveUnion(he_dim, me_dim, use_cuda)
+            self.unions_v = nn.ModuleList([NaiveUnion(hv_dim, mv_dim, use_cuda) for _ in range(hops)])
+            self.unions_e = nn.ModuleList([NaiveUnion(he_dim, me_dim, use_cuda) for _ in range(hops)])
         elif union_type == 'gru':
-            self.union_v = GRUUnion(hv_dim, mv_dim, use_cuda)
-            self.union_e = GRUUnion(he_dim, me_dim, use_cuda)
+            self.unions_v = nn.ModuleList([GRUUnion(hv_dim, mv_dim, use_cuda) for _ in range(hops)])
+            self.unions_e = nn.ModuleList([GRUUnion(he_dim, me_dim, use_cuda) for _ in range(hops)])
         else:
             assert False, 'Undefined union type {} in net.layers.ConfAwareMPNNKernel'.format(union_type)
 
     def forward(self, hv_ftr: torch.Tensor, he_ftr: torch.Tensor, p_ftr: torch.Tensor, q_ftr: torch.Tensor,
                 mask_matrices: MaskMatrices
                 ) -> Tuple[torch.Tensor, torch.Tensor]:
-        mv_ftr, me_ftr = self.message(hv_ftr, he_ftr, p_ftr, q_ftr, mask_matrices)
-        hv_ftr = self.union_v(hv_ftr, mv_ftr)
-        he_ftr = self.union_e(he_ftr, me_ftr)
+        for i in range(self.hops):
+            mv_ftr, me_ftr = self.messages[i](hv_ftr, he_ftr, p_ftr, q_ftr, mask_matrices)
+            hv_ftr = self.unions_v[i](hv_ftr, mv_ftr)
+            he_ftr = self.unions_e[i](he_ftr, me_ftr)
         return hv_ftr, he_ftr
 
 
