@@ -14,10 +14,11 @@ from .config import QM9_CONFIG
 from .utils.cache_batch import Batch, BatchCache, load_batch_cache, load_encode_mols, batch_cuda_copy
 from .utils.seed import set_seed
 from .utils.loss_functions import multi_mse_loss, multi_mae_loss, adj3_loss, distance_loss
+from .utils.save_log import save_log
 
 
 def train_qm9(special_config: dict = None,
-              use_cuda=False, max_num=-1, name='QM9', seed=0, force_save=False,
+              use_cuda=False, max_num=-1, data_name='QM9', seed=0, force_save=False, tag='QM9',
               use_tqdm=False):
     # set parameters and seed
     config = QM9_CONFIG.copy()
@@ -30,7 +31,7 @@ def train_qm9(special_config: dict = None,
     print('Loading:')
     mol_list_weight_mol, mol_properties = load_qm9(max_num)
     mols = [list_weight_mol[0][1] for list_weight_mol in mol_list_weight_mol]
-    mols_info = load_encode_mols(mols, name=name)
+    mols_info = load_encode_mols(mols, name=data_name)
 
     # normalize properties and cache batches
     mean_p = np.mean(mol_properties, axis=0)
@@ -38,10 +39,10 @@ def train_qm9(special_config: dict = None,
     norm_p = (mol_properties - mean_p) / stddev_p
     print('Caching Batches...')
     try:
-        batch_cache = load_batch_cache(name, mols, mols_info, norm_p, batch_size=config['BATCH'],
+        batch_cache = load_batch_cache(data_name, mols, mols_info, norm_p, batch_size=config['BATCH'],
                                        use_cuda=use_cuda, use_tqdm=use_tqdm, force_save=force_save)
     except EOFError:
-        batch_cache = load_batch_cache(name, mols, mols_info, norm_p, batch_size=config['BATCH'],
+        batch_cache = load_batch_cache(data_name, mols, mols_info, norm_p, batch_size=config['BATCH'],
                                        use_cuda=use_cuda, use_tqdm=use_tqdm, force_save=True)
 
     # build model
@@ -78,6 +79,7 @@ def train_qm9(special_config: dict = None,
 
     # train
     epoch = 0
+    logs = []
 
     def train(batches: List[Batch]):
         model.train()
@@ -97,7 +99,7 @@ def train_qm9(special_config: dict = None,
             loss.backward()
             optimizer.step()
 
-    def evaluate(batches: List[Batch]):
+    def evaluate(batches: List[Batch], batch_name: str):
         model.eval()
         classifier.eval()
         optimizer.zero_grad()
@@ -135,16 +137,25 @@ def train_qm9(special_config: dict = None,
         print(f'\t\t\tPROPERTIES MULTI-MAE: {sum(list_p_multi_mae) * stddev_p / n_batch}')
         print(f'\t\t\tPROPERTIES TOTAL MAE: {sum(list_p_total_mae) / n_batch}')
         print(f'\t\t\tCONFORMATION RS-DL: {sum(list_rsd) / n_batch}')
+        logs[-1].update({
+            f'{batch_name}_p_loss': sum(list_p_loss) / n_batch,
+            f'{batch_name}_c_loss': sum(list_c_loss) / n_batch,
+            f'{batch_name}_loss': sum(list_loss) / n_batch,
+            f'{batch_name}_p_metric': sum(list_p_total_mae) / n_batch,
+            f'{batch_name}_c_metric': sum(list_rsd) / n_batch,
+        })
 
     for _ in range(config['EPOCH']):
         epoch += 1
+        logs.append({'epoch': epoch})
         print()
         print(f'##### IN EPOCH {epoch} #####')
         print('\t\tTraining:')
         train(batch_cache.train_batches)
         print('\t\tEvaluating Train:')
-        evaluate(batch_cache.train_batches)
+        evaluate(batch_cache.train_batches, 'train')
         print('\t\tEvaluating Validate:')
-        evaluate(batch_cache.validate_batches)
+        evaluate(batch_cache.validate_batches, 'validate')
         print('\t\tEvaluating Test:')
-        evaluate(batch_cache.test_batches)
+        evaluate(batch_cache.test_batches, 'test')
+        save_log(logs, directory='QM9', tag=tag)
