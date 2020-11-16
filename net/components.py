@@ -155,16 +155,19 @@ class NormalizedNaiveDynMessage(NaiveDynMessage):
                      mask_matrices: MaskMatrices
                      ) -> Tuple[torch.Tensor, torch.Tensor]:
         mvw = mask_matrices.mol_vertex_w
+        # print(p_ftr.cpu().detach().numpy())
         for i in range(mvw.shape[0]):
             vertex_mask = mvw[i] == 1
             pi_ftr = p_ftr[vertex_mask, :]
             pi_ftr = pi_ftr - torch.mean(pi_ftr, dim=0)
             qi_ftr = q_ftr[vertex_mask, :]
-            _, _, v_ = torch.svd(pi_ftr)
-            pi_ftr = pi_ftr @ v_.t()
-            qi_ftr = qi_ftr @ v_.t()
+            _, _, v = torch.svd(pi_ftr, some=False)
+            # print(v.cpu().detach().numpy())
+            pi_ftr = pi_ftr @ v
+            qi_ftr = qi_ftr @ v
             p_ftr[vertex_mask, :] = pi_ftr
             q_ftr[vertex_mask, :] = qi_ftr
+        # print(p_ftr.cpu().detach().numpy())
         return p_ftr, q_ftr
 
 
