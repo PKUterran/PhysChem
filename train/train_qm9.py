@@ -2,7 +2,7 @@ import torch
 import torch.optim as optim
 import numpy as np
 
-from typing import List
+from typing import List, Dict
 from itertools import chain
 from functools import reduce
 from tqdm import tqdm
@@ -79,7 +79,7 @@ def train_qm9(special_config: dict = None,
 
     # train
     epoch = 0
-    logs = []
+    logs: List[Dict[str, float]] = []
 
     def train(batches: List[Batch]):
         model.train()

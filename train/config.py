@@ -11,7 +11,7 @@ DEFAULT_CONFIG = {
     'N_HOP': 3,
     'N_ITERATION': 20,
     'N_GLOBAL': 3,
-    'MESSAGE_TYPE': 'naive',
+    'MESSAGE_TYPE': 'norm_naive',
     'UNION_TYPE': 'gru',
     'TAU': 0.01,
     'DROPOUT': 0.2,

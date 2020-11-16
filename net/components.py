@@ -5,7 +5,6 @@ from torch.nn.utils.rnn import pad_sequence
 
 from .utils.MaskMatrices import MaskMatrices
 from .utils.model_utils import activation_select
-from .dynamics.classic import DissipativeHamiltonianDerivation
 
 
 class MLP(nn.Module):
@@ -142,6 +141,33 @@ class NaiveDynMessage(nn.Module):
         return mv_ftr, me_ftr
 
 
+class NormalizedNaiveDynMessage(NaiveDynMessage):
+    def __init__(self, *args, **kwargs):
+        super(NormalizedNaiveDynMessage, self).__init__(*args, **kwargs)
+
+    def forward(self, hv_ftr: torch.Tensor, he_ftr: torch.Tensor, p_ftr: torch.Tensor, q_ftr: torch.Tensor,
+                mask_matrices: MaskMatrices
+                ) -> Tuple[torch.Tensor, torch.Tensor]:
+        p_ftr, q_ftr = self.normalize_pq(p_ftr, q_ftr, mask_matrices)
+        return super(NormalizedNaiveDynMessage, self).forward(hv_ftr, he_ftr, p_ftr, q_ftr, mask_matrices)
+
+    def normalize_pq(self, p_ftr: torch.Tensor, q_ftr: torch.Tensor,
+                     mask_matrices: MaskMatrices
+                     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        mvw = mask_matrices.mol_vertex_w
+        for i in range(mvw.shape[0]):
+            vertex_mask = mvw[i] == 1
+            pi_ftr = p_ftr[vertex_mask, :]
+            pi_ftr = pi_ftr - torch.mean(pi_ftr, dim=0)
+            qi_ftr = q_ftr[vertex_mask, :]
+            _, _, v_ = torch.svd(pi_ftr)
+            pi_ftr = pi_ftr @ v_.t()
+            qi_ftr = qi_ftr @ v_.t()
+            p_ftr[vertex_mask, :] = pi_ftr
+            q_ftr[vertex_mask, :] = qi_ftr
+        return p_ftr, q_ftr
+
+
 class NaiveUnion(nn.Module):
     def __init__(self, h_dim: int, m_dim: int,
                  use_cuda=False, bias=True):
@@ -206,6 +232,3 @@ class GlobalDynReadout(nn.Module):
         mm_ftr = self.ag_act(align_ftr @ attend_ftr)  # shape [n_mol, mm_dim]
 
         return mm_ftr
-
-
-

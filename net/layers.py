@@ -1,6 +1,3 @@
-import torch
-import torch.nn as nn
-
 from .components import *
 from .dynamics.classic import DissipativeHamiltonianDerivation
 from .utils.model_utils import normalize_adj_r
@@ -56,7 +53,13 @@ class ConfAwareMPNNKernel(nn.Module):
 
         if message_type == 'naive':
             self.messages = nn.ModuleList([
-                NaiveDynMessage(hv_dim, he_dim, mv_dim, me_dim, p_dim, q_dim, use_cuda, dropout) for _ in range(hops)
+                NaiveDynMessage(hv_dim, he_dim, mv_dim, me_dim, p_dim, q_dim, use_cuda, dropout)
+                for _ in range(hops)
+            ])
+        elif message_type == 'norm_naive':
+            self.messages = nn.ModuleList([
+                NormalizedNaiveDynMessage(hv_dim, he_dim, mv_dim, me_dim, p_dim, q_dim, use_cuda, dropout)
+                for _ in range(hops)
             ])
         else:
             assert False, 'Undefined message type {} in net.layers.ConfAwareMPNNKernel'.format(message_type)
