@@ -95,7 +95,7 @@ class BatchCache:
             vs = []
             for i, m in enumerate(mask):
                 ms.extend([i] * n_atoms[i])
-                prev_bonds = sum(n_bonds[:i])
+                prev_bonds = sum(n_atoms[:i])
                 us.extend(self.mols_info[m]['us'] + prev_bonds)
                 vs.extend(self.mols_info[m]['vs'] + prev_bonds)
 

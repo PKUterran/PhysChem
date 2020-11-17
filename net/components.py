@@ -158,10 +158,12 @@ class NormalizedNaiveDynMessage(NaiveDynMessage):
         # print(p_ftr.cpu().detach().numpy())
         for i in range(mvw.shape[0]):
             vertex_mask = mvw[i] == 1
+            if torch.sum(vertex_mask) == 1:
+                continue
             pi_ftr = p_ftr[vertex_mask, :]
             pi_ftr = pi_ftr - torch.mean(pi_ftr, dim=0)
             qi_ftr = q_ftr[vertex_mask, :]
-            _, _, v = torch.svd(pi_ftr, some=False)
+            _, _, v = torch.svd(pi_ftr.detach(), some=False)
             # print(v.cpu().detach().numpy())
             pi_ftr = pi_ftr @ v
             qi_ftr = qi_ftr @ v
