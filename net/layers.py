@@ -1,5 +1,6 @@
 from .components import *
-from .dynamics.classic import DissipativeHamiltonianDerivation
+from .dynamics.newton import NewtonianDerivation
+from .dynamics.hamiltion import DissipativeHamiltonianDerivation
 from .utils.model_utils import normalize_adj_r
 
 
@@ -83,15 +84,22 @@ class ConfAwareMPNNKernel(nn.Module):
         return hv_ftr, he_ftr
 
 
-class InformedHamiltonianKernel(nn.Module):
+class InformedDerivationKernel(nn.Module):
     def __init__(self, hv_dim: int, he_dim: int, p_dim: int, q_dim: int, tau: float,
-                 use_cuda=False, dropout=0.0):
-        super(InformedHamiltonianKernel, self).__init__()
+                 use_cuda=False, dropout=0.0,
+                 derivation_type='newton'):
+        super(InformedDerivationKernel, self).__init__()
         self.tau = tau
         self.use_cuda = use_cuda
 
-        self.derivation = DissipativeHamiltonianDerivation(hv_dim, he_dim, p_dim, q_dim,
-                                                           use_cuda=use_cuda, dropout=dropout)
+        if derivation_type == 'newton':
+            self.derivation = NewtonianDerivation(hv_dim, he_dim, p_dim, q_dim,
+                                                  use_cuda=use_cuda, dropout=dropout)
+        elif derivation_type == 'hamilton':
+            self.derivation = DissipativeHamiltonianDerivation(hv_dim, he_dim, p_dim, q_dim,
+                                                               use_cuda=use_cuda, dropout=dropout)
+        else:
+            assert False, 'Undefined derivation type {} in net.layers.InformedDerivationKernel'.format(derivation_type)
 
     def forward(self, hv_ftr: torch.Tensor, he_ftr: torch.Tensor,
                 massive: torch.Tensor, p_ftr: torch.Tensor, q_ftr: torch.Tensor, mask_matrices: MaskMatrices

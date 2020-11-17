@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.autograd as autograd
 from typing import Union, Tuple
 
-from data.encode import get_default_atoms_massive_matrix
 from net.utils.MaskMatrices import MaskMatrices
 
 

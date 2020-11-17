@@ -18,6 +18,7 @@ class GeomNN(nn.Module):
         n_global = config['N_GLOBAL']
         message_type = config['MESSAGE_TYPE']
         union_type = config['UNION_TYPE']
+        derivation_type = config['DERIVATION_TYPE']
         tau = config['TAU']
         dropout = config['DROPOUT']
         self.use_cuda = use_cuda
@@ -44,14 +45,15 @@ class GeomNN(nn.Module):
             message_type=message_type,
             union_type=union_type
         )
-        self.ham_kernel = InformedHamiltonianKernel(
+        self.drv_kernel = InformedDerivationKernel(
             hv_dim=hv_dim,
             he_dim=he_dim,
             p_dim=p_dim,
             q_dim=q_dim,
             tau=tau,
             use_cuda=use_cuda,
-            dropout=dropout
+            dropout=dropout,
+            derivation_type=derivation_type
         )
         self.fingerprint_gen = ConfAwareFingerprintGenerator(
             hm_dim=hm_dim,
@@ -77,7 +79,7 @@ class GeomNN(nn.Module):
             t_hv_ftr, t_he_ftr = self.mp_kernel(hv_ftr, he_ftr, p_ftr, q_ftr, mask_matrices)
 
             for j in range(self.n_iteration):
-                p_ftr, q_ftr = self.ham_kernel(hv_ftr, he_ftr, massive, p_ftr, q_ftr, mask_matrices)
+                p_ftr, q_ftr = self.drv_kernel(hv_ftr, he_ftr, massive, p_ftr, q_ftr, mask_matrices)
 
             hv_ftr, he_ftr = t_hv_ftr, t_he_ftr
 

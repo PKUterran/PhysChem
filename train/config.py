@@ -13,6 +13,7 @@ DEFAULT_CONFIG = {
     'N_GLOBAL': 2,
     'MESSAGE_TYPE': 'norm_naive',
     'UNION_TYPE': 'gru',
+    'DERIVATION_TYPE': 'newton',
     'TAU': 0.02,
     'DROPOUT': 0.2,
 
