@@ -57,7 +57,8 @@ class GeomNN(nn.Module):
         )
         self.fingerprint_gen = ConfAwareFingerprintGenerator(
             hm_dim=hm_dim,
-            hv_dim=hv_dim,
+            # hv_dim=hv_dim,
+            hv_dim=hv_dim * self.n_layer,
             mm_dim=mm_dim,
             p_dim=p_dim,
             q_dim=q_dim,
@@ -71,18 +72,35 @@ class GeomNN(nn.Module):
             dropout=dropout
         )
 
+    # def forward(self, atom_ftr: torch.Tensor, bond_ftr: torch.Tensor, massive: torch.Tensor,
+    #             mask_matrices: MaskMatrices
+    #             ) -> Tuple[torch.Tensor, torch.Tensor]:
+    #     hv_ftr, he_ftr, p_ftr, q_ftr = self.initializer(atom_ftr, bond_ftr, mask_matrices)
+    #     for i in range(self.n_layer):
+    #         t_hv_ftr, t_he_ftr = self.mp_kernel(hv_ftr, he_ftr, p_ftr, q_ftr, mask_matrices)
+    #
+    #         for j in range(self.n_iteration):
+    #             p_ftr, q_ftr = self.drv_kernel(hv_ftr, he_ftr, massive, p_ftr, q_ftr, mask_matrices)
+    #
+    #         hv_ftr, he_ftr = t_hv_ftr, t_he_ftr
+    #
+    #     fingerprint = self.fingerprint_gen(hv_ftr, p_ftr, q_ftr, mask_matrices)
+    #     conformation = self.conformation_gen(q_ftr)
+    #     return fingerprint, conformation
+
     def forward(self, atom_ftr: torch.Tensor, bond_ftr: torch.Tensor, massive: torch.Tensor,
                 mask_matrices: MaskMatrices
                 ) -> Tuple[torch.Tensor, torch.Tensor]:
         hv_ftr, he_ftr, p_ftr, q_ftr = self.initializer(atom_ftr, bond_ftr, mask_matrices)
+        hv_ftrs = []
         for i in range(self.n_layer):
             t_hv_ftr, t_he_ftr = self.mp_kernel(hv_ftr, he_ftr, p_ftr, q_ftr, mask_matrices)
 
             for j in range(self.n_iteration):
                 p_ftr, q_ftr = self.drv_kernel(hv_ftr, he_ftr, massive, p_ftr, q_ftr, mask_matrices)
 
-            hv_ftr, he_ftr = t_hv_ftr, t_he_ftr
+            hv_ftrs.append(t_hv_ftr)
 
-        fingerprint = self.fingerprint_gen(hv_ftr, p_ftr, q_ftr, mask_matrices)
+        fingerprint = self.fingerprint_gen(torch.cat(hv_ftrs, dim=1), p_ftr, q_ftr, mask_matrices)
         conformation = self.conformation_gen(q_ftr)
         return fingerprint, conformation
