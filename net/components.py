@@ -173,6 +173,81 @@ class NormalizedNaiveDynMessage(NaiveDynMessage):
         return p_ftr, q_ftr
 
 
+class TripletDynMessage(nn.Module):
+    ESP = 1e-6
+    DIS_DIM = 8
+    ANGLE_DIM = 16
+
+    def __init__(self, hv_dim: int, he_dim: int, mv_dim: int, me_dim: int, p_dim: int, q_dim: int,
+                 use_cuda=False, dropout=0.0):
+        super(TripletDynMessage, self).__init__()
+        self.use_cuda = use_cuda
+        self.dropout = nn.Dropout(dropout)
+
+        self.dis_act = nn.Tanh()
+        self.dis_encode = nn.Linear(1, self.DIS_DIM)
+        self.angle_encode = nn.Linear(1, self.ANGLE_DIM)
+
+        self.attend = nn.Linear(3 * hv_dim + 2 * self.DIS_DIM + self.ANGLE_DIM, mv_dim, bias=False)
+        self.at_act = nn.LeakyReLU()
+        self.align = nn.Linear(2 * he_dim, 1)
+        self.al_act = nn.Softmax(dim=1)
+        self.ag_act = nn.ELU()
+        self.link = nn.Linear(hv_dim + self.DIS_DIM + hv_dim, me_dim)
+        self.l_act = nn.LeakyReLU()
+
+    def forward(self, hv_ftr: torch.Tensor, he_ftr: torch.Tensor, p_ftr: torch.Tensor, q_ftr: torch.Tensor,
+                mask_matrices: MaskMatrices
+                ) -> Tuple[torch.Tensor, torch.Tensor]:
+        hv_ftr, he_ftr = self.dropout(hv_ftr), self.dropout(he_ftr)
+        n_edge = mask_matrices.vertex_edge_w1.shape[1]
+        vew1 = mask_matrices.vertex_edge_w1  # shape [n_vertex, n_edge]
+        vew2 = mask_matrices.vertex_edge_w2  # shape [n_vertex, n_edge]
+        veb1 = mask_matrices.vertex_edge_b1  # shape [n_vertex, n_edge]
+        veb2 = mask_matrices.vertex_edge_b2  # shape [n_vertex, n_edge]
+        vew_u = torch.cat([vew1, vew2], dim=1)  # shape [n_vertex, 2 * n_edge]
+        vew_v = torch.cat([vew2, vew1], dim=1)  # shape [n_vertex, 2 * n_edge]
+        he2_ftr = torch.cat([he_ftr, he_ftr])  # shape [2 * n_edge, he_dim]
+        ee = vew_u.t() @ vew_u  # shape [2 * n_edge, 2 * n_edge]
+        ee1 = ee.unsqueeze(-1)  # shape [2 * n_edge, 2 * n_edge, 1]
+        hv_v_ftr = vew_v.t() @ hv_ftr  # shape [2 * n_edge, hv_dim]
+        hv_u_ftr = vew_u.t() @ hv_ftr  # shape [2 * n_edge, hv_dim]
+        q_u_ftr = vew_u.t() @ q_ftr  # shape [2 * n_edge, q_dim]
+        q_v_ftr = vew_v.t() @ q_ftr  # shape [2 * n_edge, q_dim]
+        q_uv_ftr = q_v_ftr - q_u_ftr  # shape [2 * n_edge, q_dim]
+        dis_uv = torch.norm(q_uv_ftr, dim=1, keepdim=True) + self.ESP  # shape [2 * n_edge, 1]
+        norm_dis_uv = q_uv_ftr / dis_uv  # shape [2 * n_edge, q_dim]
+        angle_ee = norm_dis_uv @ norm_dis_uv.t()  # shape [2 * n_edge, 2 * n_edge]
+
+        dis_ftr = self.dis_encode(self.dis_act(dis_uv))  # shape [2 * n_edge, dis_dim]
+        angle_ftr = self.angle_encode(angle_ee.unsqueeze(dim=-1))  # shape [2 * n_edge, 2 * n_edge, angle_dim]
+        vd_ftr = torch.cat([hv_v_ftr, dis_ftr], dim=1)  # shape [2 * n_edge, hv_dim + dis_dim]
+        v1e1ue2v2 = ee1 * torch.cat([
+            torch.cat([vd_ftr, hv_u_ftr], dim=1).repeat([n_edge * 2, 1, 1]).transpose(0, 1),
+            vd_ftr.repeat([n_edge * 2, 1, 1]),
+            angle_ftr
+        ], dim=2)  # shape [2 * n_edge, 2 * n_edge, 3 * hv_dim + 2 * dis_dim + angle_dim]
+
+        attend_ftr = self.attend(v1e1ue2v2)  # shape [2 * n_edge, 2 * n_edge, mv_dim]
+        attend_ftr = self.at_act(attend_ftr)
+        he2r_ftr = he2_ftr.repeat([n_edge * 2, 1, 1])  # shape [2 * n_edge, 2 * n_edge, he_ftr]
+        align_ftr = self.align(torch.cat([
+            he2r_ftr.transpose(0, 1),
+            he2r_ftr
+        ], dim=2))  # shape [2 * n_edge, 2 * n_edge, 1]
+        align_ftr = ee1 * align_ftr + (-ee1 + 1) * -1e6  # shape [2 * n_edge, 2 * n_edge, 1]
+        align_ftr = self.al_act(align_ftr)
+        print(align_ftr.cpu().detach().numpy())
+        aligned_e_ftr = torch.sum(align_ftr * attend_ftr, dim=1)  # shape [2 * n_edge, mv_dim]
+        mv_ftr = self.ag_act((vew_u / torch.sum(vew_u, dim=1)) @ aligned_e_ftr)  # shape [n_vertex, mv_dim]
+
+        me2_ftr = self.link(torch.cat([hv_u_ftr, dis_ftr, hv_v_ftr], dim=1))  # shape [2 * n_edge, me_dim]
+        me_ftr = me2_ftr[:n_edge, :] + me2_ftr[n_edge:, :]  # shape [n_edge, me_dim]
+        me_ftr = self.l_act(me_ftr)
+
+        return mv_ftr, me_ftr
+
+
 class NaiveUnion(nn.Module):
     def __init__(self, h_dim: int, m_dim: int,
                  use_cuda=False, bias=True):

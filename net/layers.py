@@ -62,6 +62,11 @@ class ConfAwareMPNNKernel(nn.Module):
                 NormalizedNaiveDynMessage(hv_dim, he_dim, mv_dim, me_dim, p_dim, q_dim, use_cuda, dropout)
                 for _ in range(hops)
             ])
+        elif message_type == 'triplet':
+            self.messages = nn.ModuleList([
+                TripletDynMessage(hv_dim, he_dim, mv_dim, me_dim, p_dim, q_dim, use_cuda, dropout)
+                for _ in range(hops)
+            ])
         else:
             assert False, 'Undefined message type {} in net.layers.ConfAwareMPNNKernel'.format(message_type)
 
