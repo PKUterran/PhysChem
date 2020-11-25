@@ -1,3 +1,4 @@
+import time
 import torch
 import torch.optim as optim
 import numpy as np
@@ -79,6 +80,8 @@ def train_qm9(special_config: dict = None,
 
     # train
     epoch = 0
+    current_lr = config['LR']
+    decay = config['DECAY']
     logs: List[Dict[str, float]] = []
 
     def train(batches: List[Batch]):
@@ -98,6 +101,8 @@ def train_qm9(special_config: dict = None,
             loss = p_loss + config['LAMBDA'] * c_loss
             loss.backward()
             optimizer.step()
+            nonlocal current_lr
+            current_lr *= 1 - decay
 
     def evaluate(batches: List[Batch], batch_name: str):
         model.eval()
@@ -147,9 +152,12 @@ def train_qm9(special_config: dict = None,
 
     for _ in range(config['EPOCH']):
         epoch += 1
+        t0 = time.time()
+
         logs.append({'epoch': epoch})
         print()
         print(f'##### IN EPOCH {epoch} #####')
+        print('\tCurrent LR: {:.3e}'.format(current_lr))
         print('\t\tTraining:')
         train(batch_cache.train_batches)
         print('\t\tEvaluating Train:')
@@ -158,4 +166,8 @@ def train_qm9(special_config: dict = None,
         evaluate(batch_cache.validate_batches, 'validate')
         print('\t\tEvaluating Test:')
         evaluate(batch_cache.test_batches, 'test')
+
+        t1 = time.time()
+        print('\tProcess Time: {}'.format(int(t1 - t0)))
+        logs[-1].update({'process_time': t1 - t0})
         save_log(logs, directory='QM9', tag=tag)
