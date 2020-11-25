@@ -219,8 +219,8 @@ class TripletDynMessage(nn.Module):
         norm_dis_uv = q_uv_ftr / dis_uv  # shape [2 * n_edge, q_dim]
         angle_ee = norm_dis_uv @ norm_dis_uv.t()  # shape [2 * n_edge, 2 * n_edge]
 
-        dis_ftr = self.dis_encode(self.dis_act(dis_uv))  # shape [2 * n_edge, dis_dim]
-        angle_ftr = self.angle_encode(angle_ee.unsqueeze(dim=-1))  # shape [2 * n_edge, 2 * n_edge, angle_dim]
+        dis_ftr = torch.tanh(self.dis_encode(self.dis_act(dis_uv)))  # shape [2 * n_edge, dis_dim]
+        angle_ftr = torch.tanh(self.angle_encode(angle_ee.unsqueeze(dim=-1)))  # shape [2 * n_edge, 2 * n_edge, angle_dim]
         vd_ftr = torch.cat([hv_v_ftr, dis_ftr], dim=1)  # shape [2 * n_edge, hv_dim + dis_dim]
         v1e1ue2v2 = ee1 * torch.cat([
             torch.cat([vd_ftr, hv_u_ftr], dim=1).repeat([n_edge * 2, 1, 1]).transpose(0, 1),
@@ -237,9 +237,8 @@ class TripletDynMessage(nn.Module):
         ], dim=2))  # shape [2 * n_edge, 2 * n_edge, 1]
         align_ftr = ee1 * align_ftr + (-ee1 + 1) * -1e6  # shape [2 * n_edge, 2 * n_edge, 1]
         align_ftr = self.al_act(align_ftr)
-        print(align_ftr.cpu().detach().numpy())
         aligned_e_ftr = torch.sum(align_ftr * attend_ftr, dim=1)  # shape [2 * n_edge, mv_dim]
-        mv_ftr = self.ag_act((vew_u / torch.sum(vew_u, dim=1)) @ aligned_e_ftr)  # shape [n_vertex, mv_dim]
+        mv_ftr = self.ag_act((vew_u / (torch.sum(vew_u, dim=1, keepdim=True) + self.ESP)) @ aligned_e_ftr)  # shape [n_vertex, mv_dim]
 
         me2_ftr = self.link(torch.cat([hv_u_ftr, dis_ftr, hv_v_ftr], dim=1))  # shape [2 * n_edge, me_dim]
         me_ftr = me2_ftr[:n_edge, :] + me2_ftr[n_edge:, :]  # shape [n_edge, me_dim]
