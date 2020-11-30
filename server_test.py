@@ -2,7 +2,7 @@ from data.qm9.load_qm9 import cache_qm9
 from train.train_qm9 import train_qm9
 
 # cache_qm9()
-train_qm9(max_num=5000, data_name='QM9-5000', tag='QM9-5000',
+train_qm9(max_num=5000, data_name='QM9-5000', tag='QM9-5000-naive',
           use_tqdm=False, force_save=True, use_cuda=True,
           special_config={
               'HV_DIM': 16,
@@ -16,7 +16,7 @@ train_qm9(max_num=5000, data_name='QM9-5000', tag='QM9-5000',
               'N_HOP': 3,
               'N_ITERATION': 10,
               'N_GLOBAL': 3,
-              'MESSAGE_TYPE': 'triplet',
+              'MESSAGE_TYPE': 'naive',
               'UNION_TYPE': 'gru',
               'DERIVATION_TYPE': 'newton',
               'TAU': 0.02,
@@ -28,7 +28,7 @@ train_qm9(max_num=5000, data_name='QM9-5000', tag='QM9-5000',
               'LR': 4e-4,
               'DECAY': 1e-5,
           })
-train_qm9(max_num=5000, data_name='QM9-5000', tag='QM9-5000-lambda1e-2',
+train_qm9(max_num=5000, data_name='QM9-5000', tag='QM9-5000-lambda1e-2-naive',
           use_tqdm=False, force_save=False, use_cuda=True,
           special_config={
               'HV_DIM': 16,
@@ -42,7 +42,7 @@ train_qm9(max_num=5000, data_name='QM9-5000', tag='QM9-5000-lambda1e-2',
               'N_HOP': 3,
               'N_ITERATION': 10,
               'N_GLOBAL': 3,
-              'MESSAGE_TYPE': 'triplet',
+              'MESSAGE_TYPE': 'naive',
               'UNION_TYPE': 'gru',
               'DERIVATION_TYPE': 'newton',
               'TAU': 0.02,
