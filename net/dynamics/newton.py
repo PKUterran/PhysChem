@@ -11,7 +11,7 @@ class Force(nn.Module):
     def __init__(self, v_dim: int, e_dim: int, q_dim: int, h_dim=32,
                  use_cuda=False, dropout=0.0):
         super(Force, self).__init__()
-        self.fb_linear1 = nn.Linear(v_dim + e_dim + v_dim, h_dim, bias=False)
+        self.fb_linear1 = nn.Linear(v_dim + e_dim, h_dim, bias=False)
         self.fb_relu = nn.LeakyReLU()
         self.fb_linear2 = nn.Linear(h_dim, 1)
         self.fb_tanh = nn.Tanh()
@@ -28,10 +28,10 @@ class Force(nn.Module):
         vew_u = torch.cat([vew1, vew2], dim=1)  # shape [n_vertex, 2 * n_edge]
         vew_v = torch.cat([vew2, vew1], dim=1)  # shape [n_vertex, 2 * n_edge]
         e2 = torch.cat([e, e])  # shape [2 * n_edge, e_dim]
-        u_e_v = torch.cat([vew_u.t() @ v, e2, vew_v.t() @ v], dim=1)
+        uv_e = torch.cat([(vew_u + vew_v).t() @ v, e2], dim=1)
         delta_q = vew_u.t() @ q - vew_v.t() @ q
         unit_f_bond = delta_q / (torch.norm(delta_q, dim=1, keepdim=True) + self.ESP)
-        value_f_bond = self.fb_tanh(self.fb_tanh(self.fb_linear2(self.fb_relu(self.fb_linear1(u_e_v)))))
+        value_f_bond = self.fb_tanh(self.fb_tanh(self.fb_linear2(self.fb_relu(self.fb_linear1(uv_e)))))
         f_bond = vew_u @ (unit_f_bond * value_f_bond)
 
         # relative force

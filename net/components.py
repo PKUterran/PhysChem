@@ -189,9 +189,9 @@ class TripletDynMessage(nn.Module):
         self.angle_encode = nn.Linear(1, self.ANGLE_DIM)
 
         self.attend = nn.Linear(3 * hv_dim + 2 * self.DIS_DIM + self.ANGLE_DIM, mv_dim, bias=False)
-        self.at_act = nn.LeakyReLU()
-        self.align = nn.Linear(2 * he_dim, 1)
-        self.al_act = nn.Softmax(dim=1)
+        self.at_act = nn.ReLU()
+        self.align = nn.Linear(he_dim, 1)
+        self.al_act = nn.Softmax(dim=-1)
         self.ag_act = nn.ELU()
         self.link = nn.Linear(hv_dim + self.DIS_DIM + hv_dim, me_dim)
         self.l_act = nn.LeakyReLU()
@@ -207,6 +207,7 @@ class TripletDynMessage(nn.Module):
         veb2 = mask_matrices.vertex_edge_b2  # shape [n_vertex, n_edge]
         vew_u = torch.cat([vew1, vew2], dim=1)  # shape [n_vertex, 2 * n_edge]
         vew_v = torch.cat([vew2, vew1], dim=1)  # shape [n_vertex, 2 * n_edge]
+        veb_v = torch.cat([veb2, veb1], dim=1)  # shape [n_vertex, 2 * n_edge]
         he2_ftr = torch.cat([he_ftr, he_ftr])  # shape [2 * n_edge, he_dim]
         ee = vew_u.t() @ vew_u  # shape [2 * n_edge, 2 * n_edge]
         ee1 = ee.unsqueeze(-1)  # shape [2 * n_edge, 2 * n_edge, 1]
@@ -230,15 +231,12 @@ class TripletDynMessage(nn.Module):
 
         attend_ftr = self.attend(v1e1ue2v2)  # shape [2 * n_edge, 2 * n_edge, mv_dim]
         attend_ftr = self.at_act(attend_ftr)
-        he2r_ftr = he2_ftr.repeat([n_edge * 2, 1, 1])  # shape [2 * n_edge, 2 * n_edge, he_ftr]
-        align_ftr = self.align(torch.cat([
-            he2r_ftr.transpose(0, 1),
-            he2r_ftr
-        ], dim=2))  # shape [2 * n_edge, 2 * n_edge, 1]
-        align_ftr = ee1 * align_ftr + (-ee1 + 1) * -1e6  # shape [2 * n_edge, 2 * n_edge, 1]
+        attend_ftr = torch.max(attend_ftr, dim=1)[0]  # shape [2 * n_edge, mv_dim]
+        align_ftr = self.align(he2_ftr)  # shape [2 * n_edge, 1]
         align_ftr = self.al_act(align_ftr)
-        aligned_e_ftr = torch.sum(align_ftr * attend_ftr, dim=1)  # shape [2 * n_edge, mv_dim]
-        mv_ftr = self.ag_act((vew_u / (torch.sum(vew_u, dim=1, keepdim=True) + self.ESP)) @ aligned_e_ftr)  # shape [n_vertex, mv_dim]
+        align_ftr = vew_v @ torch.diag(torch.reshape(align_ftr, [-1])) + veb_v  # shape [n_vertex, 2 * n_edge]
+        align_ftr = self.al_act(align_ftr)
+        mv_ftr = self.ag_act(align_ftr @ attend_ftr)  # shape [n_vertex, mv_dim]
 
         me2_ftr = self.link(torch.cat([hv_u_ftr, dis_ftr, hv_v_ftr], dim=1))  # shape [2 * n_edge, me_dim]
         me_ftr = me2_ftr[:n_edge, :] + me2_ftr[n_edge:, :]  # shape [n_edge, me_dim]

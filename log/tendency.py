@@ -22,8 +22,11 @@ def tendency_pc(log: dict, path: str):
 
 
 tuples = [
-    ('QM9', 'QM9-5000'),
-    ('QM9', 'QM9-5000-lambda1e-2'),
+    # ('QM9', 'QM9'),
+    ('QM9', 'QM9-10000'),
+    ('QM9', 'QM9-10000-lambda1e-2'),
+    # ('QM9', 'QM9-5000'),
+    # ('QM9', 'QM9-5000-lambda1e-2'),
 ]
 
 for d, f in tuples:

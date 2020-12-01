@@ -8,7 +8,20 @@ train_qm9(
     max_num=-1,
     data_name='QM9',
     seed=0,
-    force_save=False,
+    force_save=True,
     tag='QM9',
+    use_tqdm=False,
+)
+
+train_qm9(
+    special_config={
+        'LAMBDA': 1e-2,
+    },
+    use_cuda=True,
+    max_num=-1,
+    data_name='QM9',
+    seed=0,
+    force_save=False,
+    tag='QM9-lambda1e-2',
     use_tqdm=False,
 )
