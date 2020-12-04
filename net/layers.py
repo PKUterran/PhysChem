@@ -123,8 +123,12 @@ class ConfAwareFingerprintGenerator(nn.Module):
 
         self.vertex2mol = nn.Linear(hv_dim, hm_dim, bias=True)
         self.vm_act = nn.LeakyReLU()
-        self.readout = GlobalDynReadout(hm_dim, hv_dim, mm_dim, p_dim, q_dim, use_cuda, dropout)
-        self.union = GRUUnion(hm_dim, mm_dim, use_cuda)
+        self.readouts = nn.ModuleList([
+            GlobalReadout(hm_dim, hv_dim, mm_dim, p_dim, q_dim, use_cuda, dropout)
+            for _ in range(iteration)])
+        self.unions = nn.ModuleList([
+            GRUUnion(hm_dim, mm_dim, use_cuda)
+            for _ in range(iteration)])
         self.iteration = iteration
 
     def forward(self, hv_ftr: torch.Tensor, p_ftr: torch.Tensor, q_ftr: torch.Tensor,
@@ -137,8 +141,8 @@ class ConfAwareFingerprintGenerator(nn.Module):
 
         # iterate
         for i in range(self.iteration):
-            mm_ftr = self.readout(hm_ftr, hv_ftr, p_ftr, q_ftr, mask_matrices)
-            hm_ftr = self.union(hm_ftr, mm_ftr)
+            mm_ftr = self.readouts[i](hm_ftr, hv_ftr, p_ftr, q_ftr, mask_matrices)
+            hm_ftr = self.unions[i](hm_ftr, mm_ftr)
 
         return hm_ftr
 

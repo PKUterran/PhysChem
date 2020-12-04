@@ -271,6 +271,46 @@ class GRUUnion(nn.Module):
         return h_ftr
 
 
+class GlobalReadout(nn.Module):
+    def __init__(self, hm_dim: int, hv_dim: int, mm_dim: int, p_dim: int, q_dim: int,
+                 use_cuda=False, dropout=0.0):
+        super(GlobalReadout, self).__init__()
+        self.use_cuda = use_cuda
+        self.dropout = nn.Dropout(dropout)
+
+        self.attend = nn.Linear(hv_dim, mm_dim)
+        self.at_act = nn.LeakyReLU()
+        self.align = nn.Linear(hm_dim + hv_dim, 1)
+        self.al_act = nn.Softmax(dim=-1)
+        self.ag_act = nn.ELU()
+
+    def forward(self, hm_ftr: torch.Tensor, hv_ftr: torch.Tensor, p_ftr: torch.Tensor, q_ftr: torch.Tensor,
+                mask_matrices: MaskMatrices
+                ) -> torch.Tensor:
+        """
+        molecule message readout with global attention and dynamic properties
+        :param hm_ftr: molecule features with shape [n_mol, hm_dim]
+        :param hv_ftr: vertex features with shape [n_vertex, hv_dim]
+        :param p_ftr: atom momentum features with shape [n_vertex, p_dim]
+        :param q_ftr: atom position features with shape [n_vertex, q_dim]
+        :param mask_matrices: mask matrices
+        :return: molecule message
+        """
+        hm_ftr, hv_ftr = self.dropout(hm_ftr), self.dropout(hv_ftr)
+        mvw = mask_matrices.mol_vertex_w  # shape [n_mol, n_vertex]
+        mvb = mask_matrices.mol_vertex_b  # shape [n_mol, n_vertex]
+        hm_v_ftr = mvw.t() @ hm_ftr  # shape [n_vertex, hm_dim]
+
+        attend_ftr = self.attend(hv_ftr)  # shape [n_vertex, mm_dim]
+        attend_ftr = self.at_act(attend_ftr)
+        align_ftr = self.align(torch.cat([hm_v_ftr, hv_ftr], dim=1))  # shape [n_vertex, 1]
+        align_ftr = mvw @ torch.diag(torch.reshape(align_ftr, [-1])) + mvb  # shape [n_mol, n_vertex]
+        align_ftr = self.al_act(align_ftr)
+        mm_ftr = self.ag_act(align_ftr @ attend_ftr)  # shape [n_mol, mm_dim]
+
+        return mm_ftr
+
+
 class GlobalDynReadout(nn.Module):
     def __init__(self, hm_dim: int, hv_dim: int, mm_dim: int, p_dim: int, q_dim: int,
                  use_cuda=False, dropout=0.0):
