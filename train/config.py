@@ -1,11 +1,11 @@
 DEFAULT_CONFIG = {
     # model
-    'HV_DIM': 64,
-    'HE_DIM': 64,
-    'HM_DIM': 64,
-    'MV_DIM': 64,
-    'ME_DIM': 64,
-    'MM_DIM': 64,
+    'HV_DIM': 128,
+    'HE_DIM': 128,
+    'HM_DIM': 128,
+    'MV_DIM': 128,
+    'ME_DIM': 128,
+    'MM_DIM': 128,
     'PQ_DIM': 3,
     'N_LAYER': 3,
     'N_HOP': 2,
