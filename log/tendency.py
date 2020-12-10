@@ -12,7 +12,7 @@ def tendency_pc(log: dict, path: str):
     fig, ax1 = plt.subplots()
     ax1.plot(epochs, train_p, color='red', linestyle='--')
     ax1.plot(epochs, test_p, color='red')
-    ax1.set_ylim(3, 11)
+    ax1.set_ylim(2, 11)
     ax2 = ax1.twinx()
     ax2.plot(epochs, train_c, color='green', linestyle='--')
     ax2.plot(epochs, test_c, color='green')
@@ -22,7 +22,7 @@ def tendency_pc(log: dict, path: str):
 
 
 tuples = [
-    ('QM9', 'QM9'),
+    ('QM9', 'QM9-10000-Xconf-b'),
     # ('QM9', 'QM9-5000-naive'),
     # ('QM9', 'QM9-5000'),
     # ('QM9', 'QM9-5000-lambda1e-2'),

@@ -17,11 +17,13 @@ DEFAULT_CONFIG = {
     'TAU': 0.01,
     'DROPOUT': 0.0,
 
-    'EPOCH': 100,
+    'EPOCH': 200,
     'BATCH': 20,
     'LAMBDA': 1,
     'LR': 1e-4,
     'DECAY': 1e-5,
+
+    'Xconf': False,
 }
 
 QM9_CONFIG = DEFAULT_CONFIG.copy()

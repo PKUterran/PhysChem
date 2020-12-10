@@ -15,13 +15,13 @@ train_qm9(
 
 train_qm9(
     special_config={
-        'LAMBDA': 1e-2,
+        'Xconf': True,
     },
     use_cuda=True,
     max_num=-1,
     data_name='QM9',
     seed=0,
     force_save=False,
-    tag='QM9-lambda1e-2',
+    tag='QM9-Xconf',
     use_tqdm=False,
 )

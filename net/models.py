@@ -23,6 +23,8 @@ class GeomNN(nn.Module):
         dropout = config['DROPOUT']
         self.use_cuda = use_cuda
 
+        self.Xconf = config['Xconf']
+
         self.initializer = Initializer(
             atom_dim=atom_dim,
             bond_dim=bond_dim,
@@ -57,8 +59,7 @@ class GeomNN(nn.Module):
         )
         self.fingerprint_gen = ConfAwareFingerprintGenerator(
             hm_dim=hm_dim,
-            # hv_dim=hv_dim,
-            hv_dim=hv_dim * self.n_layer,
+            hv_dim=hv_dim * self.n_layer if not self.Xconf else hv_dim,
             mm_dim=mm_dim,
             p_dim=p_dim,
             q_dim=q_dim,
@@ -93,13 +94,20 @@ class GeomNN(nn.Module):
                 ) -> Tuple[torch.Tensor, torch.Tensor]:
         hv_ftr, he_ftr, p_ftr, q_ftr = self.initializer(atom_ftr, bond_ftr, mask_matrices)
         hv_ftrs = []
+
+        if self.Xconf:
+            p_ftr, q_ftr = p_ftr * 0, q_ftr * 0
+
         for i in range(self.n_layer):
             t_hv_ftr, t_he_ftr = self.mp_kernel(hv_ftr, he_ftr, p_ftr, q_ftr, mask_matrices)
 
-            for j in range(self.n_iteration):
-                p_ftr, q_ftr = self.drv_kernel(hv_ftr, he_ftr, massive, p_ftr, q_ftr, mask_matrices)
+            if not self.Xconf:
+                for j in range(self.n_iteration):
+                    p_ftr, q_ftr = self.drv_kernel(hv_ftr, he_ftr, massive, p_ftr, q_ftr, mask_matrices)
 
             hv_ftrs.append(t_hv_ftr)
+            if self.Xconf:
+                break
 
         fingerprint = self.fingerprint_gen(torch.cat(hv_ftrs, dim=1), p_ftr, q_ftr, mask_matrices)
         conformation = self.conformation_gen(q_ftr)
