@@ -20,7 +20,7 @@ DEFAULT_CONFIG = {
     'EPOCH': 200,
     'BATCH': 20,
     'LAMBDA': 1,
-    'LR': 1e-4,
+    'LR': 1e-5,
     'DECAY': 1e-5,
 
     'Xconf': False,
