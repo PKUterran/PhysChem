@@ -10,7 +10,7 @@ train_qm9(
     max_num=-1,
     data_name='QM9',
     seed=0,
-    force_save=False,
+    force_save=True,
     tag='QM9-Xconf',
     use_tqdm=False,
 )
@@ -21,7 +21,7 @@ train_qm9(
     max_num=-1,
     data_name='QM9',
     seed=0,
-    force_save=True,
+    force_save=False,
     tag='QM9',
     use_tqdm=False,
 )
