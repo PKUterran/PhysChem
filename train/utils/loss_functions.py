@@ -55,7 +55,7 @@ def adj3_loss(source: torch.Tensor, target: torch.Tensor, mask_matrices: MaskMat
     adj = adj_d + adj_d.t() + i
     norm_adj = normalize_adj_rc(adj)
     norm_adj_2 = norm_adj @ norm_adj
-    norm_adj_3 = norm_adj @ norm_adj
+    norm_adj_3 = norm_adj_2 @ norm_adj
     mean_adj_3 = (norm_adj + norm_adj_2 + norm_adj_3) / 3
 
     ds = distance_among(source)
