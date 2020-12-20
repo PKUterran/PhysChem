@@ -59,7 +59,7 @@ def train_qm9(special_config: dict = None,
     classifier = MLP(
         in_dim=config['HM_DIM'],
         out_dim=12,
-        hidden_dims=[32],
+        hidden_dims=config['CLASSIFIER_HIDDENS'],
         use_cuda=use_cuda,
         bias=True
     )

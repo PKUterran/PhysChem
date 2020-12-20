@@ -1,5 +1,6 @@
 DEFAULT_CONFIG = {
     # model
+    'CLASSIFIER_HIDDENS': [128],
     'HV_DIM': 128,
     'HE_DIM': 128,
     'HM_DIM': 128,
