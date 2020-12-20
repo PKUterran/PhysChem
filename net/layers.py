@@ -2,6 +2,7 @@ from .components import *
 from .dynamics.newton import NewtonianDerivation
 from .dynamics.hamiltion import DissipativeHamiltonianDerivation
 from .utils.model_utils import normalize_adj_r
+from typing import Union
 
 
 class Initializer(nn.Module):
@@ -24,13 +25,19 @@ class Initializer(nn.Module):
         self.lstm_encoder = LSTMEncoder(hv_dim + sum(self.H_DIMS) + self.OUT_DIM, p_dim + q_dim)
 
     def forward(self, atom_ftr: torch.Tensor, bond_ftr: torch.Tensor,
-                mask_matrices: MaskMatrices
-                ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+                mask_matrices: MaskMatrices, pq_none=False
+                ) -> Union[
+        Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor],
+        Tuple[torch.Tensor, torch.Tensor, None, None]
+    ]:
         vew1 = mask_matrices.vertex_edge_w1
         vew2 = mask_matrices.vertex_edge_w2
 
         hv_ftr = self.v_act(self.v_linear(atom_ftr))
         he_ftr = self.e_act(self.e_linear(bond_ftr))
+        if pq_none:
+            return hv_ftr, he_ftr, None, None
+
         a = self.a_act(self.a_linear(he_ftr))
         adj_d = vew1 @ torch.diag(torch.reshape(a, [-1])) @ vew2.t()
         adj = adj_d + adj_d.t()
@@ -115,23 +122,23 @@ class InformedDerivationKernel(nn.Module):
         return p_ftr, q_ftr
 
 
-class ConfAwareFingerprintGenerator(nn.Module):
-    def __init__(self, hm_dim: int, hv_dim: int, mm_dim: int, p_dim: int, q_dim: int, iteration: int,
+class FingerprintGenerator(nn.Module):
+    def __init__(self, hm_dim: int, hv_dim: int, mm_dim: int, iteration: int,
                  use_cuda=False, dropout=0.0):
-        super(ConfAwareFingerprintGenerator, self).__init__()
+        super(FingerprintGenerator, self).__init__()
         self.use_cuda = use_cuda
 
         self.vertex2mol = nn.Linear(hv_dim, hm_dim, bias=True)
         self.vm_act = nn.LeakyReLU()
         self.readouts = nn.ModuleList([
-            GlobalReadout(hm_dim, hv_dim, mm_dim, p_dim, q_dim, use_cuda, dropout)
+            GlobalReadout(hm_dim, hv_dim, mm_dim, use_cuda, dropout)
             for _ in range(iteration)])
         self.unions = nn.ModuleList([
             GRUUnion(hm_dim, mm_dim, use_cuda)
             for _ in range(iteration)])
         self.iteration = iteration
 
-    def forward(self, hv_ftr: torch.Tensor, p_ftr: torch.Tensor, q_ftr: torch.Tensor,
+    def forward(self, hv_ftr: torch.Tensor,
                 mask_matrices: MaskMatrices
                 ) -> torch.Tensor:
         # initialize molecule features with mean of vertex features
@@ -141,7 +148,7 @@ class ConfAwareFingerprintGenerator(nn.Module):
 
         # iterate
         for i in range(self.iteration):
-            mm_ftr = self.readouts[i](hm_ftr, hv_ftr, p_ftr, q_ftr, mask_matrices)
+            mm_ftr = self.readouts[i](hm_ftr, hv_ftr, mask_matrices)
             hm_ftr = self.unions[i](hm_ftr, mm_ftr)
 
         return hm_ftr

@@ -1,3 +1,6 @@
+from net.config import ConfType
+
+
 DEFAULT_CONFIG = {
     # model
     'HV_DIM': 128,
@@ -23,7 +26,7 @@ DEFAULT_CONFIG = {
     'LR': 1e-5,
     'DECAY': 1e-5,
 
-    'Xconf': False,
+    'CONF_TYPE': ConfType.NEWTON,
 }
 
 QM9_CONFIG = DEFAULT_CONFIG.copy()

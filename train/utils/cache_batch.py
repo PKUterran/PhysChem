@@ -118,18 +118,6 @@ class BatchCache:
             vertex_edge_b2 = torch.from_numpy(vertex_edge_b2).type(torch.float32)
             properties = torch.from_numpy(properties).type(torch.float32)
             conformation = torch.from_numpy(conformation).type(torch.float32)
-            # if self.use_cuda:
-            #     atom_ftr = atom_ftr.cuda()
-            #     bond_ftr = bond_ftr.cuda()
-            #     massive = massive.cuda()
-            #     mol_vertex_w = mol_vertex_w.cuda()
-            #     mol_vertex_b = mol_vertex_b.cuda()
-            #     vertex_edge_w1 = vertex_edge_w1.cuda()
-            #     vertex_edge_b1 = vertex_edge_b1.cuda()
-            #     vertex_edge_w2 = vertex_edge_w2.cuda()
-            #     vertex_edge_b2 = vertex_edge_b2.cuda()
-            #     properties = properties.cuda()
-            #     conformation = conformation.cuda()
 
             mask_matrices = MaskMatrices(mol_vertex_w, mol_vertex_b,
                                          vertex_edge_w1, vertex_edge_w2,

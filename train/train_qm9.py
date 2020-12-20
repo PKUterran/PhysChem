@@ -94,8 +94,8 @@ def train_qm9(special_config: dict = None,
         for batch in batches:
             if use_cuda:
                 batch = batch_cuda_copy(batch)
-            fp, pred_c = model(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices)
-            pred_p = classifier(fp)
+            fp, pred_c = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices)
+            pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
             c_loss = adj3_loss(pred_c, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
             loss = p_loss + config['LAMBDA'] * c_loss
@@ -120,8 +120,8 @@ def train_qm9(special_config: dict = None,
         for batch in batches:
             if use_cuda:
                 batch = batch_cuda_copy(batch)
-            fp, pred_c = model(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices)
-            pred_p = classifier(fp)
+            fp, pred_c = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices)
+            pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
             c_loss = adj3_loss(pred_c, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
             loss = p_loss + config['LAMBDA'] * c_loss

@@ -1,10 +1,11 @@
 from data.qm9.load_qm9 import cache_qm9
+from net.config import ConfType
 from train.train_qm9 import train_qm9
 
 # cache_qm9()
 # train_qm9(
 #     special_config={
-#         'Xconf': True,
+#         'CONF_TYPE': ConfType.NONE,
 #     },
 #     use_cuda=True,
 #     max_num=-1,
