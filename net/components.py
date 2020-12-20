@@ -272,7 +272,7 @@ class GRUUnion(nn.Module):
 
 
 class GlobalReadout(nn.Module):
-    def __init__(self, hm_dim: int, hv_dim: int, mm_dim: int, p_dim: int, q_dim: int,
+    def __init__(self, hm_dim: int, hv_dim: int, mm_dim: int,
                  use_cuda=False, dropout=0.0):
         super(GlobalReadout, self).__init__()
         self.use_cuda = use_cuda
@@ -284,15 +284,13 @@ class GlobalReadout(nn.Module):
         self.al_act = nn.Softmax(dim=-1)
         self.ag_act = nn.ELU()
 
-    def forward(self, hm_ftr: torch.Tensor, hv_ftr: torch.Tensor, p_ftr: torch.Tensor, q_ftr: torch.Tensor,
+    def forward(self, hm_ftr: torch.Tensor, hv_ftr: torch.Tensor,
                 mask_matrices: MaskMatrices
                 ) -> torch.Tensor:
         """
         molecule message readout with global attention and dynamic properties
         :param hm_ftr: molecule features with shape [n_mol, hm_dim]
         :param hv_ftr: vertex features with shape [n_vertex, hv_dim]
-        :param p_ftr: atom momentum features with shape [n_vertex, p_dim]
-        :param q_ftr: atom position features with shape [n_vertex, q_dim]
         :param mask_matrices: mask matrices
         :return: molecule message
         """

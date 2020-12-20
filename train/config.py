@@ -1,3 +1,6 @@
+from net.config import ConfType
+
+
 DEFAULT_CONFIG = {
     # model
     'CLASSIFIER_HIDDENS': [128],
@@ -8,14 +11,14 @@ DEFAULT_CONFIG = {
     'ME_DIM': 128,
     'MM_DIM': 128,
     'PQ_DIM': 3,
-    'N_LAYER': 3,
-    'N_HOP': 2,
-    'N_ITERATION': 16,
+    'N_LAYER': 1,
+    'N_HOP': 1,
+    'N_ITERATION': 10,
     'N_GLOBAL': 2,
     'MESSAGE_TYPE': 'triplet',
     'UNION_TYPE': 'gru',
     'DERIVATION_TYPE': 'newton',
-    'TAU': 0.01,
+    'TAU': 0.05,
     'DROPOUT': 0.0,
 
     'EPOCH': 200,
@@ -24,7 +27,7 @@ DEFAULT_CONFIG = {
     'LR': 1e-5,
     'DECAY': 1e-5,
 
-    'Xconf': False,
+    'CONF_TYPE': ConfType.NEWTON,
 }
 
 QM9_CONFIG = DEFAULT_CONFIG.copy()
