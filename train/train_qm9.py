@@ -23,9 +23,13 @@ def train_qm9(special_config: dict = None,
               use_cuda=False, max_num=-1, data_name='QM9', seed=0, force_save=False, tag='QM9',
               use_tqdm=False):
     # set parameters and seed
+    print(f'For {tag}:')
     config = QM9_CONFIG.copy()
     if special_config is not None:
         config.update(special_config)
+    print('\t CONFIG:')
+    for k, v in config.items():
+        print(f'\t\t{k}: {v}')
     rdkit_support = config['CONF_TYPE'] == ConfType.RDKIT
     set_seed(seed, use_cuda=use_cuda)
     np.set_printoptions(suppress=True, precision=3, linewidth=200)
