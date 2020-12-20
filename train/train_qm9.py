@@ -9,7 +9,8 @@ from functools import reduce
 from tqdm import tqdm
 
 from data.qm9.load_qm9 import load_qm9
-from net.models import GeomNN
+from net.config import ConfType
+from net.models import GeomNN, RecGeomNN
 from net.components import MLP
 from .config import QM9_CONFIG
 from .utils.cache_batch import Batch, BatchCache, load_batch_cache, load_encode_mols, batch_cuda_copy
@@ -25,6 +26,7 @@ def train_qm9(special_config: dict = None,
     config = QM9_CONFIG.copy()
     if special_config is not None:
         config.update(special_config)
+    rdkit_support = config['CONF_TYPE'] == ConfType.RDKIT
     set_seed(seed, use_cuda=use_cuda)
     np.set_printoptions(suppress=True, precision=3, linewidth=200)
 
@@ -41,16 +43,18 @@ def train_qm9(special_config: dict = None,
     print('Caching Batches...')
     try:
         batch_cache = load_batch_cache(data_name, mols, mols_info, norm_p, batch_size=config['BATCH'],
+                                       needs_rdkit_conf=rdkit_support,
                                        use_cuda=use_cuda, use_tqdm=use_tqdm, force_save=force_save)
     except EOFError:
         batch_cache = load_batch_cache(data_name, mols, mols_info, norm_p, batch_size=config['BATCH'],
+                                       needs_rdkit_conf=rdkit_support,
                                        use_cuda=use_cuda, use_tqdm=use_tqdm, force_save=True)
 
     # build model
     print('Building Models...')
     atom_dim = batch_cache.atom_dim
     bond_dim = batch_cache.bond_dim
-    model = GeomNN(
+    model = RecGeomNN(
         atom_dim=atom_dim,
         bond_dim=bond_dim,
         config=config,
@@ -94,7 +98,8 @@ def train_qm9(special_config: dict = None,
         for batch in batches:
             if use_cuda:
                 batch = batch_cuda_copy(batch)
-            fp, pred_c = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices)
+            fp, pred_c = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
+                                       batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
             c_loss = adj3_loss(pred_c, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
@@ -120,7 +125,8 @@ def train_qm9(special_config: dict = None,
         for batch in batches:
             if use_cuda:
                 batch = batch_cuda_copy(batch)
-            fp, pred_c = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices)
+            fp, pred_c = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
+                                       batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
             c_loss = adj3_loss(pred_c, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)

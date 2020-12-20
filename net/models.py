@@ -183,11 +183,6 @@ class RecGeomNN(nn.Module):
             use_cuda=use_cuda,
             dropout=dropout
         )
-        self.conformation_gen = ConformationGenerator(
-            q_dim=q_dim,
-            h_dims=[16],
-            dropout=dropout
-        )
 
     def forward(self, atom_ftr: torch.Tensor, bond_ftr: torch.Tensor, massive: torch.Tensor,
                 mask_matrices: MaskMatrices,
@@ -209,6 +204,5 @@ class RecGeomNN(nn.Module):
             hv_ftr, he_ftr = t_hv_ftr, t_he_ftr
 
         fingerprint = self.fingerprint_gen.forward(hv_ftr, mask_matrices)
-        conformation = self.conformation_gen.forward(q_ftr)
+        conformation = q_ftr
         return fingerprint, conformation
-

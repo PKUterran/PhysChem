@@ -9,6 +9,7 @@ from tqdm import tqdm
 from data.encode import get_massive_from_atom_features, encode_mols
 from data.qm9.load_qm9 import get_mol_positions
 from net.utils.MaskMatrices import MaskMatrices, cuda_copy
+from train.utils.rdkit import rdkit_mol_positions
 
 CACHE_DIR = 'train/utils/cache'
 MOLS_DIR = 'train/utils/mols'
@@ -17,7 +18,8 @@ MOLS_DIR = 'train/utils/mols'
 class Batch:
     def __init__(self, atom_ftr: torch.Tensor, bond_ftr: torch.Tensor, massive: torch.Tensor,
                  mask_matrices: MaskMatrices,
-                 properties: torch.Tensor = None, conformation: torch.Tensor = None):
+                 properties: torch.Tensor = None, conformation: torch.Tensor = None,
+                 rdkit_conf: torch.Tensor = None):
         self.n_atom = atom_ftr.shape[0]
         self.n_bond = bond_ftr.shape[0]
         self.n_mol = mask_matrices.mol_vertex_w.shape[0]
@@ -28,6 +30,7 @@ class Batch:
         self.mask_matrices = mask_matrices
         self.properties = properties
         self.conformation = conformation
+        self.rdkit_conf = rdkit_conf
 
 
 def batch_cuda_copy(batch: Batch) -> Batch:
@@ -38,11 +41,13 @@ def batch_cuda_copy(batch: Batch) -> Batch:
         mask_matrices=cuda_copy(batch.mask_matrices),
         properties=batch.properties.cuda() if batch.properties is not None else None,
         conformation=batch.conformation.cuda() if batch.conformation is not None else None,
+        rdkit_conf=batch.rdkit_conf.cuda() if batch.rdkit_conf is not None else None,
     )
 
 
 class BatchCache:
     def __init__(self, mols: List[Any], mols_info: List[Dict[str, np.ndarray]], mol_properties: np.ndarray,
+                 needs_rdkit_conf=False, contains_ground_truth_conf=True,
                  use_cuda=False, batch_size=32,
                  use_tqdm=False):
         assert len(mols_info) == mol_properties.shape[0]
@@ -53,6 +58,8 @@ class BatchCache:
         self.mols = mols
         self.mols_info = mols_info
         self.mol_properties = mol_properties
+        self.needs_rdkit_conf = needs_rdkit_conf
+        self.contains_ground_truth_conf = contains_ground_truth_conf
         self.use_cuda = use_cuda
         self.use_tqdm = use_tqdm
 
@@ -104,8 +111,6 @@ class BatchCache:
             vertex_edge_w2, vertex_edge_b2 = self.produce_mask_matrix(sum(n_atoms), vs)
 
             properties = self.mol_properties[mask, :].astype(np.float)
-            conformation = np.vstack([get_mol_positions(self.mols[m]) for m in mask])
-            assert conformation.shape[0] == sum(n_atoms)
 
             atom_ftr = torch.from_numpy(atom_ftr).type(torch.float32)
             bond_ftr = torch.from_numpy(bond_ftr).type(torch.float32)
@@ -117,12 +122,26 @@ class BatchCache:
             vertex_edge_w2 = torch.from_numpy(vertex_edge_w2).type(torch.float32)
             vertex_edge_b2 = torch.from_numpy(vertex_edge_b2).type(torch.float32)
             properties = torch.from_numpy(properties).type(torch.float32)
-            conformation = torch.from_numpy(conformation).type(torch.float32)
+
+            if self.contains_ground_truth_conf:
+                conformation = np.vstack([get_mol_positions(self.mols[m]) for m in mask])
+                assert conformation.shape[0] == sum(n_atoms)
+                conformation = torch.from_numpy(conformation).type(torch.float32)
+            else:
+                conformation = None
+            if self.needs_rdkit_conf:
+                rdkit_conf = np.vstack([rdkit_mol_positions(self.mols[m]) for m in mask])
+                assert rdkit_conf.shape[0] == sum(n_atoms)
+                rdkit_conf = torch.from_numpy(rdkit_conf).type(torch.float32)
+                if not self.contains_ground_truth_conf:
+                    conformation = rdkit_conf
+            else:
+                rdkit_conf = None
 
             mask_matrices = MaskMatrices(mol_vertex_w, mol_vertex_b,
                                          vertex_edge_w1, vertex_edge_w2,
                                          vertex_edge_b1, vertex_edge_b2)
-            batch = Batch(atom_ftr, bond_ftr, massive, mask_matrices, properties, conformation)
+            batch = Batch(atom_ftr, bond_ftr, massive, mask_matrices, properties, conformation, rdkit_conf)
             batches.append(batch)
 
         return batches
@@ -140,6 +159,7 @@ class BatchCache:
 
 
 def load_batch_cache(name: str, mols: List[Any], mols_info: List[Dict[str, np.ndarray]], mol_properties: np.ndarray,
+                     needs_rdkit_conf=False, contains_ground_truth_conf=True,
                      use_cuda=False, batch_size=32,
                      force_save=False, use_tqdm=False) -> BatchCache:
     if not os.path.exists(CACHE_DIR):
@@ -148,6 +168,8 @@ def load_batch_cache(name: str, mols: List[Any], mols_info: List[Dict[str, np.nd
     if not os.path.exists(pickle_path) or force_save:
         print('\tProducing New Batches...')
         batch_cache = BatchCache(mols, mols_info, mol_properties,
+                                 needs_rdkit_conf=needs_rdkit_conf,
+                                 contains_ground_truth_conf=contains_ground_truth_conf,
                                  use_cuda=use_cuda, batch_size=batch_size, use_tqdm=use_tqdm)
         with open(pickle_path, 'wb+') as fp:
             pickle.dump(batch_cache, fp)
