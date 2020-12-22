@@ -186,14 +186,14 @@ class RecGeomNN(nn.Module):
 
     def forward(self, atom_ftr: torch.Tensor, bond_ftr: torch.Tensor, massive: torch.Tensor,
                 mask_matrices: MaskMatrices,
-                given_p_ftr: torch.Tensor = None,
+                given_q_ftr: torch.Tensor = None,
                 ) -> Tuple[torch.Tensor, torch.Tensor]:
         hv_ftr, he_ftr, p_ftr, q_ftr = self.initializer.forward(atom_ftr, bond_ftr, mask_matrices)
 
         if self.conf_type is ConfType.NONE:
             p_ftr, q_ftr = p_ftr * 0, q_ftr * 0
         elif self.conf_type is ConfType.RDKIT:
-            p_ftr, q_ftr = given_p_ftr, q_ftr * 0
+            p_ftr, q_ftr = p_ftr * 0, given_q_ftr
 
         for i in range(self.n_iteration):
             t_hv_ftr, t_he_ftr = self.mp_kernel.forward(hv_ftr, he_ftr, p_ftr, q_ftr, mask_matrices)
