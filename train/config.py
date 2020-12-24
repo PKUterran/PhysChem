@@ -35,3 +35,24 @@ QM9_CONFIG = DEFAULT_CONFIG.copy()
 QM9_CONFIG.update({
 
 })
+
+LIPOP_CONFIG = DEFAULT_CONFIG.copy()
+LIPOP_CONFIG.update({
+    'CLASSIFIER_HIDDENS': [128],
+    'HV_DIM': 256,
+    'HE_DIM': 256,
+    'HM_DIM': 256,
+    'MV_DIM': 256,
+    'ME_DIM': 256,
+    'MM_DIM': 256,
+
+    'N_ITERATION': 2,
+    'N_GLOBAL': 4,
+
+    'BATCH': 12,
+    'LR': 1e-4,
+    'GAMMA': 0.98,
+    'DECAY': 1e-4,
+
+    'CONF_TYPE': ConfType.RDKIT,
+})

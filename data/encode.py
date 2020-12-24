@@ -151,7 +151,7 @@ def encode_mols(mols: list, return_mask=False
         cnt += 1
         if cnt % 10000 == 0:
             print('\t', cnt, 'encoded.')
-    print('Encoded:', len(ret))
+    print('\tEncoded:', len(ret))
     if return_mask:
         return ret, mask
     return ret

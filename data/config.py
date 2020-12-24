@@ -8,3 +8,6 @@ DRUG_RDKIT_PICKLE_DIR = f'{RDKIT_FOLDER_DIR}/drug'
 QM9_CSV2JSON_PATH = 'data/qm9/csv2json.json'
 QM9_CSV_PATH = 'data/qm9/qm9.csv'
 QM9_PICKLE_PATH = 'data/qm9/qm9.pickle'
+
+LIPOP_CSV_PATH = 'data/Lipop/Lipophilicity.csv'
+LIPOP_PICKLE_PATH = 'data/Lipop/lipop.pickle'
