@@ -96,7 +96,6 @@ def train_lipop(special_config: dict = None,
         classifier.train()
         optimizer.zero_grad()
         n_batch = len(batches)
-        losses = []
         if use_tqdm:
             batches = tqdm(batches, total=n_batch)
         for i, batch in enumerate(batches):
@@ -107,12 +106,8 @@ def train_lipop(special_config: dict = None,
             pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
             loss = p_loss
-            losses.append(loss)
-
-            if len(losses) >= 5 or i == n_batch - 1:
-                (sum(losses) / len(losses)).backward()
-                optimizer.step()
-                losses.clear()
+            loss.backward()
+            optimizer.step()
 
     def evaluate(batches: List[Batch], batch_name: str):
         model.eval()
@@ -136,8 +131,8 @@ def train_lipop(special_config: dict = None,
             p_total_mse = multi_mse_loss(pred_p, batch.properties)
             list_p_total_rmse.append((np.sqrt(p_total_mse.cpu().item()) * stddev_p.data)[0])
 
-        print(f'\t\t\tTOTAL LOSS: {sum(list_loss) / n_batch}')
-        print(f'\t\t\tPROPERTIES TOTAL RMSE: {sum(list_p_total_rmse) / n_batch}')
+        print(f'\t\t\tLOSS: {sum(list_loss) / n_batch}')
+        print(f'\t\t\tRMSE: {sum(list_p_total_rmse) / n_batch}')
         logs[-1].update({
             f'{batch_name}_loss': sum(list_loss) / n_batch,
             f'{batch_name}_p_metric': sum(list_p_total_rmse) / n_batch,

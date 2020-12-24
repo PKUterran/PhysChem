@@ -49,8 +49,8 @@ LIPOP_CONFIG.update({
     'N_ITERATION': 2,
     'N_GLOBAL': 4,
 
-    'BATCH': 8,
-    'LR': 1e-4,
+    'BATCH': 5,
+    'LR': 1e-5,
     'GAMMA': 0.98,
     'DECAY': 1e-5,
 
