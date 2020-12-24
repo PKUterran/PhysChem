@@ -78,6 +78,7 @@ def train_qm9(special_config: dict = None,
     # initialize optimization
     parameters = list(chain(model.parameters(), classifier.parameters()))
     optimizer = optim.Adam(params=parameters, lr=config['LR'], weight_decay=config['DECAY'])
+    scheduler = optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=1, gamma=config['GAMMA'])
     print('##### Parameters #####')
 
     param_size = 0
@@ -88,8 +89,6 @@ def train_qm9(special_config: dict = None,
 
     # train
     epoch = 0
-    current_lr = config['LR']
-    decay = config['DECAY']
     logs: List[Dict[str, float]] = []
 
     def train(batches: List[Batch]):
@@ -110,8 +109,6 @@ def train_qm9(special_config: dict = None,
             loss = p_loss + config['LAMBDA'] * c_loss
             loss.backward()
             optimizer.step()
-            nonlocal current_lr
-            current_lr *= 1 - decay
 
     def evaluate(batches: List[Batch], batch_name: str):
         model.eval()
@@ -167,7 +164,7 @@ def train_qm9(special_config: dict = None,
         logs.append({'epoch': epoch})
         print()
         print(f'##### IN EPOCH {epoch} #####')
-        print('\tCurrent LR: {:.3e}'.format(current_lr))
+        print('\tCurrent LR: {:.3e}'.format(optimizer.state_dict()['param_groups'][0]['lr']))
         print('\t\tTraining:')
         train(batch_cache.train_batches)
         print('\t\tEvaluating Train:')
@@ -176,6 +173,7 @@ def train_qm9(special_config: dict = None,
         evaluate(batch_cache.validate_batches, 'validate')
         print('\t\tEvaluating Test:')
         evaluate(batch_cache.test_batches, 'test')
+        scheduler.step(epoch)
 
         t1 = time.time()
         print('\tProcess Time: {}'.format(int(t1 - t0)))

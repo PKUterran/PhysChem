@@ -25,6 +25,7 @@ DEFAULT_CONFIG = {
     'BATCH': 20,
     'LAMBDA': 1,
     'LR': 1e-5,
+    'GAMMA': 1.00,
     'DECAY': 1e-5,
 
     'CONF_TYPE': ConfType.NEWTON,

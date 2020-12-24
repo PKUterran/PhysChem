@@ -26,6 +26,7 @@ tuples = [
     ('QM9', 'QM9-Xconf'),
     ('QM9', 'QM9-rdkit'),
     ('QM9', 'QM9'),
+    ('QM9', 'QM9-lrd'),
     # ('QM9', 'QM9-10000-Xconf-naive'),
     # ('QM9', 'QM9-5000-naive'),
     # ('QM9', 'QM9-5000'),
