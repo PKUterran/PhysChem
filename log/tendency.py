@@ -25,20 +25,20 @@ def tendency_pc(log: dict, path: str, show_conf=False):
 
 
 tuples = [
-    ('Lipop', 'Lipop')
+    # ('Lipop', 'Lipop')
     # ('QM9', 'QM9-Xconf'),
     # ('QM9', 'QM9-rdkit'),
-    # ('QM9', 'QM9'),
-    # ('QM9', 'QM9-lrd'),
+    # ('QM9', 'QM9', True),
+    ('QM9', 'QM9-lrd', True),
     # ('QM9', 'QM9-10000-Xconf-naive'),
     # ('QM9', 'QM9-5000-naive'),
     # ('QM9', 'QM9-5000'),
     # ('QM9', 'QM9-5000-lambda1e-2'),
 ]
 
-for d, f in tuples:
+for d, f, *t in tuples:
     json_path = f'{d}/{f}.json'
     graph_path = f'{d}/{f}.png'
     with open(json_path) as fp:
         log = json.load(fp)
-    tendency_pc(log, graph_path)
+    tendency_pc(log, graph_path, t)

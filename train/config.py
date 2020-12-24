@@ -49,7 +49,7 @@ LIPOP_CONFIG.update({
     'N_ITERATION': 2,
     'N_GLOBAL': 4,
 
-    'BATCH': 12,
+    'BATCH': 4,
     'LR': 1e-4,
     'GAMMA': 0.98,
     'DECAY': 1e-4,
