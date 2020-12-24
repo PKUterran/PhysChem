@@ -51,7 +51,7 @@ LIPOP_CONFIG.update({
 
     'BATCH': 5,
     'LR': 1e-5,
-    'GAMMA': 0.98,
+    'GAMMA': 0.99,
     'DECAY': 1e-5,
 
     'CONF_TYPE': ConfType.RDKIT,
