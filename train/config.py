@@ -49,10 +49,10 @@ LIPOP_CONFIG.update({
     'N_ITERATION': 2,
     'N_GLOBAL': 4,
 
-    'BATCH': 4,
+    'BATCH': 8,
     'LR': 1e-4,
     'GAMMA': 0.98,
-    'DECAY': 1e-4,
+    'DECAY': 1e-5,
 
     'CONF_TYPE': ConfType.RDKIT,
 })

@@ -96,9 +96,10 @@ def train_lipop(special_config: dict = None,
         classifier.train()
         optimizer.zero_grad()
         n_batch = len(batches)
+        losses = []
         if use_tqdm:
             batches = tqdm(batches, total=n_batch)
-        for batch in batches:
+        for i, batch in enumerate(batches):
             if use_cuda:
                 batch = batch_cuda_copy(batch)
             fp, _ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
@@ -106,8 +107,12 @@ def train_lipop(special_config: dict = None,
             pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
             loss = p_loss
-            loss.backward()
-            optimizer.step()
+            losses.append(loss)
+
+            if len(losses) >= 5 or i == n_batch - 1:
+                (sum(losses) / len(losses)).backward()
+                optimizer.step()
+                losses.clear()
 
     def evaluate(batches: List[Batch], batch_name: str):
         model.eval()

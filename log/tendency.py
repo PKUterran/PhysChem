@@ -25,7 +25,8 @@ def tendency_pc(log: dict, path: str, show_conf=False):
 
 
 tuples = [
-    # ('Lipop', 'Lipop')
+    ('Lipop', 'Lipop'),
+    # ('Lipop', 'Lipop-test'),
     # ('QM9', 'QM9-Xconf'),
     # ('QM9', 'QM9-rdkit'),
     # ('QM9', 'QM9', True),
