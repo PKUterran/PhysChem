@@ -8,23 +8,23 @@ import rdkit.Chem as Chem
 from rdkit.Chem.rdchem import Mol as Molecule
 from typing import Tuple, List
 
-from data.config import LIPOP_CSV_PATH, LIPOP_PICKLE_PATH
+from data.config import TOX21_CSV_PATH, TOX21_PICKLE_PATH
 
 
-def dump_lipop():
-    df = pd.read_csv(LIPOP_CSV_PATH)
+def dump_tox21():
+    df = pd.read_csv(TOX21_CSV_PATH)
     csv: np.ndarray = df.values
-    smiles = csv[:, 2].astype(np.str)
-    properties = csv[:, 1: 2].astype(np.float)
+    smiles = csv[:, 13].astype(np.str)
+    properties = csv[:, : 12].astype(np.float)
     mols = [Chem.MolFromSmiles(s) for s in smiles]
-    with open(LIPOP_PICKLE_PATH, 'wb+') as fp:
+    with open(TOX21_PICKLE_PATH, 'wb+') as fp:
         pickle.dump((mols, properties), fp)
 
 
-def load_lipop(max_num=-1) -> Tuple[List[Molecule], np.ndarray]:
-    if not os.path.exists(LIPOP_PICKLE_PATH):
-        dump_lipop()
-    with open(LIPOP_PICKLE_PATH, 'rb') as fp:
+def load_tox21(max_num=-1) -> Tuple[List[Molecule], np.ndarray]:
+    if not os.path.exists(TOX21_PICKLE_PATH):
+        dump_tox21()
+    with open(TOX21_PICKLE_PATH, 'rb') as fp:
         mols, properties = pickle.load(fp)
     if 0 < max_num < len(mols):
         mols = mols[: max_num]

@@ -1,9 +1,24 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from sklearn.metrics import roc_auc_score
 
 from net.utils.MaskMatrices import MaskMatrices
 from net.utils.model_utils import normalize_adj_rc
+
+
+def multi_roc(source: np.ndarray, target: np.ndarray) -> float:
+    assert source.shape == target.shape
+    total_roc = 0
+    n_m = source.shape[1]
+    for i in range(n_m):
+        try:
+            roc = roc_auc_score(target[:, i], source[:, i])
+        except ValueError:
+            roc = 1
+        total_roc += roc
+    return total_roc / n_m
 
 
 def multi_mse_loss(source: torch.Tensor, target: torch.Tensor, explicit=False) -> torch.Tensor:

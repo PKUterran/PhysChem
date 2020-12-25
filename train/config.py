@@ -21,11 +21,11 @@ DEFAULT_CONFIG = {
     'TAU': 0.05,
     'DROPOUT': 0.0,
 
-    'EPOCH': 200,
+    'EPOCH': 300,
     'BATCH': 20,
     'LAMBDA': 1,
     'LR': 1e-5,
-    'GAMMA': 1.00,
+    'GAMMA': 0.99,
     'DECAY': 1e-5,
 
     'CONF_TYPE': ConfType.NEWTON,
@@ -48,6 +48,69 @@ LIPOP_CONFIG.update({
 
     'N_ITERATION': 2,
     'N_GLOBAL': 4,
+
+    'BATCH': 5,
+    'LR': 1e-5,
+    'GAMMA': 0.99,
+    'DECAY': 1e-5,
+
+    'CONF_TYPE': ConfType.RDKIT,
+})
+
+ESOL_CONFIG = DEFAULT_CONFIG.copy()
+ESOL_CONFIG.update({
+    'CLASSIFIER_HIDDENS': [128],
+    'HV_DIM': 256,
+    'HE_DIM': 256,
+    'HM_DIM': 256,
+    'MV_DIM': 256,
+    'ME_DIM': 256,
+    'MM_DIM': 256,
+
+    'N_ITERATION': 3,
+    'N_GLOBAL': 3,
+
+    'BATCH': 5,
+    'LR': 1e-5,
+    'GAMMA': 0.99,
+    'DECAY': 1e-5,
+
+    'CONF_TYPE': ConfType.RDKIT,
+})
+
+FREESOLV_CONFIG = DEFAULT_CONFIG.copy()
+FREESOLV_CONFIG.update({
+    'CLASSIFIER_HIDDENS': [128],
+    'HV_DIM': 256,
+    'HE_DIM': 256,
+    'HM_DIM': 256,
+    'MV_DIM': 256,
+    'ME_DIM': 256,
+    'MM_DIM': 256,
+
+    'N_ITERATION': 3,
+    'N_GLOBAL': 3,
+
+    'BATCH': 5,
+    'LR': 1e-5,
+    'GAMMA': 0.99,
+    'DECAY': 1e-5,
+
+    'CONF_TYPE': ConfType.RDKIT,
+})
+
+TOX21_CONFIG = DEFAULT_CONFIG.copy()
+TOX21_CONFIG.update({
+    'CLASSIFIER_HIDDENS': [128],
+    'HV_DIM': 256,
+    'HE_DIM': 256,
+    'HM_DIM': 256,
+    'MV_DIM': 256,
+    'ME_DIM': 256,
+    'MM_DIM': 256,
+
+    'N_ITERATION': 3,
+    'N_GLOBAL': 3,
 
     'BATCH': 5,
     'LR': 1e-5,

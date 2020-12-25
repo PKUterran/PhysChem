@@ -1,6 +1,6 @@
 import time
-import cmath
 import torch
+import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 
@@ -9,23 +9,23 @@ from itertools import chain
 from functools import reduce
 from tqdm import tqdm
 
-from data.Lipop.load_lipop import load_lipop
+from data.TOX21.load_tox21 import load_tox21
 from net.config import ConfType
 from net.models import GeomNN, RecGeomNN
 from net.components import MLP
-from .config import LIPOP_CONFIG
+from .config import TOX21_CONFIG
 from .utils.cache_batch import Batch, BatchCache, load_batch_cache, load_encode_mols, batch_cuda_copy
 from .utils.seed import set_seed
-from .utils.loss_functions import multi_mse_loss, multi_mae_loss, adj3_loss, distance_loss
+from .utils.loss_functions import multi_roc
 from .utils.save_log import save_log
 
 
-def train_lipop(special_config: dict = None,
-                use_cuda=False, max_num=-1, data_name='Lipop', seed=0, force_save=False, tag='Lipop',
+def train_tox21(special_config: dict = None,
+                use_cuda=False, max_num=-1, data_name='TOX21', seed=0, force_save=False, tag='TOX21',
                 use_tqdm=False):
     # set parameters and seed
     print(f'For {tag}:')
-    config = LIPOP_CONFIG.copy()
+    config = TOX21_CONFIG.copy()
     if special_config is not None:
         config.update(special_config)
     print('\t CONFIG:')
@@ -37,20 +37,18 @@ def train_lipop(special_config: dict = None,
 
     # load dataset
     print('Loading:')
-    mols, mol_properties = load_lipop(max_num)
+    mols, mol_properties = load_tox21(max_num)
+    mol_properties[np.isnan(mol_properties)] = 0
     mols_info = load_encode_mols(mols, name=data_name)
 
-    # normalize properties and cache batches
-    mean_p = np.mean(mol_properties, axis=0)
-    stddev_p = np.std(mol_properties.tolist(), axis=0, ddof=1)
-    norm_p = (mol_properties - mean_p) / stddev_p
+    # cache batches
     print('Caching Batches...')
     try:
-        batch_cache = load_batch_cache(data_name, mols, mols_info, norm_p, batch_size=config['BATCH'],
+        batch_cache = load_batch_cache(data_name, mols, mols_info, mol_properties, batch_size=config['BATCH'],
                                        needs_rdkit_conf=rdkit_support, contains_ground_truth_conf=False,
                                        use_cuda=use_cuda, use_tqdm=use_tqdm, force_save=force_save)
     except EOFError:
-        batch_cache = load_batch_cache(data_name, mols, mols_info, norm_p, batch_size=config['BATCH'],
+        batch_cache = load_batch_cache(data_name, mols, mols_info, mol_properties, batch_size=config['BATCH'],
                                        needs_rdkit_conf=rdkit_support, contains_ground_truth_conf=False,
                                        use_cuda=use_cuda, use_tqdm=use_tqdm, force_save=True)
 
@@ -66,7 +64,7 @@ def train_lipop(special_config: dict = None,
     )
     classifier = MLP(
         in_dim=config['HM_DIM'],
-        out_dim=1,
+        out_dim=12,
         hidden_dims=config['CLASSIFIER_HIDDENS'],
         use_cuda=use_cuda,
         bias=True
@@ -90,6 +88,7 @@ def train_lipop(special_config: dict = None,
     # train
     epoch = 0
     logs: List[Dict[str, float]] = []
+    loss_func = nn.BCEWithLogitsLoss()
 
     def train(batches: List[Batch]):
         model.train()
@@ -104,7 +103,7 @@ def train_lipop(special_config: dict = None,
             fp, _ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
                                   batch.rdkit_conf)
             pred_p = classifier.forward(fp)
-            p_loss = multi_mse_loss(pred_p, batch.properties)
+            p_loss = loss_func(pred_p, batch.properties)
             loss = p_loss
             loss.backward()
             optimizer.step()
@@ -115,7 +114,8 @@ def train_lipop(special_config: dict = None,
         optimizer.zero_grad()
         n_batch = len(batches)
         list_loss = []
-        list_p_total_rmse = []
+        list_pred_p = []
+        list_properties = []
         if use_tqdm:
             batches = tqdm(batches, total=n_batch)
         for batch in batches:
@@ -124,18 +124,21 @@ def train_lipop(special_config: dict = None,
             fp, _ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
                                   batch.rdkit_conf)
             pred_p = classifier.forward(fp)
-            p_loss = multi_mse_loss(pred_p, batch.properties)
+            p_loss = loss_func(pred_p, batch.properties)
             loss = p_loss
             list_loss.append(loss.cpu().item())
 
-            p_total_mse = multi_mse_loss(pred_p, batch.properties)
-            list_p_total_rmse.append((np.sqrt(p_total_mse.cpu().item()) * stddev_p.data)[0])
+            list_pred_p.append(pred_p.cpu().detach().numpy())
+            list_properties.append(batch.properties.cpu().numpy())
+        pred_p = np.vstack(list_pred_p)
+        properties = np.vstack(list_properties)
+        p_total_roc = multi_roc(pred_p, properties)
 
         print(f'\t\t\tLOSS: {sum(list_loss) / n_batch}')
-        print(f'\t\t\tRMSE: {sum(list_p_total_rmse) / n_batch}')
+        print(f'\t\t\tMULTI-ROC: {p_total_roc}')
         logs[-1].update({
             f'{batch_name}_loss': sum(list_loss) / n_batch,
-            f'{batch_name}_p_metric': sum(list_p_total_rmse) / n_batch,
+            f'{batch_name}_p_metric': p_total_roc,
         })
 
     for _ in range(config['EPOCH']):
@@ -159,4 +162,4 @@ def train_lipop(special_config: dict = None,
         t1 = time.time()
         print('\tProcess Time: {}'.format(int(t1 - t0)))
         logs[-1].update({'process_time': t1 - t0})
-        save_log(logs, directory='Lipop', tag=tag)
+        save_log(logs, directory='TOX21', tag=tag)

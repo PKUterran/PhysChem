@@ -1,5 +1,5 @@
 from net.config import ConfType
-from train.train_lipop import train_lipop
+from train.train_single_regression import train_single_regression, SingleRegressionDataset
 
 # train_lipop(
 #     special_config={},
@@ -11,15 +11,16 @@ from train.train_lipop import train_lipop
 #     tag='Lipop',
 #     use_tqdm=False
 # )
-train_lipop(
+train_single_regression(
+    dataset=SingleRegressionDataset.LIPOP,
+    data_name='Lipop-Xconf',
+    tag='Lipop-Xconf',
     special_config={
         'CONF_TYPE': ConfType.NONE,
     },
     use_cuda=True,
     max_num=-1,
-    data_name='Lipop-Xconf',
     seed=0,
     force_save=False,
-    tag='Lipop-Xconf',
     use_tqdm=False
 )
