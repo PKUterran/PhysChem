@@ -2,7 +2,7 @@ import json
 import matplotlib.pyplot as plt
 
 
-def tendency_pc(log: dict, path: str, show_conf=False, higher_is_better=False):
+def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
     epochs = [dic['epoch'] for dic in log]
     train_p = [dic['train_p_metric'] for dic in log]
     valid_p = [dic['validate_p_metric'] for dic in log]
@@ -29,22 +29,27 @@ def tendency_pc(log: dict, path: str, show_conf=False, higher_is_better=False):
 
 
 tuples = [
-    ('Lipop', 'Lipop'),
-    ('Lipop', 'Lipop-Xconf'),
-    # ('Lipop', 'Lipop-test'),
-    ('QM9', 'QM9-Xconf'),
-    ('QM9', 'QM9-rdkit'),
-    # ('QM9', 'QM9', True),
-    ('QM9', 'QM9-lrd', True),
-    # ('QM9', 'QM9-10000-Xconf-naive'),
-    # ('QM9', 'QM9-5000-naive'),
-    # ('QM9', 'QM9-5000'),
-    # ('QM9', 'QM9-5000-lambda1e-2'),
+    # ('QM9', 'QM9-Xconf', False, False),
+    # ('QM9', 'QM9-rdkit', False, False),
+    # ('QM9', 'QM9', False, True),
+    # ('QM9', 'QM9-lrd', False, True),
+
+    # ('Lipop', 'Lipop', False, False),
+    # ('Lipop', 'Lipop-Xconf', False, False),
+
+    ('TOX21', 'TOX21', True, False),
+    # ('TOX21', 'TOX21-Xconf', True, False),
+
+    ('ESOL', 'ESOL', False, False),
+    # ('ESOL', 'ESOL-Xconf', False, False),
+
+    ('FreeSolv', 'FreeSolv', False, False),
+    ('FreeSolv', 'FreeSolv-Xconf', False, False),
 ]
 
-for d, f, *t in tuples:
+for d, f, h, t in tuples:
     json_path = f'{d}/{f}.json'
     graph_path = f'{d}/{f}.png'
     with open(json_path) as fp:
         log = json.load(fp)
-    tendency_pc(log, graph_path, t)
+    tendency_pc(log, graph_path, h, t)

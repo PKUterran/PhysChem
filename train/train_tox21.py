@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from itertools import chain
 from functools import reduce
 from tqdm import tqdm
@@ -38,7 +38,6 @@ def train_tox21(special_config: dict = None,
     # load dataset
     print('Loading:')
     mols, mol_properties = load_tox21(max_num)
-    mol_properties[np.isnan(mol_properties)] = 0
     mols_info = load_encode_mols(mols, name=data_name)
 
     # cache batches
@@ -90,6 +89,18 @@ def train_tox21(special_config: dict = None,
     logs: List[Dict[str, float]] = []
     loss_func = nn.BCEWithLogitsLoss()
 
+    def nan_masked(s: torch.Tensor, t: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        nan_mask = torch.isnan(t)
+        s[nan_mask] = -1e6
+        t[nan_mask] = 0
+        return s, t
+
+    def nan_masked_np(s: np.ndarray, t: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        nan_mask = np.isnan(t)
+        s[nan_mask] = -1e6
+        t[nan_mask] = 0
+        return s, t
+
     def train(batches: List[Batch]):
         model.train()
         classifier.train()
@@ -103,7 +114,8 @@ def train_tox21(special_config: dict = None,
             fp, _ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
                                   batch.rdkit_conf)
             pred_p = classifier.forward(fp)
-            p_loss = loss_func(pred_p, batch.properties)
+            pred_p, properties = nan_masked(pred_p, batch.properties)
+            p_loss = loss_func(pred_p, properties)
             loss = p_loss
             loss.backward()
             optimizer.step()
@@ -124,7 +136,8 @@ def train_tox21(special_config: dict = None,
             fp, _ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
                                   batch.rdkit_conf)
             pred_p = classifier.forward(fp)
-            p_loss = loss_func(pred_p, batch.properties)
+            pred_p, properties = nan_masked(pred_p, batch.properties)
+            p_loss = loss_func(pred_p, properties)
             loss = p_loss
             list_loss.append(loss.cpu().item())
 
@@ -132,6 +145,7 @@ def train_tox21(special_config: dict = None,
             list_properties.append(batch.properties.cpu().numpy())
         pred_p = np.vstack(list_pred_p)
         properties = np.vstack(list_properties)
+        pred_p, properties = nan_masked_np(pred_p, properties)
         p_total_roc = multi_roc(pred_p, properties)
 
         print(f'\t\t\tLOSS: {sum(list_loss) / n_batch}')
