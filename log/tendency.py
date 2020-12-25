@@ -2,10 +2,14 @@ import json
 import matplotlib.pyplot as plt
 
 
-def tendency_pc(log: dict, path: str, show_conf=False):
+def tendency_pc(log: dict, path: str, show_conf=False, higher_is_better=False):
     epochs = [dic['epoch'] for dic in log]
     train_p = [dic['train_p_metric'] for dic in log]
+    valid_p = [dic['validate_p_metric'] for dic in log]
     test_p = [dic['test_p_metric'] for dic in log]
+    ps = zip(valid_p, test_p)
+    ps = sorted(ps, key=lambda x: x[0], reverse=higher_is_better)
+    print('{}: {:.4f}'.format(path, ps[0][1]))
 
     fig, ax1 = plt.subplots()
     ax1.plot(epochs, train_p, color='red', linestyle='--')
@@ -28,8 +32,8 @@ tuples = [
     ('Lipop', 'Lipop'),
     ('Lipop', 'Lipop-LR5'),
     # ('Lipop', 'Lipop-test'),
-    # ('QM9', 'QM9-Xconf'),
-    # ('QM9', 'QM9-rdkit'),
+    ('QM9', 'QM9-Xconf'),
+    ('QM9', 'QM9-rdkit'),
     # ('QM9', 'QM9', True),
     ('QM9', 'QM9-lrd', True),
     # ('QM9', 'QM9-10000-Xconf-naive'),
