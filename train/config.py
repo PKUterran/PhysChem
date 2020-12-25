@@ -67,12 +67,12 @@ ESOL_CONFIG.update({
     'ME_DIM': 256,
     'MM_DIM': 256,
 
-    'N_ITERATION': 3,
-    'N_GLOBAL': 3,
+    'N_ITERATION': 5,
+    'N_GLOBAL': 2,
 
     'BATCH': 5,
     'LR': 1e-5,
-    'GAMMA': 0.99,
+    'GAMMA': 0.995,
     'DECAY': 5e-4,
 
     'CONF_TYPE': ConfType.RDKIT,
@@ -88,12 +88,12 @@ FREESOLV_CONFIG.update({
     'ME_DIM': 256,
     'MM_DIM': 256,
 
-    'N_ITERATION': 3,
-    'N_GLOBAL': 3,
+    'N_ITERATION': 5,
+    'N_GLOBAL': 2,
 
     'BATCH': 5,
     'LR': 1e-5,
-    'GAMMA': 0.99,
+    'GAMMA': 0.995,
     'DECAY': 5e-4,
 
     'CONF_TYPE': ConfType.RDKIT,
