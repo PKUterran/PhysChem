@@ -43,6 +43,8 @@ def train_qm9(special_config: dict = None,
     # normalize properties and cache batches
     mean_p = np.mean(mol_properties, axis=0)
     stddev_p = np.std(mol_properties.tolist(), axis=0, ddof=1)
+    mad_p = np.array([1.189, 6.299, 0.016, 0.039, 0.040, 202.017,
+                      0.026, 31.072, 31.072, 31.072, 31.072, 3.204], dtype=np.float)
     norm_p = (mol_properties - mean_p) / stddev_p
     print('Caching Batches...')
     try:
@@ -146,7 +148,7 @@ def train_qm9(special_config: dict = None,
         print(f'\t\t\tP LOSS: {sum(list_p_loss) / n_batch}')
         print(f'\t\t\tC LOSS: {sum(list_c_loss) / n_batch}')
         print(f'\t\t\tTOTAL LOSS: {sum(list_loss) / n_batch}')
-        print(f'\t\t\tPROPERTIES MULTI-MAE: {sum(list_p_multi_mae) * stddev_p / n_batch}')
+        print(f'\t\t\tPROPERTIES MULTI-MAE: {sum(list_p_multi_mae) * mad_p / n_batch}')
         print(f'\t\t\tPROPERTIES TOTAL MAE: {sum(list_p_total_mae) / n_batch}')
         print(f'\t\t\tCONFORMATION RS-DL: {sum(list_rsd) / n_batch}')
         logs[-1].update({
@@ -154,6 +156,7 @@ def train_qm9(special_config: dict = None,
             f'{batch_name}_c_loss': sum(list_c_loss) / n_batch,
             f'{batch_name}_loss': sum(list_loss) / n_batch,
             f'{batch_name}_p_metric': sum(list_p_total_mae) / n_batch,
+            f'{batch_name}_multi_p_metric': list(sum(list_p_multi_mae) * mad_p / n_batch),
             f'{batch_name}_c_metric': sum(list_rsd) / n_batch,
         })
 
