@@ -109,8 +109,8 @@ FREESOLV_CONFIG.update({
     'ME_DIM': 256,
     'MM_DIM': 256,
 
-    'N_ITERATION': 5,
-    'N_GLOBAL': 5,
+    'N_ITERATION': 10,
+    'N_GLOBAL': 3,
 
     'BATCH': 5,
     'LR': 1e-5,
