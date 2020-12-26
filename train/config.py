@@ -94,7 +94,7 @@ FREESOLV_CONFIG.update({
     'BATCH': 5,
     'LR': 1e-5,
     'GAMMA': 0.995,
-    'DECAY': 1e-4,
+    'DECAY': 1e-3,
 
     'CONF_TYPE': ConfType.RDKIT,
 })
@@ -114,8 +114,8 @@ TOX21_CONFIG.update({
 
     'BATCH': 5,
     'LR': 1e-5,
-    'GAMMA': 0.99,
-    'DECAY': 1e-5,
+    'GAMMA': 0.995,
+    'DECAY': 5e-4,
 
     'CONF_TYPE': ConfType.RDKIT,
 })
