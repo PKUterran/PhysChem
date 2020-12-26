@@ -68,7 +68,7 @@ ESOL_CONFIG.update({
     'MM_DIM': 256,
 
     'N_ITERATION': 5,
-    'N_GLOBAL': 2,
+    'N_GLOBAL': 3,
 
     'BATCH': 5,
     'LR': 1e-5,
@@ -89,7 +89,7 @@ FREESOLV_CONFIG.update({
     'MM_DIM': 256,
 
     'N_ITERATION': 5,
-    'N_GLOBAL': 2,
+    'N_GLOBAL': 3,
 
     'BATCH': 5,
     'LR': 1e-5,
