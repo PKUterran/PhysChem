@@ -109,13 +109,13 @@ FREESOLV_CONFIG.update({
     'ME_DIM': 256,
     'MM_DIM': 256,
 
-    'N_ITERATION': 2,
-    'N_GLOBAL': 3,
+    'N_ITERATION': 1,
+    'N_GLOBAL': 5,
 
     'BATCH': 5,
     'LR': 1e-5,
     'GAMMA': 0.995,
-    'DECAY': 5e-4,
+    'DECAY': 1e-4,
 
     'CONF_TYPE': ConfType.RDKIT,
 })
