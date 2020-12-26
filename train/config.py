@@ -92,7 +92,7 @@ ESOL_CONFIG.update({
     'N_GLOBAL': 3,
 
     'BATCH': 5,
-    'LR': 2e-6,
+    'LR': 1e-4,
     'GAMMA': 0.995,
     'DECAY': 1e-4,
 
