@@ -57,6 +57,27 @@ LIPOP_CONFIG.update({
     'CONF_TYPE': ConfType.RDKIT,
 })
 
+TOX21_CONFIG = DEFAULT_CONFIG.copy()
+TOX21_CONFIG.update({
+    'CLASSIFIER_HIDDENS': [128],
+    'HV_DIM': 256,
+    'HE_DIM': 256,
+    'HM_DIM': 256,
+    'MV_DIM': 256,
+    'ME_DIM': 256,
+    'MM_DIM': 256,
+
+    'N_ITERATION': 3,
+    'N_GLOBAL': 3,
+
+    'BATCH': 5,
+    'LR': 2e-6,
+    'GAMMA': 0.995,
+    'DECAY': 1e-4,
+
+    'CONF_TYPE': ConfType.RDKIT,
+})
+
 ESOL_CONFIG = DEFAULT_CONFIG.copy()
 ESOL_CONFIG.update({
     'CLASSIFIER_HIDDENS': [128],
@@ -71,7 +92,7 @@ ESOL_CONFIG.update({
     'N_GLOBAL': 3,
 
     'BATCH': 5,
-    'LR': 1e-5,
+    'LR': 2e-6,
     'GAMMA': 0.995,
     'DECAY': 1e-4,
 
@@ -92,30 +113,10 @@ FREESOLV_CONFIG.update({
     'N_GLOBAL': 3,
 
     'BATCH': 5,
-    'LR': 1e-5,
-    'GAMMA': 0.995,
-    'DECAY': 1e-3,
-
-    'CONF_TYPE': ConfType.RDKIT,
-})
-
-TOX21_CONFIG = DEFAULT_CONFIG.copy()
-TOX21_CONFIG.update({
-    'CLASSIFIER_HIDDENS': [128],
-    'HV_DIM': 256,
-    'HE_DIM': 256,
-    'HM_DIM': 256,
-    'MV_DIM': 256,
-    'ME_DIM': 256,
-    'MM_DIM': 256,
-
-    'N_ITERATION': 3,
-    'N_GLOBAL': 3,
-
-    'BATCH': 5,
-    'LR': 1e-5,
+    'LR': 2e-6,
     'GAMMA': 0.995,
     'DECAY': 5e-4,
 
     'CONF_TYPE': ConfType.RDKIT,
 })
+

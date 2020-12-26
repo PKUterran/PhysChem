@@ -37,8 +37,8 @@ tuples = [
     # ('Lipop', 'Lipop', False, False),
     # ('Lipop', 'Lipop-Xconf', False, False),
 
-    # ('TOX21', 'TOX21', True, False),
-    # ('TOX21', 'TOX21-Xconf', True, False),
+    ('TOX21', 'TOX21', True, False),
+    ('TOX21', 'TOX21-Xconf', True, False),
 
     ('ESOL', 'ESOL', False, False),
     ('ESOL', 'ESOL-Xconf', False, False),
