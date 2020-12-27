@@ -67,6 +67,8 @@ def train_single_regression(
     # normalize properties and cache batches
     mean_p = np.mean(mol_properties, axis=0)
     stddev_p = np.std(mol_properties.tolist(), axis=0, ddof=1)
+    print(f'\tmean: {mean_p[0]}')
+    print(f'\tstd: {stddev_p[0]}')
     norm_p = (mol_properties - mean_p) / stddev_p
     print('Caching Batches...')
     try:
@@ -120,6 +122,7 @@ def train_single_regression(
         classifier.train()
         optimizer.zero_grad()
         n_batch = len(batches)
+        losses = []
         if use_tqdm:
             batches = tqdm(batches, total=n_batch)
         for i, batch in enumerate(batches):
@@ -130,8 +133,13 @@ def train_single_regression(
             pred_p = classifier.forward(fp)
             p_loss = mse_loss(pred_p, batch.properties)
             loss = p_loss
-            loss.backward()
-            optimizer.step()
+            # loss.backward()
+            # optimizer.step()
+            losses.append(loss)
+            if len(losses) >= config['PACK'] or i == n_batch - 1:
+                (sum(losses) / len(losses)).backward()
+                optimizer.step()
+                losses.clear()
 
     def evaluate(batches: List[Batch], batch_name: str):
         model.eval()
@@ -153,7 +161,7 @@ def train_single_regression(
             list_loss.append(loss.cpu().item())
 
             p_rmse = rmse_loss(pred_p, batch.properties)
-            list_p_rmse.append(p_rmse.item() * stddev_p[0])
+            list_p_rmse.append(p_rmse.item() * stddev_p[0] ** 1.0)
 
         print(f'\t\t\tLOSS: {sum(list_loss) / n_batch}')
         print(f'\t\t\tRMSE: {sum(list_p_rmse) / n_batch}')

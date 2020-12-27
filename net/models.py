@@ -68,11 +68,6 @@ class GeomNN(nn.Module):
             use_cuda=use_cuda,
             dropout=dropout
         )
-        self.conformation_gen = ConformationGenerator(
-            q_dim=q_dim,
-            h_dims=[16],
-            dropout=dropout
-        )
 
     # def forward(self, atom_ftr: torch.Tensor, bond_ftr: torch.Tensor, massive: torch.Tensor,
     #             mask_matrices: MaskMatrices
@@ -92,7 +87,7 @@ class GeomNN(nn.Module):
 
     def forward(self, atom_ftr: torch.Tensor, bond_ftr: torch.Tensor, massive: torch.Tensor,
                 mask_matrices: MaskMatrices,
-                given_p_ftr: torch.Tensor = None,
+                given_q_ftr: torch.Tensor = None,
                 ) -> Tuple[torch.Tensor, torch.Tensor]:
         hv_ftr, he_ftr, p_ftr, q_ftr = self.initializer.forward(atom_ftr, bond_ftr, mask_matrices)
         hv_ftrs = []
@@ -100,7 +95,7 @@ class GeomNN(nn.Module):
         if self.conf_type is ConfType.NONE:
             p_ftr, q_ftr = p_ftr * 0, q_ftr * 0
         elif self.conf_type is ConfType.RDKIT:
-            p_ftr, q_ftr = given_p_ftr, q_ftr * 0
+            p_ftr, q_ftr = p_ftr * 0, given_q_ftr
 
         for i in range(self.n_layer):
             t_hv_ftr, t_he_ftr = self.mp_kernel.forward(hv_ftr, he_ftr, p_ftr, q_ftr, mask_matrices)
@@ -114,7 +109,7 @@ class GeomNN(nn.Module):
                 break
 
         fingerprint = self.fingerprint_gen.forward(torch.cat(hv_ftrs, dim=1), mask_matrices)
-        conformation = self.conformation_gen.forward(q_ftr)
+        conformation = q_ftr
         return fingerprint, conformation
 
 
@@ -135,6 +130,7 @@ class RecGeomNN(nn.Module):
         message_type = config['MESSAGE_TYPE']
         union_type = config['UNION_TYPE']
         derivation_type = config['DERIVATION_TYPE']
+        global_type = config['GLOBAL_TYPE']
         tau = config['TAU']
         dropout = config['DROPOUT']
         self.use_cuda = use_cuda
@@ -175,14 +171,24 @@ class RecGeomNN(nn.Module):
                 dropout=dropout,
                 derivation_type=derivation_type
             )
-        self.fingerprint_gen = FingerprintGenerator(
-            hm_dim=hm_dim,
-            hv_dim=hv_dim,
-            mm_dim=mm_dim,
-            iteration=n_global,
-            use_cuda=use_cuda,
-            dropout=dropout
-        )
+        if global_type == 'recurrent':
+            self.fingerprint_gen = RecFingerprintGenerator(
+                hm_dim=hm_dim,
+                hv_dim=hv_dim,
+                mm_dim=mm_dim,
+                iteration=n_global,
+                use_cuda=use_cuda,
+                dropout=dropout
+            )
+        else:
+            self.fingerprint_gen = FingerprintGenerator(
+                hm_dim=hm_dim,
+                hv_dim=hv_dim,
+                mm_dim=mm_dim,
+                iteration=n_global,
+                use_cuda=use_cuda,
+                dropout=dropout
+            )
 
     def forward(self, atom_ftr: torch.Tensor, bond_ftr: torch.Tensor, massive: torch.Tensor,
                 mask_matrices: MaskMatrices,

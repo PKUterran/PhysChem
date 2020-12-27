@@ -154,6 +154,34 @@ class FingerprintGenerator(nn.Module):
         return hm_ftr
 
 
+class RecFingerprintGenerator(nn.Module):
+    def __init__(self, hm_dim: int, hv_dim: int, mm_dim: int, iteration: int,
+                 use_cuda=False, dropout=0.0):
+        super(RecFingerprintGenerator, self).__init__()
+        self.use_cuda = use_cuda
+
+        self.vertex2mol = nn.Linear(hv_dim, hm_dim, bias=True)
+        self.vm_act = nn.LeakyReLU()
+        self.readout = GlobalReadout(hm_dim, hv_dim, mm_dim, use_cuda, dropout)
+        self.union = GRUUnion(hm_dim, mm_dim, use_cuda)
+        self.iteration = iteration
+
+    def forward(self, hv_ftr: torch.Tensor,
+                mask_matrices: MaskMatrices
+                ) -> torch.Tensor:
+        # initialize molecule features with mean of vertex features
+        mvw = mask_matrices.mol_vertex_w
+        norm_mvw = mvw / torch.sum(mvw, dim=-1, keepdim=True)
+        hm_ftr = norm_mvw @ self.vm_act(self.vertex2mol(hv_ftr))
+
+        # iterate
+        for i in range(self.iteration):
+            mm_ftr = self.readout(hm_ftr, hv_ftr, mask_matrices)
+            hm_ftr = self.union(hm_ftr, mm_ftr)
+
+        return hm_ftr
+
+
 class ConformationGenerator(nn.Module):
     def __init__(self, q_dim: int, h_dims: list,
                  dropout=0.0):

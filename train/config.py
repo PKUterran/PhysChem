@@ -17,12 +17,14 @@ DEFAULT_CONFIG = {
     'N_GLOBAL': 3,
     'MESSAGE_TYPE': 'triplet',
     'UNION_TYPE': 'gru',
+    'GLOBAL_TYPE': 'inductive',
     'DERIVATION_TYPE': 'newton',
     'TAU': 0.05,
     'DROPOUT': 0.0,
 
     'EPOCH': 300,
     'BATCH': 20,
+    'PACK': 1,
     'LAMBDA': 1,
     'LR': 2e-6,
     'GAMMA': 0.995,
@@ -80,41 +82,47 @@ TOX21_CONFIG.update({
 
 ESOL_CONFIG = DEFAULT_CONFIG.copy()
 ESOL_CONFIG.update({
-    'CLASSIFIER_HIDDENS': [128],
-    'HV_DIM': 256,
-    'HE_DIM': 256,
-    'HM_DIM': 256,
-    'MV_DIM': 256,
-    'ME_DIM': 256,
-    'MM_DIM': 256,
+    'CLASSIFIER_HIDDENS': [32],
+    'HV_DIM': 160,
+    'HE_DIM': 160,
+    'HM_DIM': 160,
+    'MV_DIM': 160,
+    'ME_DIM': 160,
+    'MM_DIM': 160,
 
-    'N_ITERATION': 3,
-    'N_GLOBAL': 3,
+    'N_ITERATION': 2,
+    'N_GLOBAL': 2,
 
-    'BATCH': 5,
-    'LR': 1e-5,
-    'GAMMA': 0.995,
-    'DECAY': 1e-4,
+    'EPOCH': 300,
+    'BATCH': 4,
+    'PACK': 32,
+    'LR': 1e-4,
+    'GAMMA': 0.99,
+    'DECAY': 1e-5,
 
     'CONF_TYPE': ConfType.RDKIT,
 })
 
 FREESOLV_CONFIG = DEFAULT_CONFIG.copy()
 FREESOLV_CONFIG.update({
-    'CLASSIFIER_HIDDENS': [128],
-    'HV_DIM': 256,
-    'HE_DIM': 256,
-    'HM_DIM': 256,
-    'MV_DIM': 256,
-    'ME_DIM': 256,
-    'MM_DIM': 256,
+    'CLASSIFIER_HIDDENS': [32],
+    'HV_DIM': 120,
+    'HE_DIM': 120,
+    'HM_DIM': 120,
+    'MV_DIM': 120,
+    'ME_DIM': 120,
+    'MM_DIM': 120,
 
-    'N_ITERATION': 3,
-    'N_GLOBAL': 3,
+    'GLOBAL_TYPE': 'inductive',
 
-    'BATCH': 5,
-    'LR': 1e-5,
-    'GAMMA': 0.995,
+    'N_ITERATION': 2,
+    'N_GLOBAL': 2,
+
+    'EPOCH': 300,
+    'BATCH': 4,
+    'PACK': 20,
+    'LR': 1e-3,
+    'GAMMA': 0.99,
     'DECAY': 1e-5,
 
     'CONF_TYPE': ConfType.RDKIT,
