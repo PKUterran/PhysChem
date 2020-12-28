@@ -94,15 +94,15 @@ ESOL_CONFIG.update({
     'MM_DIM': 200,
 
     'N_ITERATION': 1,
-    'N_HOP': 2,
-    'N_GLOBAL': 2,
-    'DROPOUT': 0.2,
+    'N_HOP': 3,
+    'N_GLOBAL': 3,
+    'DROPOUT': 0.5,
 
-    'EPOCH': 400,
+    'EPOCH': 800,
     'BATCH': 4,
     'PACK': 32,
     'LR': 1e-3,
-    'GAMMA': 0.99,
+    'GAMMA': 0.995,
     'DECAY': 1e-5,
 
     'CONF_TYPE': ConfType.RDKIT,
