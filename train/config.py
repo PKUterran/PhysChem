@@ -93,12 +93,12 @@ ESOL_CONFIG.update({
     'N_ITERATION': 2,
     'N_GLOBAL': 2,
 
-    'EPOCH': 300,
+    'EPOCH': 800,
     'BATCH': 4,
     'PACK': 32,
     'LR': 1e-3,
     'GAMMA': 0.995,
-    'DECAY': 1e-5,
+    'DECAY': 1e-4,
 
     'CONF_TYPE': ConfType.RDKIT,
 })
@@ -118,12 +118,12 @@ FREESOLV_CONFIG.update({
     'N_ITERATION': 2,
     'N_GLOBAL': 2,
 
-    'EPOCH': 300,
+    'EPOCH': 800,
     'BATCH': 4,
     'PACK': 20,
     'LR': 1e-3,
     'GAMMA': 0.995,
-    'DECAY': 1e-5,
+    'DECAY': 1e-4,
 
     'CONF_TYPE': ConfType.RDKIT,
 })
