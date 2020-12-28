@@ -10,7 +10,7 @@ train_single_regression(
     },
     use_cuda=True,
     max_num=-1,
-    seed=0,
+    seed=2,
     force_save=True,
     use_tqdm=False
 )
@@ -23,7 +23,7 @@ train_single_regression(
     },
     use_cuda=True,
     max_num=-1,
-    seed=0,
+    seed=2,
     force_save=True,
     use_tqdm=False
 )
