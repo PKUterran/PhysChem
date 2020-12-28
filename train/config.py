@@ -91,7 +91,7 @@ ESOL_CONFIG.update({
     'MM_DIM': 160,
 
     'N_ITERATION': 2,
-    'N_GLOBAL': 2,
+    'N_GLOBAL': 4,
 
     'EPOCH': 800,
     'BATCH': 4,
@@ -116,7 +116,7 @@ FREESOLV_CONFIG.update({
     'GLOBAL_TYPE': 'inductive',
 
     'N_ITERATION': 2,
-    'N_GLOBAL': 2,
+    'N_GLOBAL': 4,
 
     'EPOCH': 800,
     'BATCH': 4,
