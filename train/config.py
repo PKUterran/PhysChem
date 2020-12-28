@@ -96,8 +96,8 @@ ESOL_CONFIG.update({
     'EPOCH': 300,
     'BATCH': 4,
     'PACK': 32,
-    'LR': 1e-4,
-    'GAMMA': 0.99,
+    'LR': 1e-3,
+    'GAMMA': 0.995,
     'DECAY': 1e-5,
 
     'CONF_TYPE': ConfType.RDKIT,
@@ -122,7 +122,7 @@ FREESOLV_CONFIG.update({
     'BATCH': 4,
     'PACK': 20,
     'LR': 1e-3,
-    'GAMMA': 0.99,
+    'GAMMA': 0.995,
     'DECAY': 1e-5,
 
     'CONF_TYPE': ConfType.RDKIT,
