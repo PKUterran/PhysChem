@@ -149,7 +149,8 @@ def train_tox21(special_config: dict = None,
         p_total_roc, p_multi_roc = multi_roc(pred_p, properties)
 
         print(f'\t\t\tLOSS: {sum(list_loss) / n_batch}')
-        print(f'\t\t\tMULTI-ROC: {p_total_roc}')
+        print(f'\t\t\tAVG-ROC: {p_total_roc}')
+        print(f'\t\t\tMULTI-ROC: {p_multi_roc}')
         logs[-1].update({
             f'{batch_name}_loss': sum(list_loss) / n_batch,
             f'{batch_name}_p_metric': p_total_roc,
