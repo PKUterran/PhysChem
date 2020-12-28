@@ -9,7 +9,7 @@ train_tox21(
     max_num=-1,
     data_name='TOX21',
     seed=0,
-    force_save=False,
+    force_save=True,
     tag='TOX21',
     use_tqdm=False
 )
@@ -21,7 +21,7 @@ train_tox21(
     max_num=-1,
     data_name='TOX21-Xconf',
     seed=0,
-    force_save=False,
+    force_save=True,
     tag='TOX21-Xconf',
     use_tqdm=False
 )

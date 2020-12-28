@@ -88,15 +88,10 @@ def train_tox21(special_config: dict = None,
     epoch = 0
     logs: List[Dict[str, float]] = []
     loss_func = nn.BCEWithLogitsLoss()
+    nn.CrossEntropyLoss()
 
     def nan_masked(s: torch.Tensor, t: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         nan_mask = torch.isnan(t)
-        s[nan_mask] = -1e6
-        t[nan_mask] = 0
-        return s, t
-
-    def nan_masked_np(s: np.ndarray, t: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        nan_mask = np.isnan(t)
         s[nan_mask] = -1e6
         t[nan_mask] = 0
         return s, t
@@ -105,6 +100,7 @@ def train_tox21(special_config: dict = None,
         model.train()
         classifier.train()
         optimizer.zero_grad()
+        losses = []
         n_batch = len(batches)
         if use_tqdm:
             batches = tqdm(batches, total=n_batch)
@@ -117,8 +113,13 @@ def train_tox21(special_config: dict = None,
             pred_p, properties = nan_masked(pred_p, batch.properties)
             p_loss = loss_func(pred_p, properties)
             loss = p_loss
-            loss.backward()
-            optimizer.step()
+            # loss.backward()
+            # optimizer.step()
+            losses.append(loss)
+            if len(losses) >= config['PACK'] or i == n_batch - 1:
+                (sum(losses) / len(losses)).backward()
+                optimizer.step()
+                losses.clear()
 
     def evaluate(batches: List[Batch], batch_name: str):
         model.eval()
@@ -145,14 +146,14 @@ def train_tox21(special_config: dict = None,
             list_properties.append(batch.properties.cpu().numpy())
         pred_p = np.vstack(list_pred_p)
         properties = np.vstack(list_properties)
-        pred_p, properties = nan_masked_np(pred_p, properties)
-        p_total_roc = multi_roc(pred_p, properties)
+        p_total_roc, p_multi_roc = multi_roc(pred_p, properties)
 
         print(f'\t\t\tLOSS: {sum(list_loss) / n_batch}')
         print(f'\t\t\tMULTI-ROC: {p_total_roc}')
         logs[-1].update({
             f'{batch_name}_loss': sum(list_loss) / n_batch,
             f'{batch_name}_p_metric': p_total_roc,
+            f'{batch_name}_p_multi_metric': p_multi_roc,
         })
 
     for _ in range(config['EPOCH']):

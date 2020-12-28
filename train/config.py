@@ -13,8 +13,8 @@ DEFAULT_CONFIG = {
     'PQ_DIM': 3,
     'N_LAYER': 1,
     'N_HOP': 1,
-    'N_ITERATION': 4,
-    'N_GLOBAL': 3,
+    'N_ITERATION': 3,
+    'N_GLOBAL': 2,
     'MESSAGE_TYPE': 'triplet',
     'UNION_TYPE': 'gru',
     'GLOBAL_TYPE': 'inductive',
@@ -64,21 +64,25 @@ LIPOP_CONFIG.update({
 
 TOX21_CONFIG = DEFAULT_CONFIG.copy()
 TOX21_CONFIG.update({
-    'CLASSIFIER_HIDDENS': [128],
-    'HV_DIM': 256,
-    'HE_DIM': 256,
-    'HM_DIM': 256,
-    'MV_DIM': 256,
-    'ME_DIM': 256,
-    'MM_DIM': 256,
+    'CLASSIFIER_HIDDENS': [],
+    'HV_DIM': 200,
+    'HE_DIM': 200,
+    'HM_DIM': 200,
+    'MV_DIM': 200,
+    'ME_DIM': 200,
+    'MM_DIM': 200,
 
-    'N_ITERATION': 3,
-    'N_GLOBAL': 3,
+    'N_ITERATION': 1,
+    'N_HOP': 2,
+    'N_GLOBAL': 2,
+    'DROPOUT': 0.2,
 
-    'BATCH': 5,
-    'LR': 2e-6,
+    'EPOCH': 400,
+    'BATCH': 4,
+    'PACK': 32,
+    'LR': 1e-3,
     'GAMMA': 0.995,
-    'DECAY': 1e-4,
+    'DECAY': 1e-5,
 
     'CONF_TYPE': ConfType.RDKIT,
 })

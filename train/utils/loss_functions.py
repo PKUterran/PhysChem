@@ -2,23 +2,25 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from typing import Tuple, List
 from sklearn.metrics import roc_auc_score
 
 from net.utils.MaskMatrices import MaskMatrices
 from net.utils.model_utils import normalize_adj_rc
 
 
-def multi_roc(source: np.ndarray, target: np.ndarray) -> float:
+def multi_roc(source: np.ndarray, target: np.ndarray) -> Tuple[float, List[float]]:
     assert source.shape == target.shape
-    total_roc = 0
+    not_nan_mask = np.logical_not(np.isnan(target))
+    list_roc = []
     n_m = source.shape[1]
     for i in range(n_m):
         try:
-            roc = roc_auc_score(target[:, i], source[:, i])
+            roc = roc_auc_score(target[not_nan_mask[:, i], i], source[not_nan_mask[:, i], i])
         except ValueError:
             roc = 1
-        total_roc += roc
-    return total_roc / n_m
+        list_roc.append(roc)
+    return sum(list_roc) / len(list_roc), list_roc
 
 
 def multi_mse_loss(source: torch.Tensor, target: torch.Tensor, explicit=False) -> torch.Tensor:
