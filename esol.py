@@ -11,7 +11,7 @@ train_single_regression(
     use_cuda=True,
     max_num=-1,
     seed=0,
-    force_save=False,
+    force_save=True,
     use_tqdm=False
 )
 train_single_regression(
@@ -24,6 +24,6 @@ train_single_regression(
     use_cuda=True,
     max_num=-1,
     seed=0,
-    force_save=False,
+    force_save=True,
     use_tqdm=False
 )

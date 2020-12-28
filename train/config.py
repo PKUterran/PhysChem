@@ -55,7 +55,7 @@ LIPOP_CONFIG.update({
     'EPOCH': 400,
     'BATCH': 4,
     'PACK': 8,
-    'LR': 1e-4,
+    'LR': 2e-5,
     'GAMMA': 0.995,
     'DECAY': 1e-5,
 
