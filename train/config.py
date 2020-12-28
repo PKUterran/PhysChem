@@ -105,17 +105,17 @@ ESOL_CONFIG.update({
 
 FREESOLV_CONFIG = DEFAULT_CONFIG.copy()
 FREESOLV_CONFIG.update({
-    'CLASSIFIER_HIDDENS': [32],
-    'HV_DIM': 120,
-    'HE_DIM': 120,
-    'HM_DIM': 120,
-    'MV_DIM': 120,
-    'ME_DIM': 120,
-    'MM_DIM': 120,
+    'CLASSIFIER_HIDDENS': [64],
+    'HV_DIM': 240,
+    'HE_DIM': 240,
+    'HM_DIM': 240,
+    'MV_DIM': 240,
+    'ME_DIM': 240,
+    'MM_DIM': 240,
 
     'GLOBAL_TYPE': 'inductive',
 
-    'N_ITERATION': 1,
+    'N_ITERATION': 2,
     'N_GLOBAL': 2,
 
     'EPOCH': 800,
