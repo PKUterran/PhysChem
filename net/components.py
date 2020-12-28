@@ -294,14 +294,13 @@ class GlobalReadout(nn.Module):
         :param mask_matrices: mask matrices
         :return: molecule message
         """
-        hm_ftr, hv_ftr = self.dropout(hm_ftr), self.dropout(hv_ftr)
         mvw = mask_matrices.mol_vertex_w  # shape [n_mol, n_vertex]
         mvb = mask_matrices.mol_vertex_b  # shape [n_mol, n_vertex]
         hm_v_ftr = mvw.t() @ hm_ftr  # shape [n_vertex, hm_dim]
 
-        attend_ftr = self.attend(hv_ftr)  # shape [n_vertex, mm_dim]
+        attend_ftr = self.attend(self.dropout(hv_ftr))  # shape [n_vertex, mm_dim]
         attend_ftr = self.at_act(attend_ftr)
-        align_ftr = self.align(torch.cat([hm_v_ftr, hv_ftr], dim=1))  # shape [n_vertex, 1]
+        align_ftr = self.align(self.dropout(torch.cat([hm_v_ftr, hv_ftr], dim=1)))  # shape [n_vertex, 1]
         align_ftr = mvw @ torch.diag(torch.reshape(align_ftr, [-1])) + mvb  # shape [n_mol, n_vertex]
         align_ftr = self.al_act(align_ftr)
         mm_ftr = self.ag_act(align_ftr @ attend_ftr)  # shape [n_mol, mm_dim]

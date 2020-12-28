@@ -69,7 +69,8 @@ def train_single_regression(
     stddev_p = np.std(mol_properties.tolist(), axis=0, ddof=1)
     print(f'\tmean: {mean_p[0]}')
     print(f'\tstd: {stddev_p[0]}')
-    norm_p = (mol_properties - mean_p) / stddev_p
+    # norm_p = (mol_properties - mean_p) / stddev_p
+    norm_p = mol_properties - mean_p
     print('Caching Batches...')
     try:
         batch_cache = load_batch_cache(data_name, mols, mols_info, norm_p, batch_size=config['BATCH'],
@@ -161,7 +162,8 @@ def train_single_regression(
             list_loss.append(loss.cpu().item())
 
             p_rmse = rmse_loss(pred_p, batch.properties)
-            list_p_rmse.append(p_rmse.item() * stddev_p[0] ** 1.0)
+            # list_p_rmse.append(p_rmse.item() * stddev_p[0] ** 1.0)
+            list_p_rmse.append(p_rmse.item())
 
         print(f'\t\t\tLOSS: {sum(list_loss) / n_batch}')
         print(f'\t\t\tRMSE: {sum(list_p_rmse) / n_batch}')
