@@ -5,7 +5,9 @@ train_single_regression(
     dataset=SingleRegressionDataset.LIPOP,
     data_name='Lipop',
     tag='Lipop',
-    special_config={},
+    special_config={
+
+    },
     use_cuda=True,
     max_num=-1,
     seed=0,
