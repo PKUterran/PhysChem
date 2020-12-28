@@ -3,17 +3,17 @@ from net.config import ConfType
 
 DEFAULT_CONFIG = {
     # model
-    'CLASSIFIER_HIDDENS': [128],
-    'HV_DIM': 128,
-    'HE_DIM': 128,
-    'HM_DIM': 128,
-    'MV_DIM': 128,
-    'ME_DIM': 128,
-    'MM_DIM': 128,
+    'CLASSIFIER_HIDDENS': [],
+    'HV_DIM': 280,
+    'HE_DIM': 280,
+    'HM_DIM': 280,
+    'MV_DIM': 280,
+    'ME_DIM': 280,
+    'MM_DIM': 280,
     'PQ_DIM': 3,
     'N_LAYER': 1,
     'N_HOP': 1,
-    'N_ITERATION': 5,
+    'N_ITERATION': 4,
     'N_GLOBAL': 3,
     'MESSAGE_TYPE': 'triplet',
     'UNION_TYPE': 'gru',
@@ -35,7 +35,7 @@ DEFAULT_CONFIG = {
 
 QM9_CONFIG = DEFAULT_CONFIG.copy()
 QM9_CONFIG.update({
-
+    'DROPOUT': 0.5,
 })
 
 LIPOP_CONFIG = DEFAULT_CONFIG.copy()
