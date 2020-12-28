@@ -115,8 +115,8 @@ FREESOLV_CONFIG.update({
 
     'GLOBAL_TYPE': 'inductive',
 
-    'N_ITERATION': 2,
-    'N_GLOBAL': 4,
+    'N_ITERATION': 1,
+    'N_GLOBAL': 2,
 
     'EPOCH': 800,
     'BATCH': 4,
