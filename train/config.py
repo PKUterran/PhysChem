@@ -40,7 +40,7 @@ QM9_CONFIG.update({
 
 LIPOP_CONFIG = DEFAULT_CONFIG.copy()
 LIPOP_CONFIG.update({
-    'CLASSIFIER_HIDDENS': [128],
+    'CLASSIFIER_HIDDENS': [],
     'HV_DIM': 256,
     'HE_DIM': 256,
     'HM_DIM': 256,
@@ -48,12 +48,15 @@ LIPOP_CONFIG.update({
     'ME_DIM': 256,
     'MM_DIM': 256,
 
-    'N_ITERATION': 2,
+    'N_ITERATION': 1,
+    'N_HOP': 2,
     'N_GLOBAL': 4,
 
-    'BATCH': 5,
-    'LR': 1e-5,
-    'GAMMA': 0.99,
+    'EPOCH': 400,
+    'BATCH': 4,
+    'PACK': 8,
+    'LR': 1e-3,
+    'GAMMA': 0.995,
     'DECAY': 1e-5,
 
     'CONF_TYPE': ConfType.RDKIT,
