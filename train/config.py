@@ -95,11 +95,11 @@ ESOL_CONFIG.update({
     'N_GLOBAL': 2,
     'DROPOUT': 0.2,
 
-    'EPOCH': 800,
+    'EPOCH': 200,
     'BATCH': 4,
     'PACK': 32,
     'LR': 3e-3,
-    'GAMMA': 0.995,
+    'GAMMA': 0.99,
     'DECAY': 1e-5,
 
     'CONF_TYPE': ConfType.RDKIT,
@@ -120,7 +120,7 @@ FREESOLV_CONFIG.update({
     'N_GLOBAL': 2,
     'DROPOUT': 0.2,
 
-    'EPOCH': 800,
+    'EPOCH': 400,
     'BATCH': 4,
     'PACK': 20,
     'LR': 3e-3,
