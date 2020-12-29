@@ -76,9 +76,10 @@ class BatchCache:
         train_sep = int(train_num / batch_size) + 1
         validate_sep = int(validate_num / batch_size) + 1
         test_sep = int(test_num / batch_size) + 1
-        self.train_masks: List[List[int]] = [train_mask[i::train_sep] for i in range(train_sep)]
-        self.validate_masks: List[List[int]] = [validate_mask[i::validate_sep] for i in range(validate_sep)]
-        self.test_masks: List[List[int]] = [test_mask[i::test_sep] for i in range(test_sep)]
+        self.train_masks: List[List[int]] = [train_mask[i::train_sep] for i in range(train_sep) if i < len(train_mask)]
+        self.validate_masks: List[List[int]] = [validate_mask[i::validate_sep] for i in range(validate_sep)
+                                                if i < len(validate_mask)]
+        self.test_masks: List[List[int]] = [test_mask[i::test_sep] for i in range(test_sep) if i < len(test_mask)]
 
         print('\t\tProducing Train Batches:')
         self.train_batches: List[Batch] = self.produce_batches(self.train_masks)
