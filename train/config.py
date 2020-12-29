@@ -51,12 +51,12 @@ LIPOP_CONFIG.update({
     'N_ITERATION': 1,
     'N_HOP': 2,
     'N_GLOBAL': 4,
-    'DROPOUT': 0.5,
+    'DROPOUT': 0.2,
 
     'EPOCH': 400,
     'BATCH': 2,
-    'PACK': 64,
-    'LR': 5e-4,
+    'PACK': 16,
+    'LR': 1e-4,
     'GAMMA': 0.995,
     'DECAY': 1e-5,
 
