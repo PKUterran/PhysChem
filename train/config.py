@@ -101,7 +101,7 @@ ESOL_CONFIG.update({
     'N_ITERATION': 1,
     'N_HOP': 2,
     'N_GLOBAL': 2,
-    'DROPOUT': 0.2,
+    'DROPOUT': 0.5,
 
     'EPOCH': 400,
     'BATCH': 2,
