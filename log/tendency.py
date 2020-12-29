@@ -29,9 +29,9 @@ def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
 
 
 tuples = [
-    # ('QM9', 'QM9-Xconf', False, False),
-    # ('QM9', 'QM9-rdkit', False, False),
-    # ('QM9', 'QM9', False, True),
+    ('QM9', 'QM9-Xconf', False, False),
+    ('QM9', 'QM9-rdkit', False, False),
+    ('QM9', 'QM9', False, True),
 
     ('Lipop', 'Lipop', False, False),
     ('Lipop', 'Lipop-Xconf', False, False),
@@ -43,8 +43,8 @@ tuples = [
     # ('ESOL', 'ESOL-test', False, False),
     ('ESOL', 'ESOL-Xconf', False, False),
 
-    # ('FreeSolv', 'FreeSolv', False, False),
-    # ('FreeSolv', 'FreeSolv-Xconf', False, False),
+    ('FreeSolv', 'FreeSolv', False, False),
+    ('FreeSolv', 'FreeSolv-Xconf', False, False),
 ]
 
 for d, f, h, t in tuples:
