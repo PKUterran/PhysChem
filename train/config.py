@@ -48,14 +48,15 @@ LIPOP_CONFIG.update({
     'ME_DIM': 256,
     'MM_DIM': 256,
 
-    'N_ITERATION': 2,
-    'N_HOP': 1,
+    'N_ITERATION': 1,
+    'N_HOP': 2,
     'N_GLOBAL': 4,
+    'DROPOUT': 0.5,
 
     'EPOCH': 400,
     'BATCH': 2,
     'PACK': 16,
-    'LR': 1e-4,
+    'LR': 1e-5,
     'GAMMA': 0.995,
     'DECAY': 1e-5,
 
