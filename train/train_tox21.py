@@ -40,6 +40,9 @@ def train_tox21(special_config: dict = None,
     mols, mol_properties = load_tox21(max_num)
     pos_cnt = np.sum(mol_properties == 1, axis=0)
     neg_cnt = np.sum(mol_properties == 0, axis=0)
+    pos_weight = torch.from_numpy(neg_cnt / (pos_cnt + 1e-3)).type(torch.float32)
+    if use_cuda:
+        pos_weight = pos_weight.cuda()
     print(f'\tPositive: {pos_cnt}')
     print(f'\tNegative: {neg_cnt}')
     mols_info = load_encode_mols(mols, name=data_name, force_save=force_save)
@@ -91,7 +94,7 @@ def train_tox21(special_config: dict = None,
     # train
     epoch = 0
     logs: List[Dict[str, float]] = []
-    loss_func = nn.BCEWithLogitsLoss(pos_weight=torch.from_numpy(neg_cnt / (pos_cnt + 1e-3)).type(torch.float32))
+    loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     nn.CrossEntropyLoss()
 
     def nan_masked(s: torch.Tensor, t: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
