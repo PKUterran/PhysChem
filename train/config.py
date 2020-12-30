@@ -81,7 +81,7 @@ TOX21_CONFIG.update({
     'EPOCH': 400,
     'BATCH': 2,
     'PACK': 64,
-    'LR': 1e-3,
+    'LR': 1e-4,
     'GAMMA': 0.995,
     'DECAY': 1e-5,
 

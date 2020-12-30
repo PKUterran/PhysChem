@@ -17,8 +17,10 @@ def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
     ax1.set_ylim(min(train_p) - 0.5, max(train_p) + 0.5)
 
     if show_conf:
-        train_c = [dic['train_c_metric'] for dic in log]
-        test_c = [dic['test_c_metric'] for dic in log]
+        train_c = [dic['train_loss'] for dic in log]
+        test_c = [dic['test_loss'] for dic in log]
+        # train_c = [dic['train_c_metric'] for dic in log]
+        # test_c = [dic['test_c_metric'] for dic in log]
         ax2 = ax1.twinx()
         ax2.plot(epochs, train_c, color='green', linestyle='--')
         ax2.plot(epochs, test_c, color='green')
@@ -29,15 +31,15 @@ def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
 
 
 tuples = [
-    ('QM9', 'QM9-Xconf', False, False),
-    ('QM9', 'QM9-rdkit', False, False),
-    ('QM9', 'QM9', False, True),
+    # ('QM9', 'QM9-Xconf', False, False),
+    # ('QM9', 'QM9-rdkit', False, True),
+    # ('QM9', 'QM9', False, True),
 
     # ('Lipop', 'Lipop', False, False),
     # ('Lipop', 'Lipop-Xconf', False, False),
 
-    ('TOX21', 'TOX21', True, False),
-    ('TOX21', 'TOX21-Xconf', True, False),
+    ('TOX21', 'TOX21', True, True),
+    ('TOX21', 'TOX21-Xconf', True, True),
 
     # ('ESOL', 'ESOL', False, False),
     # ('ESOL', 'ESOL-test', False, False),
