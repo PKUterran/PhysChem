@@ -98,9 +98,11 @@ def train_tox21(special_config: dict = None,
     nn.CrossEntropyLoss()
 
     def nan_masked(s: torch.Tensor, t: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        nan_mask = torch.isnan(t)
-        s[nan_mask] = -1e6
-        t[nan_mask] = 0
+        nan_mask = torch.isnan(t).type(torch.float32)
+        not_nan_mask = torch.logical_not(torch.isnan(t)).type(torch.float32)
+        s = s * not_nan_mask + nan_mask * 1e-6
+        t = t * not_nan_mask
+        t[torch.isnan(t)] = 0
         return s, t
 
     def train(batches: List[Batch]):
@@ -117,8 +119,8 @@ def train_tox21(special_config: dict = None,
             fp, _ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
                                   batch.rdkit_conf)
             pred_p = classifier.forward(fp)
-            pred_p, properties = nan_masked(pred_p, batch.properties)
-            p_loss = loss_func(pred_p, properties)
+            pred_p_, properties_ = nan_masked(pred_p, batch.properties)
+            p_loss = loss_func(pred_p_, properties_)
             loss = p_loss
             # loss.backward()
             # optimizer.step()
@@ -144,8 +146,8 @@ def train_tox21(special_config: dict = None,
             fp, _ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
                                   batch.rdkit_conf)
             pred_p = classifier.forward(fp)
-            pred_p, properties = nan_masked(pred_p, batch.properties)
-            p_loss = loss_func(pred_p, properties)
+            pred_p_, properties_ = nan_masked(pred_p, batch.properties)
+            p_loss = loss_func(pred_p_, properties_)
             loss = p_loss
             list_loss.append(loss.cpu().item())
 
