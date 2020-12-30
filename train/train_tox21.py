@@ -91,7 +91,7 @@ def train_tox21(special_config: dict = None,
     # train
     epoch = 0
     logs: List[Dict[str, float]] = []
-    loss_func = nn.BCEWithLogitsLoss(pos_weight=torch.from_numpy(neg_cnt / (pos_cnt + 1e-3)))
+    loss_func = nn.BCEWithLogitsLoss(pos_weight=torch.from_numpy(neg_cnt / (pos_cnt + 1e-3)).type(torch.float32))
     nn.CrossEntropyLoss()
 
     def nan_masked(s: torch.Tensor, t: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:

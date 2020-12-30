@@ -33,18 +33,18 @@ tuples = [
     ('QM9', 'QM9-rdkit', False, False),
     ('QM9', 'QM9', False, True),
 
-    ('Lipop', 'Lipop', False, False),
-    ('Lipop', 'Lipop-Xconf', False, False),
+    # ('Lipop', 'Lipop', False, False),
+    # ('Lipop', 'Lipop-Xconf', False, False),
 
-    # ('TOX21', 'TOX21', True, False),
-    # ('TOX21', 'TOX21-Xconf', True, False),
+    ('TOX21', 'TOX21', True, False),
+    ('TOX21', 'TOX21-Xconf', True, False),
 
-    ('ESOL', 'ESOL', False, False),
+    # ('ESOL', 'ESOL', False, False),
     # ('ESOL', 'ESOL-test', False, False),
-    ('ESOL', 'ESOL-Xconf', False, False),
+    # ('ESOL', 'ESOL-Xconf', False, False),
 
-    ('FreeSolv', 'FreeSolv', False, False),
-    ('FreeSolv', 'FreeSolv-Xconf', False, False),
+    # ('FreeSolv', 'FreeSolv', False, False),
+    # ('FreeSolv', 'FreeSolv-Xconf', False, False),
 ]
 
 for d, f, h, t in tuples:

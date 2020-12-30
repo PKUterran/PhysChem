@@ -19,7 +19,7 @@ if seed == 0:
         use_cuda=True,
         max_num=-1,
         seed=seed,
-        force_save=True,
+        force_save=False,
         use_tqdm=False
     )
     exit(0)
