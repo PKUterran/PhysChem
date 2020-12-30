@@ -63,7 +63,7 @@ def train_single_regression(
         mols, mol_properties = load_freesolv(max_num)
     else:
         assert False
-    mols_info = load_encode_mols(mols, name=data_name)
+    mols_info = load_encode_mols(mols, name=data_name, force_save=force_save)
 
     # normalize properties and cache batches
     mean_p = np.mean(mol_properties, axis=0)

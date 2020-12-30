@@ -38,7 +38,7 @@ def train_qm9(special_config: dict = None,
     print('Loading:')
     mol_list_weight_mol, mol_properties = load_qm9(max_num)
     mols = [list_weight_mol[0][1] for list_weight_mol in mol_list_weight_mol]
-    mols_info = load_encode_mols(mols, name=data_name)
+    mols_info = load_encode_mols(mols, name=data_name, force_save=force_save)
 
     # normalize properties and cache batches
     mean_p = np.mean(mol_properties, axis=0)

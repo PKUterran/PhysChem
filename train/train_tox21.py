@@ -38,7 +38,11 @@ def train_tox21(special_config: dict = None,
     # load dataset
     print('Loading:')
     mols, mol_properties = load_tox21(max_num)
-    mols_info = load_encode_mols(mols, name=data_name)
+    pos_cnt = np.sum(mol_properties == 1, axis=0)
+    neg_cnt = np.sum(mol_properties == 0, axis=0)
+    print(f'\tPositive: {pos_cnt}')
+    print(f'\tNegative: {neg_cnt}')
+    mols_info = load_encode_mols(mols, name=data_name, force_save=force_save)
 
     # cache batches
     print('Caching Batches...')
@@ -87,7 +91,7 @@ def train_tox21(special_config: dict = None,
     # train
     epoch = 0
     logs: List[Dict[str, float]] = []
-    loss_func = nn.BCEWithLogitsLoss()
+    loss_func = nn.BCEWithLogitsLoss(pos_weight=torch.from_numpy(neg_cnt / (pos_cnt + 1e-3)))
     nn.CrossEntropyLoss()
 
     def nan_masked(s: torch.Tensor, t: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
