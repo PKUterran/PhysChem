@@ -2,7 +2,11 @@ import torch
 import numpy as np
 
 DEFAULT_SEEDS = [
-
+    16880611,
+    17760704,
+    17890714,
+    19491001,
+    19900612,
 ]
 
 

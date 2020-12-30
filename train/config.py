@@ -107,7 +107,7 @@ ESOL_CONFIG.update({
     'BATCH': 2,
     'PACK': 128,
     'LR': 3e-3,
-    'GAMMA': 0.99,
+    'GAMMA': 0.995,
     'DECAY': 1e-5,
 
     'CONF_TYPE': ConfType.RDKIT,

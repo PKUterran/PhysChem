@@ -1,0 +1,23 @@
+{
+    'CLASSIFIER_HIDDENS': [],
+    'HV_DIM': 256,
+    'HE_DIM': 256,
+    'HM_DIM': 256,
+    'MV_DIM': 256,
+    'ME_DIM': 256,
+    'MM_DIM': 256,
+
+    'N_ITERATION': 1,
+    'N_HOP': 2,
+    'N_GLOBAL': 4,
+    'DROPOUT': 0.2,
+
+    'EPOCH': 400,
+    'BATCH': 2,
+    'PACK': 16,
+    'LR': 1e-4,
+    'GAMMA': 0.995,
+    'DECAY': 1e-5,
+
+    'CONF_TYPE': ConfType.RDKIT,
+}
