@@ -99,7 +99,7 @@ def train_tox21(special_config: dict = None,
 
     def nan_masked(s: torch.Tensor, t: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         nan_mask = torch.isnan(t).type(torch.float32)
-        not_nan_mask = torch.logical_not(torch.isnan(t)).type(torch.float32)
+        not_nan_mask = -nan_mask + 1.0
         s = s * not_nan_mask + nan_mask * 1e-6
         t = t * not_nan_mask
         t[torch.isnan(t)] = 0
