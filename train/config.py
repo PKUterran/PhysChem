@@ -53,7 +53,7 @@ LIPOP_CONFIG.update({
     'N_GLOBAL': 4,
     'DROPOUT': 0.2,
 
-    'EPOCH': 400,
+    'EPOCH': 250,
     'BATCH': 2,
     'PACK': 16,
     'LR': 1e-4,
