@@ -76,7 +76,7 @@ TOX21_CONFIG.update({
     'N_ITERATION': 1,
     'N_HOP': 2,
     'N_GLOBAL': 2,
-    'DROPOUT': 0.2,
+    'DROPOUT': 0.5,
 
     'EPOCH': 400,
     'BATCH': 2,
@@ -91,17 +91,17 @@ TOX21_CONFIG.update({
 ESOL_CONFIG = DEFAULT_CONFIG.copy()
 ESOL_CONFIG.update({
     'CLASSIFIER_HIDDENS': [],
-    'HV_DIM': 128,
-    'HE_DIM': 128,
-    'HM_DIM': 128,
-    'MV_DIM': 128,
-    'ME_DIM': 128,
-    'MM_DIM': 128,
+    'HV_DIM': 160,
+    'HE_DIM': 160,
+    'HM_DIM': 160,
+    'MV_DIM': 160,
+    'ME_DIM': 160,
+    'MM_DIM': 160,
 
     'N_ITERATION': 1,
     'N_HOP': 2,
     'N_GLOBAL': 2,
-    'DROPOUT': 0.5,
+    'DROPOUT': 0.2,
 
     'EPOCH': 400,
     'BATCH': 2,
