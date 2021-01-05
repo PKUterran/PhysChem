@@ -14,7 +14,7 @@ from data.Lipop.load_lipop import load_lipop
 from data.ESOL.load_esol import load_esol
 from data.FreeSolv.load_freesolv import load_freesolv
 from net.config import ConfType
-from net.models import GeomNN, RecGeomNN
+from net.models import GeomNN
 from net.components import MLP
 from .config import LIPOP_CONFIG, ESOL_CONFIG, FREESOLV_CONFIG
 from .utils.cache_batch import Batch, BatchCache, load_batch_cache, load_encode_mols, batch_cuda_copy
@@ -85,7 +85,7 @@ def train_single_regression(
     print('Building Models...')
     atom_dim = batch_cache.atom_dim
     bond_dim = batch_cache.bond_dim
-    model = RecGeomNN(
+    model = GeomNN(
         atom_dim=atom_dim,
         bond_dim=bond_dim,
         config=config,
@@ -129,8 +129,8 @@ def train_single_regression(
         for i, batch in enumerate(batches):
             if use_cuda:
                 batch = batch_cuda_copy(batch)
-            fp, _ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
-                                  batch.rdkit_conf)
+            fp, _, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
+                                      batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             p_loss = mse_loss(pred_p, batch.properties)
             loss = p_loss
@@ -155,8 +155,8 @@ def train_single_regression(
         for batch in batches:
             if use_cuda:
                 batch = batch_cuda_copy(batch)
-            fp, _ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
-                                  batch.rdkit_conf)
+            fp, _, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
+                                      batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             p_loss = mse_loss(pred_p, batch.properties)
             loss = p_loss

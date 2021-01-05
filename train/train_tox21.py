@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 from data.TOX21.load_tox21 import load_tox21
 from net.config import ConfType
-from net.models import GeomNN, RecGeomNN
+from net.models import GeomNN
 from net.components import MLP
 from .config import TOX21_CONFIG
 from .utils.cache_batch import Batch, BatchCache, load_batch_cache, load_encode_mols, batch_cuda_copy
@@ -62,7 +62,7 @@ def train_tox21(special_config: dict = None,
     print('Building Models...')
     atom_dim = batch_cache.atom_dim
     bond_dim = batch_cache.bond_dim
-    model = RecGeomNN(
+    model = GeomNN(
         atom_dim=atom_dim,
         bond_dim=bond_dim,
         config=config,
@@ -116,8 +116,8 @@ def train_tox21(special_config: dict = None,
         for i, batch in enumerate(batches):
             if use_cuda:
                 batch = batch_cuda_copy(batch)
-            fp, _ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
-                                  batch.rdkit_conf)
+            fp, _, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
+                                      batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             pred_p_, properties_ = nan_masked(pred_p, batch.properties)
             p_loss = loss_func(pred_p_, properties_)
@@ -143,8 +143,8 @@ def train_tox21(special_config: dict = None,
         for batch in batches:
             if use_cuda:
                 batch = batch_cuda_copy(batch)
-            fp, _ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
-                                  batch.rdkit_conf)
+            fp, _, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
+                                      batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             pred_p_, properties_ = nan_masked(pred_p, batch.properties)
             p_loss = loss_func(pred_p_, properties_)

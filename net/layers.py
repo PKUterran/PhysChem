@@ -2,7 +2,7 @@ from .components import *
 from .dynamics.newton import NewtonianDerivation
 from .dynamics.hamiltion import DissipativeHamiltonianDerivation
 from .utils.model_utils import normalize_adj_r
-from typing import Union
+from typing import Union, List
 
 
 class Initializer(nn.Module):
@@ -64,11 +64,6 @@ class ConfAwareMPNNKernel(nn.Module):
                 NaiveDynMessage(hv_dim, he_dim, mv_dim, me_dim, p_dim, q_dim, use_cuda, dropout)
                 for _ in range(hops)
             ])
-        elif message_type == 'norm_naive':
-            self.messages = nn.ModuleList([
-                NormalizedNaiveDynMessage(hv_dim, he_dim, mv_dim, me_dim, p_dim, q_dim, use_cuda, dropout)
-                for _ in range(hops)
-            ])
         elif message_type == 'triplet':
             self.messages = nn.ModuleList([
                 TripletDynMessage(hv_dim, he_dim, mv_dim, me_dim, p_dim, q_dim, use_cuda, dropout)
@@ -87,13 +82,16 @@ class ConfAwareMPNNKernel(nn.Module):
             assert False, 'Undefined union type {} in net.layers.ConfAwareMPNNKernel'.format(union_type)
 
     def forward(self, hv_ftr: torch.Tensor, he_ftr: torch.Tensor, p_ftr: torch.Tensor, q_ftr: torch.Tensor,
-                mask_matrices: MaskMatrices
-                ) -> Tuple[torch.Tensor, torch.Tensor]:
+                mask_matrices: MaskMatrices,
+                return_alignment=False) -> Tuple[torch.Tensor, torch.Tensor, List[np.ndarray]]:
+        alignments = []
         for i in range(self.hops):
-            mv_ftr, me_ftr = self.messages[i](hv_ftr, he_ftr, p_ftr, q_ftr, mask_matrices)
+            mv_ftr, me_ftr, alignment = self.messages[i].forward(hv_ftr, he_ftr, p_ftr, q_ftr,
+                                                                 mask_matrices, return_alignment)
             hv_ftr = self.unions_v[i](hv_ftr, mv_ftr)
             he_ftr = self.unions_e[i](he_ftr, me_ftr)
-        return hv_ftr, he_ftr
+            alignments.append(alignment)
+        return hv_ftr, he_ftr, alignments
 
 
 class InformedDerivationKernel(nn.Module):
@@ -139,19 +137,21 @@ class FingerprintGenerator(nn.Module):
         self.iteration = iteration
 
     def forward(self, hv_ftr: torch.Tensor,
-                mask_matrices: MaskMatrices
-                ) -> torch.Tensor:
+                mask_matrices: MaskMatrices,
+                return_alignment=False) -> Tuple[torch.Tensor, List[np.ndarray]]:
         # initialize molecule features with mean of vertex features
         mvw = mask_matrices.mol_vertex_w
         norm_mvw = mvw / torch.sum(mvw, dim=-1, keepdim=True)
         hm_ftr = norm_mvw @ self.vm_act(self.vertex2mol(hv_ftr))
 
         # iterate
+        alignments = []
         for i in range(self.iteration):
-            mm_ftr = self.readouts[i](hm_ftr, hv_ftr, mask_matrices)
-            hm_ftr = self.unions[i](hm_ftr, mm_ftr)
+            mm_ftr, alignment = self.readouts[i].forward(hm_ftr, hv_ftr, mask_matrices, return_alignment)
+            hm_ftr = self.unions[i].forward(hm_ftr, mm_ftr)
+            alignments.append(alignment)
 
-        return hm_ftr
+        return hm_ftr, alignments
 
 
 class RecFingerprintGenerator(nn.Module):
@@ -167,19 +167,21 @@ class RecFingerprintGenerator(nn.Module):
         self.iteration = iteration
 
     def forward(self, hv_ftr: torch.Tensor,
-                mask_matrices: MaskMatrices
-                ) -> torch.Tensor:
+                mask_matrices: MaskMatrices,
+                return_alignment=False) -> Tuple[torch.Tensor, List[np.ndarray]]:
         # initialize molecule features with mean of vertex features
         mvw = mask_matrices.mol_vertex_w
         norm_mvw = mvw / torch.sum(mvw, dim=-1, keepdim=True)
         hm_ftr = norm_mvw @ self.vm_act(self.vertex2mol(hv_ftr))
 
         # iterate
+        alignments = []
         for i in range(self.iteration):
-            mm_ftr = self.readout(hm_ftr, hv_ftr, mask_matrices)
-            hm_ftr = self.union(hm_ftr, mm_ftr)
+            mm_ftr, alignment = self.readout.forward(hm_ftr, hv_ftr, mask_matrices, return_alignment)
+            hm_ftr = self.union.forward(hm_ftr, mm_ftr)
+            alignments.append(alignment)
 
-        return hm_ftr
+        return hm_ftr, alignments
 
 
 class ConformationGenerator(nn.Module):

@@ -11,9 +11,9 @@ DEFAULT_CONFIG = {
     'ME_DIM': 280,
     'MM_DIM': 280,
     'PQ_DIM': 3,
-    'N_LAYER': 1,
+    'N_LAYER': 3,
     'N_HOP': 1,
-    'N_ITERATION': 3,
+    'N_ITERATION': 1,
     'N_GLOBAL': 2,
     'MESSAGE_TYPE': 'triplet',
     'UNION_TYPE': 'gru',
@@ -48,6 +48,7 @@ LIPOP_CONFIG.update({
     'ME_DIM': 256,
     'MM_DIM': 256,
 
+    'N_LAYER': 1,
     'N_ITERATION': 1,
     'N_HOP': 2,
     'N_GLOBAL': 4,
@@ -73,6 +74,7 @@ TOX21_CONFIG.update({
     'ME_DIM': 200,
     'MM_DIM': 200,
 
+    'N_LAYER': 1,
     'N_ITERATION': 1,
     'N_HOP': 2,
     'N_GLOBAL': 2,
@@ -98,6 +100,7 @@ ESOL_CONFIG.update({
     'ME_DIM': 160,
     'MM_DIM': 160,
 
+    'N_LAYER': 1,
     'N_ITERATION': 1,
     'N_HOP': 2,
     'N_GLOBAL': 2,
@@ -123,6 +126,7 @@ FREESOLV_CONFIG.update({
     'ME_DIM': 120,
     'MM_DIM': 120,
 
+    'N_LAYER': 1,
     'N_ITERATION': 1,
     'N_HOP': 2,
     'N_GLOBAL': 2,

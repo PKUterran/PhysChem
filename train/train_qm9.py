@@ -1,3 +1,4 @@
+import os
 import time
 import torch
 import torch.optim as optim
@@ -10,13 +11,14 @@ from tqdm import tqdm
 
 from data.qm9.load_qm9 import load_qm9
 from net.config import ConfType
-from net.models import GeomNN, RecGeomNN
-from net.components import MLP
+from net.models import GeomNN, MLP
 from .config import QM9_CONFIG
 from .utils.cache_batch import Batch, BatchCache, load_batch_cache, load_encode_mols, batch_cuda_copy
 from .utils.seed import set_seed
 from .utils.loss_functions import multi_mse_loss, multi_mae_loss, adj3_loss, distance_loss
 from .utils.save_log import save_log
+
+MODEL_DICT_DIR = 'train/models'
 
 
 def train_qm9(special_config: dict = None,
@@ -45,7 +47,10 @@ def train_qm9(special_config: dict = None,
     stddev_p = np.std((mol_properties - mean_p).tolist(), axis=0, ddof=1)
     mad_p = np.array([1.189, 6.299, 0.016, 0.039, 0.040, 202.017,
                       0.026, 31.072, 31.072, 31.072, 31.072, 3.204], dtype=np.float)
-    norm_p = (mol_properties - mean_p) / stddev_p
+    norm_p = (mol_properties - mean_p) / mad_p
+    print(f'\tmean: {mean_p}')
+    print(f'\tstd: {stddev_p}')
+    print(f'\tmad: {mad_p}')
     print('Caching Batches...')
     try:
         batch_cache = load_batch_cache(data_name, mols, mols_info, norm_p, batch_size=config['BATCH'],
@@ -60,7 +65,7 @@ def train_qm9(special_config: dict = None,
     print('Building Models...')
     atom_dim = batch_cache.atom_dim
     bond_dim = batch_cache.bond_dim
-    model = RecGeomNN(
+    model = GeomNN(
         atom_dim=atom_dim,
         bond_dim=bond_dim,
         config=config,
@@ -92,6 +97,10 @@ def train_qm9(special_config: dict = None,
     # train
     epoch = 0
     logs: List[Dict[str, float]] = []
+    best_epoch = 0
+    best_metric = 999
+    if not os.path.exists(MODEL_DICT_DIR):
+        os.mkdir(MODEL_DICT_DIR)
 
     def train(batches: List[Batch]):
         model.train()
@@ -103,8 +112,8 @@ def train_qm9(special_config: dict = None,
         for batch in batches:
             if use_cuda:
                 batch = batch_cuda_copy(batch)
-            fp, pred_c = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
-                                       batch.rdkit_conf)
+            fp, pred_c, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
+                                           batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
             c_loss = adj3_loss(pred_c, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
@@ -112,7 +121,7 @@ def train_qm9(special_config: dict = None,
             loss.backward()
             optimizer.step()
 
-    def evaluate(batches: List[Batch], batch_name: str):
+    def evaluate(batches: List[Batch], batch_name: str) -> float:
         model.eval()
         classifier.eval()
         optimizer.zero_grad()
@@ -128,8 +137,8 @@ def train_qm9(special_config: dict = None,
         for batch in batches:
             if use_cuda:
                 batch = batch_cuda_copy(batch)
-            fp, pred_c = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
-                                       batch.rdkit_conf)
+            fp, pred_c, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
+                                           batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
             c_loss = adj3_loss(pred_c, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
@@ -159,6 +168,7 @@ def train_qm9(special_config: dict = None,
             f'{batch_name}_multi_p_metric': list(sum(list_p_multi_mae) * mad_p / n_batch),
             f'{batch_name}_c_metric': sum(list_rsd) / n_batch,
         })
+        return sum(list_p_total_mae) / n_batch
 
     for _ in range(config['EPOCH']):
         epoch += 1
@@ -173,7 +183,7 @@ def train_qm9(special_config: dict = None,
         print('\t\tEvaluating Train:')
         evaluate(batch_cache.train_batches, 'train')
         print('\t\tEvaluating Validate:')
-        evaluate(batch_cache.validate_batches, 'validate')
+        m = evaluate(batch_cache.validate_batches, 'validate')
         print('\t\tEvaluating Test:')
         evaluate(batch_cache.test_batches, 'test')
         scheduler.step(epoch)
@@ -181,4 +191,12 @@ def train_qm9(special_config: dict = None,
         t1 = time.time()
         print('\tProcess Time: {}'.format(int(t1 - t0)))
         logs[-1].update({'process_time': t1 - t0})
+
+        if m < best_metric:
+            best_metric = m
+            best_epoch = epoch
+            print(f'\tSaving Model...')
+            torch.save(model.state_dict(), f'{MODEL_DICT_DIR}/{tag}-model.pkl')
+            torch.save(classifier.state_dict(), f'{MODEL_DICT_DIR}/{tag}-classifier.pkl')
+        logs[-1].update({'best_epoch': best_epoch})
         save_log(logs, directory='QM9', tag=tag)

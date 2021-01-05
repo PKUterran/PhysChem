@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 from typing import Tuple
@@ -97,8 +98,8 @@ class NaiveDynMessage(nn.Module):
         self.l_act = nn.LeakyReLU()
 
     def forward(self, hv_ftr: torch.Tensor, he_ftr: torch.Tensor, p_ftr: torch.Tensor, q_ftr: torch.Tensor,
-                mask_matrices: MaskMatrices
-                ) -> Tuple[torch.Tensor, torch.Tensor]:
+                mask_matrices: MaskMatrices,
+                return_alignment=False) -> Tuple[torch.Tensor, torch.Tensor, np.ndarray]:
         """
         naive message passing with dynamic properties
         :param hv_ftr: hidden vertex features with shape [n_vertex, hv_dim]
@@ -106,7 +107,8 @@ class NaiveDynMessage(nn.Module):
         :param p_ftr: atom momentum features with shape [n_vertex, p_dim]
         :param q_ftr: atom position features with shape [n_vertex, q_dim]
         :param mask_matrices: mask matrices
-        :return: vertex message, edge message
+        :param return_alignment: if returns node alignment
+        :return: vertex message, edge message, node alignment
         """
         hv_ftr, he_ftr = self.dropout(hv_ftr), self.dropout(he_ftr)
         n_edge = mask_matrices.vertex_edge_w1.shape[1]
@@ -138,39 +140,7 @@ class NaiveDynMessage(nn.Module):
         me_ftr = me2_ftr[:n_edge, :] + me2_ftr[n_edge:, :]  # shape [n_edge, me_dim]
         me_ftr = self.l_act(me_ftr)
 
-        return mv_ftr, me_ftr
-
-
-class NormalizedNaiveDynMessage(NaiveDynMessage):
-    def __init__(self, *args, **kwargs):
-        super(NormalizedNaiveDynMessage, self).__init__(*args, **kwargs)
-
-    def forward(self, hv_ftr: torch.Tensor, he_ftr: torch.Tensor, p_ftr: torch.Tensor, q_ftr: torch.Tensor,
-                mask_matrices: MaskMatrices
-                ) -> Tuple[torch.Tensor, torch.Tensor]:
-        p_ftr, q_ftr = self.normalize_pq(p_ftr, q_ftr, mask_matrices)
-        return super(NormalizedNaiveDynMessage, self).forward(hv_ftr, he_ftr, p_ftr, q_ftr, mask_matrices)
-
-    def normalize_pq(self, p_ftr: torch.Tensor, q_ftr: torch.Tensor,
-                     mask_matrices: MaskMatrices
-                     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        mvw = mask_matrices.mol_vertex_w
-        # print(p_ftr.cpu().detach().numpy())
-        for i in range(mvw.shape[0]):
-            vertex_mask = mvw[i] == 1
-            if torch.sum(vertex_mask) == 1:
-                continue
-            pi_ftr = p_ftr[vertex_mask, :]
-            pi_ftr = pi_ftr - torch.mean(pi_ftr, dim=0)
-            qi_ftr = q_ftr[vertex_mask, :]
-            _, _, v = torch.svd(pi_ftr.detach(), some=False)
-            # print(v.cpu().detach().numpy())
-            pi_ftr = pi_ftr @ v
-            qi_ftr = qi_ftr @ v
-            p_ftr[vertex_mask, :] = pi_ftr
-            q_ftr[vertex_mask, :] = qi_ftr
-        # print(p_ftr.cpu().detach().numpy())
-        return p_ftr, q_ftr
+        return mv_ftr, me_ftr, align_ftr.cpu().detach().numpy() if return_alignment else None
 
 
 class TripletDynMessage(nn.Module):
@@ -197,8 +167,8 @@ class TripletDynMessage(nn.Module):
         self.l_act = nn.LeakyReLU()
 
     def forward(self, hv_ftr: torch.Tensor, he_ftr: torch.Tensor, p_ftr: torch.Tensor, q_ftr: torch.Tensor,
-                mask_matrices: MaskMatrices
-                ) -> Tuple[torch.Tensor, torch.Tensor]:
+                mask_matrices: MaskMatrices,
+                return_alignment=False) -> Tuple[torch.Tensor, torch.Tensor, np.ndarray]:
         hv_ftr, he_ftr = self.dropout(hv_ftr), self.dropout(he_ftr)
         n_edge = mask_matrices.vertex_edge_w1.shape[1]
         vew1 = mask_matrices.vertex_edge_w1  # shape [n_vertex, n_edge]
@@ -233,7 +203,6 @@ class TripletDynMessage(nn.Module):
         attend_ftr = self.at_act(attend_ftr)
         attend_ftr = torch.max(attend_ftr, dim=1)[0]  # shape [2 * n_edge, mv_dim]
         align_ftr = self.align(he2_ftr)  # shape [2 * n_edge, 1]
-        align_ftr = self.al_act(align_ftr)
         align_ftr = vew_v @ torch.diag(torch.reshape(align_ftr, [-1])) + veb_v  # shape [n_vertex, 2 * n_edge]
         align_ftr = self.al_act(align_ftr)
         mv_ftr = self.ag_act(align_ftr @ attend_ftr)  # shape [n_vertex, mv_dim]
@@ -242,7 +211,7 @@ class TripletDynMessage(nn.Module):
         me_ftr = me2_ftr[:n_edge, :] + me2_ftr[n_edge:, :]  # shape [n_edge, me_dim]
         me_ftr = self.l_act(me_ftr)
 
-        return mv_ftr, me_ftr
+        return mv_ftr, me_ftr, align_ftr.cpu().detach().numpy() if return_alignment else None
 
 
 class NaiveUnion(nn.Module):
@@ -285,13 +254,14 @@ class GlobalReadout(nn.Module):
         self.ag_act = nn.ELU()
 
     def forward(self, hm_ftr: torch.Tensor, hv_ftr: torch.Tensor,
-                mask_matrices: MaskMatrices
-                ) -> torch.Tensor:
+                mask_matrices: MaskMatrices,
+                return_alignment=False) -> Tuple[torch.Tensor, np.ndarray]:
         """
         molecule message readout with global attention and dynamic properties
         :param hm_ftr: molecule features with shape [n_mol, hm_dim]
         :param hv_ftr: vertex features with shape [n_vertex, hv_dim]
         :param mask_matrices: mask matrices
+        :param return_alignment: if returns node alignment
         :return: molecule message
         """
         mvw = mask_matrices.mol_vertex_w  # shape [n_mol, n_vertex]
@@ -305,7 +275,7 @@ class GlobalReadout(nn.Module):
         align_ftr = self.al_act(align_ftr)
         mm_ftr = self.ag_act(align_ftr @ attend_ftr)  # shape [n_mol, mm_dim]
 
-        return mm_ftr
+        return mm_ftr, align_ftr.cpu().detach().numpy() if return_alignment else None
 
 
 class GlobalDynReadout(nn.Module):
