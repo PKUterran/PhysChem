@@ -99,8 +99,11 @@ def train_qm9(special_config: dict = None,
     logs: List[Dict[str, float]] = []
     best_epoch = 0
     best_metric = 999
-    if not os.path.exists(MODEL_DICT_DIR):
-        os.mkdir(MODEL_DICT_DIR)
+    try:
+        if not os.path.exists(MODEL_DICT_DIR):
+            os.mkdir(MODEL_DICT_DIR)
+    except FileExistsError:
+        pass
 
     def train(batches: List[Batch]):
         model.train()
