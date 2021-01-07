@@ -1,16 +1,19 @@
 import numpy as np
 import torch
 from typing import List, Dict, Tuple
+from rdkit import Chem
 
 from data.encode import encode_smiles, get_massive_from_atom_features
 from net.utils.MaskMatrices import MaskMatrices, cuda_copy
 from net.models import GeomNN
 from train.utils.cache_batch import BatchCache
+from train.utils.rdkit import rdkit_mol_positions
 from .rebuild import rebuild_qm9
+from .plt_attn import plt_local_alignment, plt_global_alignment
 
 
 def generate_alignments(model: GeomNN, mol_info: Dict[str, np.ndarray]
-                        ) -> Tuple[List[List[np.ndarray]], List[np.ndarray]]:
+                        ) -> Tuple[np.ndarray, List[List[np.ndarray]], List[np.ndarray]]:
     af, bf, us, vs = mol_info['af'], mol_info['bf'], mol_info['us'], mol_info['vs']
     massive = get_massive_from_atom_features(af)
     mvw, mvb = BatchCache.produce_mask_matrix(1, [0] * af.shape[0])
@@ -30,9 +33,10 @@ def generate_alignments(model: GeomNN, mol_info: Dict[str, np.ndarray]
     mask_matrices = MaskMatrices(mol_vertex_w, mol_vertex_b,
                                  vertex_edge_w1, vertex_edge_w2,
                                  vertex_edge_b1, vertex_edge_b2)
-    _, _, local_alignments, global_alignments = model.forward(atom_ftr, bond_ftr, massive, mask_matrices,
-                                                              return_local_alignment=True, return_global_alignment=True)
-    return local_alignments, global_alignments
+    _, conf, local_alignments, global_alignments = model.forward(atom_ftr, bond_ftr, massive, mask_matrices,
+                                                                 return_local_alignment=True,
+                                                                 return_global_alignment=True)
+    return conf.cpu().detach().numpy(), local_alignments, global_alignments
 
 
 def ve_align2vv_align(align: np.ndarray):
@@ -54,12 +58,15 @@ def vis_alignment(list_smiles: List[str], tag: str, special_config: dict, use_cu
     mols_info = encode_smiles(np.array(list_smiles, dtype=np.str))
     atom_dim, bond_dim = mols_info[0]['af'].shape[1], mols_info[0]['bf'].shape[1]
     model, classifier = rebuild_qm9(atom_dim, bond_dim, tag, special_config, use_cuda)
-    for mol_info in mols_info:
-        local_alignments, global_alignment = generate_alignments(model, mol_info)
+    for idx, mol_info in enumerate(mols_info):
+        conf, local_alignments, global_alignment = generate_alignments(model, mol_info)
+        conf = rdkit_mol_positions(Chem.MolFromSmiles(list_smiles[idx]))
         for i in range(len(local_alignments)):
             for j in range(len(local_alignments[i])):
                 print(f'local: {i}, {j}')
                 print(ve_align2vv_align(local_alignments[i][j]))
+                plt_local_alignment(conf, list_smiles[idx], local_alignments[i][j], f'm{idx}_local_{i}-{j}')
         for i in range(len(global_alignment)):
             print(f'global: {i}')
             print(global_alignment[i])
+            plt_global_alignment(conf, list_smiles[idx], global_alignment[i], f'm{idx}_global_{i}')
