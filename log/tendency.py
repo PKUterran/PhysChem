@@ -34,9 +34,9 @@ tuples = [
     ('QM9', 'QM9-Xconf', False, False),
     ('QM9', 'QM9-rdkit', False, True),
     ('QM9', 'QM9', False, True),
-    ('QM9', 'QM9-M-Xconf', False, False),
-    ('QM9', 'QM9-M-rdkit', False, True),
-    ('QM9', 'QM9-M', False, True),
+    # ('QM9', 'QM9-M-Xconf', False, False),
+    # ('QM9', 'QM9-M-rdkit', False, True),
+    # ('QM9', 'QM9-M', False, True),
 
     # ('Lipop', 'Lipop', False, False),
     # ('Lipop', 'Lipop-Xconf', False, False),
