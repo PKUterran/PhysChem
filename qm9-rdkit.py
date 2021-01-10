@@ -11,6 +11,6 @@ train_qm9(
     data_name='QM9-rdkit',
     seed=0,
     force_save=False,
-    tag='QM9-rdkit',
+    tag='QM9-M-rdkit',
     use_tqdm=False,
 )
