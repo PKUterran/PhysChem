@@ -271,7 +271,7 @@ class TripletDynMessage(nn.Module):
         attend_ftr = self.attend(v1e1ue2v2)  # shape [2 * n_edge, 2 * n_edge, mv_dim]
         attend_ftr = self.at_act(attend_ftr)
         attend_ftr = torch.max(attend_ftr, dim=1)[0]  # shape [2 * n_edge, mv_dim]
-        align_ftr = vew_v / vew_v.sum(dim=1, keepdim=True)  # shape [n_vertex, 2 * n_edge]
+        align_ftr = vew_v / (vew_v.sum(dim=1, keepdim=True) + self.ESP)  # shape [n_vertex, 2 * n_edge]
         mv_ftr = self.ag_act(align_ftr @ attend_ftr)  # shape [n_vertex, mv_dim]
 
         me2_ftr = self.link(torch.cat([hv_u_ftr, he2_ftr, dis_ftr, hv_v_ftr], dim=1))  # shape [2 * n_edge, me_dim]
