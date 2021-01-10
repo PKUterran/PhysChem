@@ -4,12 +4,12 @@ from net.config import ConfType
 DEFAULT_CONFIG = {
     # model
     'CLASSIFIER_HIDDENS': [],
-    'HV_DIM': 128,
-    'HE_DIM': 64,
-    'HM_DIM': 128,
-    'MV_DIM': 128,
-    'ME_DIM': 64,
-    'MM_DIM': 128,
+    'HV_DIM': 64,
+    'HE_DIM': 32,
+    'HM_DIM': 256,
+    'MV_DIM': 64,
+    'ME_DIM': 32,
+    'MM_DIM': 256,
     'PQ_DIM': 3,
     'N_LAYER': 3,
     'N_HOP': 1,
