@@ -62,7 +62,7 @@ def get_bonds_u_v_width_style(smiles) -> (list, list, list):
 
 
 def plt_local_alignment(pos: np.ndarray, smiles: str, local_alignment: np.ndarray,
-                        title: str = 'plt_3d', d: str = 'visualize/graph'):
+                        title: str = 'plt_3d', d: str = 'visualize/alignment'):
     n_edge = int(local_alignment.shape[1] / 2)
     local_alignment = local_alignment * np.sum(local_alignment > 1e-5, axis=1, keepdims=True)
     edge_weight = np.sum(local_alignment, axis=0)
@@ -89,7 +89,7 @@ def plt_local_alignment(pos: np.ndarray, smiles: str, local_alignment: np.ndarra
 
 
 def plt_global_alignment(pos: np.ndarray, smiles: str, global_alignment: np.ndarray,
-                         title: str = 'plt_3d', d: str = 'visualize/graph'):
+                         title: str = 'plt_3d', d: str = 'visualize/alignment'):
     global_alignment = global_alignment[0]
     colors = global_alignment / np.max(global_alignment)
 

@@ -9,7 +9,7 @@ from net.models import GeomNN
 from train.utils.cache_batch import BatchCache
 from train.utils.rdkit import rdkit_mol_positions
 from .rebuild import rebuild_qm9
-from .plt_attn import plt_local_alignment, plt_global_alignment
+from .alignment.plt_alignment import plt_local_alignment, plt_global_alignment
 
 
 def generate_alignments(model: GeomNN, mol_info: Dict[str, np.ndarray]
@@ -33,9 +33,9 @@ def generate_alignments(model: GeomNN, mol_info: Dict[str, np.ndarray]
     mask_matrices = MaskMatrices(mol_vertex_w, mol_vertex_b,
                                  vertex_edge_w1, vertex_edge_w2,
                                  vertex_edge_b1, vertex_edge_b2)
-    _, conf, local_alignments, global_alignments = model.forward(atom_ftr, bond_ftr, massive, mask_matrices,
-                                                                 return_local_alignment=True,
-                                                                 return_global_alignment=True)
+    _, conf, local_alignments, global_alignments, _ = model.forward(atom_ftr, bond_ftr, massive, mask_matrices,
+                                                                    return_local_alignment=True,
+                                                                    return_global_alignment=True)
     return conf.cpu().detach().numpy(), local_alignments, global_alignments
 
 
