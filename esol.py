@@ -12,7 +12,7 @@ pos = arg.pos
 train_single_regression(
     dataset=SingleRegressionDataset.ESOL,
     data_name='ESOL@{}'.format(seed) if pos else 'ESOL-Xconf@{}'.format(seed),
-    tag='ESOL@{}'.format(seed) if pos else 'ESOL-Xconf@{}'.format(seed),
+    tag='ESOL-M@{}'.format(seed) if pos else 'ESOL-Xconf@{}'.format(seed),
     special_config={
         'CONF_TYPE': ConfType.RDKIT if pos else ConfType.NONE,
     },

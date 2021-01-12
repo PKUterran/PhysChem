@@ -7,7 +7,7 @@ def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
     train_p = [dic['train_p_metric'] for dic in log]
     valid_p = [dic['validate_p_metric'] for dic in log]
     test_p = [dic['test_p_metric'] for dic in log]
-    ps = zip(valid_p[:270], test_p[:270])
+    ps = zip(valid_p, test_p)
     ps = sorted(ps, key=lambda x: x[0], reverse=higher_is_better)
     print('{}: {:.4f}'.format(path, ps[0][1]))
 
@@ -31,12 +31,12 @@ def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
 
 
 tuples = [
-    ('QM9', 'QM9-Xconf', False, False),
-    ('QM9', 'QM9-rdkit', False, True),
-    ('QM9', 'QM9', False, True),
-    # ('QM9', 'QM9-M-Xconf', False, False),
-    # ('QM9', 'QM9-M-rdkit', False, True),
-    # ('QM9', 'QM9-M', False, True),
+    # ('QM9', 'QM9-Xconf', False, False),
+    # ('QM9', 'QM9-rdkit', False, True),
+    # ('QM9', 'QM9', False, True),
+    ('QM9', 'QM9-M-Xconf', False, False),
+    ('QM9', 'QM9-M-rdkit', False, True),
+    ('QM9', 'QM9-M', False, True),
 
     # ('Lipop', 'Lipop', False, False),
     # ('Lipop', 'Lipop-Xconf', False, False),
