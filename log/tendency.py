@@ -34,21 +34,23 @@ tuples = [
     # ('QM9', 'QM9-Xconf', False, False),
     # ('QM9', 'QM9-rdkit', False, True),
     # ('QM9', 'QM9', False, True),
-    ('QM9', 'QM9-M-Xconf', False, False),
-    ('QM9', 'QM9-M-rdkit', False, True),
-    ('QM9', 'QM9-M', False, True),
+    # ('QM9', 'QM9-M-Xconf', False, False),
+    # ('QM9', 'QM9-M-rdkit', False, True),
+    # ('QM9', 'QM9-M', False, True),
 
     # ('Lipop', 'Lipop', False, False),
+    # ('Lipop', 'Lipop-M@16880611', False, False),
     # ('Lipop', 'Lipop-Xconf', False, False),
 
     # ('TOX21', 'TOX21', True, True),
     # ('TOX21', 'TOX21-Xconf', True, True),
 
     # ('ESOL', 'ESOL', False, False),
-    # ('ESOL', 'ESOL@16880611', False, False),
+    # ('ESOL', 'ESOL-M@16880611', False, False),
     # ('ESOL', 'ESOL-Xconf', False, False),
 
     # ('FreeSolv', 'FreeSolv', False, False),
+    # ('FreeSolv', 'FreeSolv-M@16880611', False, False),
     # ('FreeSolv', 'FreeSolv-Xconf', False, False),
 ]
 

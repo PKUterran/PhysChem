@@ -48,9 +48,9 @@ LIPOP_CONFIG.update({
     'ME_DIM': 256,
     'MM_DIM': 256,
 
-    'N_LAYER': 1,
+    'N_LAYER': 2,
     'N_ITERATION': 1,
-    'N_HOP': 2,
+    'N_HOP': 1,
     'N_GLOBAL': 4,
     'DROPOUT': 0.2,
 
@@ -100,9 +100,9 @@ ESOL_CONFIG.update({
     'ME_DIM': 160,
     'MM_DIM': 160,
 
-    'N_LAYER': 1,
+    'N_LAYER': 2,
     'N_ITERATION': 1,
-    'N_HOP': 2,
+    'N_HOP': 1,
     'N_GLOBAL': 2,
     'DROPOUT': 0.2,
 
@@ -126,9 +126,9 @@ FREESOLV_CONFIG.update({
     'ME_DIM': 120,
     'MM_DIM': 120,
 
-    'N_LAYER': 1,
+    'N_LAYER': 2,
     'N_ITERATION': 1,
-    'N_HOP': 2,
+    'N_HOP': 1,
     'N_GLOBAL': 2,
     'DROPOUT': 0.2,
 
