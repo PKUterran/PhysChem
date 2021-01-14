@@ -12,7 +12,7 @@ pos = arg.pos
 train_single_regression(
     dataset=SingleRegressionDataset.FREESOLV,
     data_name='FreeSolv@{}'.format(seed) if pos else 'FreeSolv-Xconf@{}'.format(seed),
-    tag='FreeSolv-M@{}'.format(seed) if pos else 'FreeSolv-Xconf@{}'.format(seed),
+    tag='FreeSolv-M@{}'.format(seed) if pos else 'FreeSolv-M-Xconf@{}'.format(seed),
     special_config={
         'CONF_TYPE': ConfType.RDKIT if pos else ConfType.NONE,
     },
