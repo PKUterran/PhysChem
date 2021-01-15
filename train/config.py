@@ -119,16 +119,16 @@ ESOL_CONFIG.update({
 FREESOLV_CONFIG = DEFAULT_CONFIG.copy()
 FREESOLV_CONFIG.update({
     'CLASSIFIER_HIDDENS': [],
-    'HV_DIM': 120,
-    'HE_DIM': 120,
-    'HM_DIM': 120,
-    'MV_DIM': 120,
-    'ME_DIM': 120,
-    'MM_DIM': 120,
+    'HV_DIM': 160,
+    'HE_DIM': 160,
+    'HM_DIM': 160,
+    'MV_DIM': 160,
+    'ME_DIM': 160,
+    'MM_DIM': 160,
 
-    'N_LAYER': 2,
+    'N_LAYER': 1,
     'N_ITERATION': 1,
-    'N_HOP': 1,
+    'N_HOP': 2,
     'N_GLOBAL': 2,
     'DROPOUT': 0.2,
 
