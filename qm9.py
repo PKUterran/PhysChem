@@ -10,6 +10,6 @@ train_qm9(
     data_name='QM9',
     seed=0,
     force_save=False,
-    tag='QM9-M',
+    tag='QM9',
     use_tqdm=False,
 )

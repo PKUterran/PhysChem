@@ -12,7 +12,7 @@ pos = arg.pos
 train_single_regression(
     dataset=SingleRegressionDataset.LIPOP,
     data_name='Lipop@{}'.format(seed) if pos else 'Lipop-Xconf@{}'.format(seed),
-    tag='Lipop-M@{}'.format(seed) if pos else 'Lipop-M-Xconf@{}'.format(seed),
+    tag='Lipop@{}'.format(seed) if pos else 'Lipop-Xconf@{}'.format(seed),
     special_config={
         'CONF_TYPE': ConfType.RDKIT if pos else ConfType.NONE,
     },

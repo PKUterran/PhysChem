@@ -66,6 +66,11 @@ class ConfAwareMPNNKernel(nn.Module):
             ])
         elif message_type == 'triplet':
             self.messages = nn.ModuleList([
+                TripletAttnDynMessage(hv_dim, he_dim, mv_dim, me_dim, p_dim, q_dim, use_cuda, dropout)
+                for _ in range(hops)
+            ])
+        elif message_type == 'triplet-mean':
+            self.messages = nn.ModuleList([
                 TripletDynMessage(hv_dim, he_dim, mv_dim, me_dim, p_dim, q_dim, use_cuda, dropout)
                 for _ in range(hops)
             ])

@@ -11,6 +11,6 @@ train_qm9(
     data_name='QM9-Xconf',
     seed=0,
     force_save=False,
-    tag='QM9-M-Xconf',
+    tag='QM9-Xconf',
     use_tqdm=False,
 )
