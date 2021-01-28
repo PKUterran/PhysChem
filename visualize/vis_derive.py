@@ -1,19 +1,19 @@
 import numpy as np
 import torch
-from tqdm import tqdm
-from rdkit import Chem
 from typing import List, Dict, Tuple
+from rdkit import Chem
 
-from data.encode import encode_mols, get_massive_from_atom_features
-from net.utils.MaskMatrices import MaskMatrices
+from data.encode import encode_smiles, get_massive_from_atom_features
+from net.utils.MaskMatrices import MaskMatrices, cuda_copy
 from net.models import GeomNN
 from train.utils.cache_batch import BatchCache
+from train.utils.rdkit import rdkit_mol_positions
 from .rebuild import rebuild_qm9
-from .bond_energy import get_actual_bond_energy
-from .bond.plt_bond import plt_predict_actual_bond_energy
+from .derive.plt_derive import plt_derive
 
 
-def generate_bond_energy(model: GeomNN, mol_info: Dict[str, np.ndarray]) -> List[np.ndarray]:
+def generate_derive(model: GeomNN, mol_info: Dict[str, np.ndarray]
+                    ) -> Tuple[List[np.ndarray], List[np.ndarray]]:
     af, bf, us, vs = mol_info['af'], mol_info['bf'], mol_info['us'], mol_info['vs']
     massive = get_massive_from_atom_features(af)
     mvw, mvb = BatchCache.produce_mask_matrix(1, [0] * af.shape[0])
@@ -33,30 +33,19 @@ def generate_bond_energy(model: GeomNN, mol_info: Dict[str, np.ndarray]) -> List
     mask_matrices = MaskMatrices(mol_vertex_w, mol_vertex_b,
                                  vertex_edge_w1, vertex_edge_w2,
                                  vertex_edge_b1, vertex_edge_b2)
-    _, _, _, _, list_he_ftr, *_ = model.forward(atom_ftr, bond_ftr, massive, mask_matrices)
-    return [np.sqrt(np.sum(he_ftr ** 2, axis=1)) for he_ftr in list_he_ftr]
+    _, _, _, _, _, list_p_ftr, list_q_ftr = model.forward(atom_ftr, bond_ftr, massive, mask_matrices,
+                                                          return_derive=True)
+    return list_p_ftr, list_q_ftr
 
 
-def vis_bond(list_smiles: List[str], tag: str, special_config: dict, use_cuda=False):
-    n_smiles = len(list_smiles)
-    list_mol = [Chem.MolFromSmiles(s) for s in list_smiles]
-    mols_info = encode_mols(list_mol)
+def vis_derive(list_smiles: List[str], tag: str, special_config: dict, use_cuda=False):
+    np.set_printoptions(suppress=True, precision=3, linewidth=200)
+    mols_info = encode_smiles(np.array(list_smiles, dtype=np.str))
     atom_dim, bond_dim = mols_info[0]['af'].shape[1], mols_info[0]['bf'].shape[1]
     model, classifier = rebuild_qm9(atom_dim, bond_dim, tag, special_config, use_cuda)
-    n_layer = model.n_layer
-    n1 = [[] for _ in range(n_layer)]
-    n2 = [[] for _ in range(n_layer)]
-    actual = []
-    t = tqdm(range(n_smiles), total=n_smiles)
-    for idx in t:
-        pbes = generate_bond_energy(model, mols_info[idx])
-        abe = get_actual_bond_energy(list_mol[idx])
-        mask = abe > 0
-        for j in range(n_layer):
-            pbe = pbes[j]
-            n1[j].extend(pbe[mask])
-            n2[j].extend(pbe[mask] ** 2)
-        actual.extend(abe[mask])
-    for j in range(n_layer):
-        plt_predict_actual_bond_energy(n1[j], actual, title=f'N1-{j}')
-        plt_predict_actual_bond_energy(n2[j], actual, title=f'N2-{j}')
+    for idx, mol_info in enumerate(mols_info):
+        list_p, list_q = generate_derive(model, mol_info)
+        conf = rdkit_mol_positions(Chem.MolFromSmiles(list_smiles[idx]))
+        plt_derive(conf, None, list_smiles[idx], f'm{idx}_rdkit')
+        for t, (p, q) in enumerate(zip(list_p, list_q)):
+            plt_derive(q, p, list_smiles[idx], f'm{idx}_derive_{t}')

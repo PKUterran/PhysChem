@@ -31,12 +31,12 @@ def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
 
 
 tuples = [
-    # ('QM9', 'QM9-Xconf', False, False),
-    # ('QM9', 'QM9-rdkit', False, True),
-    # ('QM9', 'QM9', False, True),
-    ('QM9', 'QM9-M-Xconf', False, False),
-    ('QM9', 'QM9-M-rdkit', False, True),
-    ('QM9', 'QM9-M', False, True),
+    ('QM9', 'QM9-Xconf', False, False),
+    ('QM9', 'QM9-rdkit', False, True),
+    ('QM9', 'QM9', False, True),
+    # ('QM9', 'QM9-M-Xconf', False, False),
+    # ('QM9', 'QM9-M-rdkit', False, True),
+    # ('QM9', 'QM9-M', False, True),
 
     # ('Lipop', 'Lipop', False, False),
     # ('Lipop', 'Lipop-M@16880611', False, False),

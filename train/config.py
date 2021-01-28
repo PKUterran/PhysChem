@@ -53,6 +53,7 @@ LIPOP_CONFIG.update({
     'N_HOP': 1,
     'N_GLOBAL': 2,
     'DROPOUT': 0.2,
+    'MESSAGE_TYPE': 'triplet-mean',
 
     'EPOCH': 250,
     'BATCH': 2,

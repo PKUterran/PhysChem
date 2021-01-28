@@ -83,8 +83,9 @@ class GeomNN(nn.Module):
     def forward(self, atom_ftr: torch.Tensor, bond_ftr: torch.Tensor, massive: torch.Tensor,
                 mask_matrices: MaskMatrices,
                 given_q_ftr: torch.Tensor = None,
-                return_local_alignment=False, return_global_alignment=False
-                ) -> Tuple[torch.Tensor, torch.Tensor, List[List[np.ndarray]], List[np.ndarray], List[np.ndarray]]:
+                return_local_alignment=False, return_global_alignment=False, return_derive=False
+                ) -> Tuple[torch.Tensor, torch.Tensor, List[List[np.ndarray]], List[np.ndarray], List[np.ndarray],
+                           List[np.ndarray], List[np.ndarray]]:
         hv_ftr, he_ftr, p_ftr, q_ftr = self.initializer.forward(atom_ftr, bond_ftr, mask_matrices)
 
         if self.conf_type is ConfType.NONE:
@@ -94,6 +95,11 @@ class GeomNN(nn.Module):
 
         list_alignments = []
         list_he_ftr = []
+        list_p_ftr = []
+        list_q_ftr = []
+        if return_derive:
+            list_p_ftr.append(p_ftr.cpu().detach().numpy())
+            list_q_ftr.append(q_ftr.cpu().detach().numpy())
         for i in range(self.n_layer):
             t_hv_ftr, t_he_ftr, alignments = self.mp_kernel.forward(hv_ftr, he_ftr, p_ftr, q_ftr,
                                                                     mask_matrices, return_local_alignment)
@@ -101,6 +107,9 @@ class GeomNN(nn.Module):
             if self.need_derive:
                 for j in range(self.n_iteration):
                     p_ftr, q_ftr = self.drv_kernel.forward(hv_ftr, he_ftr, massive, p_ftr, q_ftr, mask_matrices)
+                    if return_derive:
+                        list_p_ftr.append(p_ftr.cpu().detach().numpy())
+                        list_q_ftr.append(q_ftr.cpu().detach().numpy())
 
             hv_ftr, he_ftr = t_hv_ftr, t_he_ftr
             list_alignments.append(alignments)
@@ -108,4 +117,4 @@ class GeomNN(nn.Module):
 
         fingerprint, global_alignments = self.fingerprint_gen.forward(hv_ftr, mask_matrices, return_global_alignment)
         conformation = q_ftr
-        return fingerprint, conformation, list_alignments, global_alignments, list_he_ftr
+        return fingerprint, conformation, list_alignments, global_alignments, list_he_ftr, list_p_ftr, list_q_ftr

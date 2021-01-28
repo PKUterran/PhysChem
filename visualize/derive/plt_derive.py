@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import rdkit
 import rdkit.Chem as Chem
 from mpl_toolkits.mplot3d import Axes3D
-from typing import List, Tuple
+from typing import Union, Tuple
 
 ATOM_CONFIG = {
     'C': (6, 'black', 's'),
@@ -14,6 +14,7 @@ ATOM_CONFIG = {
 }
 
 DEFAULT_CONFIG = (10, 'black', '.')
+SPAN = 1.0
 
 
 def atom_config(atom: str) -> tuple:
@@ -61,38 +62,8 @@ def get_bonds_u_v_width_style(smiles: str) -> Tuple[list, list, list, list]:
     return us, vs, widths, styles
 
 
-def plt_local_alignment(pos: np.ndarray, smiles: str, local_alignment: np.ndarray,
-                        title: str = 'plt_3d', d: str = 'visualize/alignment'):
-    n_edge = int(local_alignment.shape[1] / 2)
-    local_alignment = local_alignment * np.sum(local_alignment > 1e-5, axis=1, keepdims=True)
-    edge_weight = np.sum(local_alignment, axis=0)
-    edge_weight = (edge_weight[:n_edge] + edge_weight[n_edge]) / 2
-    edge_weight = edge_weight - np.min(edge_weight) + 0.02
-    edge_weight = edge_weight / (np.max(edge_weight) + 1e-5)
-
-    fig = plt.figure(figsize=(8, 8))
-    ax = Axes3D(fig)
-    # ax = fig.add_subplot(111, projection='3d')
-
-    us, vs, linewidths, linestyles = get_bonds_u_v_width_style(smiles)
-    for u, v, linewidth, linestyle, weight in zip(us, vs, linewidths, linestyles, edge_weight):
-        ax.plot([pos[u, 0], pos[v, 0]], [pos[u, 1], pos[v, 1]], [pos[u, 2], pos[v, 2]],
-                linewidth=linewidth, linestyle=linestyle, c=[1 - weight, 1 - weight, 1])
-
-    sizes, colors, markers = get_atoms_size_color_marker(smiles)
-    for i in range(pos.shape[0]):
-        ax.scatter(pos[i:i + 1, 0], pos[i:i + 1, 1], pos[i:i + 1, 2], s=sizes[i], c=colors[i], marker=markers[i])
-
-    plt.title(title)
-    plt.savefig('{}/{}.png'.format(d, title))
-    plt.close()
-
-
-def plt_global_alignment(pos: np.ndarray, smiles: str, global_alignment: np.ndarray,
-                         title: str = 'plt_3d', d: str = 'visualize/alignment'):
-    global_alignment = global_alignment[0]
-    colors = global_alignment / np.max(global_alignment)
-
+def plt_derive(pos: np.ndarray, direction: Union[np.ndarray, None], smiles: str,
+               title: str = 'plt_3d', d: str = 'visualize/derive'):
     fig = plt.figure(figsize=(8, 8))
     ax = Axes3D(fig)
     # ax = fig.add_subplot(111, projection='3d')
@@ -100,12 +71,19 @@ def plt_global_alignment(pos: np.ndarray, smiles: str, global_alignment: np.ndar
     us, vs, linewidths, linestyles = get_bonds_u_v_width_style(smiles)
     for u, v, linewidth, linestyle in zip(us, vs, linewidths, linestyles):
         ax.plot([pos[u, 0], pos[v, 0]], [pos[u, 1], pos[v, 1]], [pos[u, 2], pos[v, 2]],
-                linewidth=linewidth, linestyle=linestyle, c='k')
+                linewidth=linewidth, linestyle=linestyle, c='purple')
 
-    sizes, _, markers = get_atoms_size_color_marker(smiles)
+    if direction is not None:
+        direction *= SPAN
+        for i in range(pos.shape[0]):
+            ax.plot([pos[i, 0], pos[i, 0] + direction[i, 0]],
+                    [pos[i, 1], pos[i, 1] + direction[i, 1]],
+                    [pos[i, 2], pos[i, 2] + direction[i, 2]],
+                    c='gray')
+
+    sizes, colors, markers = get_atoms_size_color_marker(smiles)
     for i in range(pos.shape[0]):
-        ax.scatter(pos[i:i + 1, 0], pos[i:i + 1, 1], pos[i:i + 1, 2],
-                   s=sizes[i], c=[[1 - colors[i], 1 - colors[i], 1]], marker=markers[i])
+        ax.scatter(pos[i:i + 1, 0], pos[i:i + 1, 1], pos[i:i + 1, 2], s=sizes[i], c=colors[i], marker=markers[i])
 
     plt.title(title)
     plt.savefig('{}/{}.png'.format(d, title))
