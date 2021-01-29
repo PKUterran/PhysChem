@@ -115,11 +115,13 @@ def train_qm9(special_config: dict = None,
         for batch in batches:
             if use_cuda:
                 batch = batch_cuda_copy(batch)
-            fp, pred_c, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
+            fp, pred_cs, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
                                            batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
-            c_loss = adj3_loss(pred_c, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+            c0_loss = adj3_loss(pred_cs[0], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+            c1_loss = adj3_loss(pred_cs[-1], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+            c_loss = c0_loss * 0.2 + c1_loss * 0.8
             loss = p_loss + config['LAMBDA'] * c_loss
             loss.backward()
             optimizer.step()
@@ -140,11 +142,13 @@ def train_qm9(special_config: dict = None,
         for batch in batches:
             if use_cuda:
                 batch = batch_cuda_copy(batch)
-            fp, pred_c, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
+            fp, pred_cs, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
                                            batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
-            c_loss = adj3_loss(pred_c, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+            c0_loss = adj3_loss(pred_cs[0], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+            c1_loss = adj3_loss(pred_cs[-1], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+            c_loss = c0_loss * 0.2 + c1_loss * 0.8
             loss = p_loss + config['LAMBDA'] * c_loss
             list_p_loss.append(p_loss.cpu().item())
             list_c_loss.append(c_loss.cpu().item())
@@ -152,7 +156,7 @@ def train_qm9(special_config: dict = None,
 
             p_multi_mae = multi_mae_loss(pred_p, batch.properties, explicit=True)
             p_total_mae = p_multi_mae.sum()
-            rsd = distance_loss(pred_c, batch.conformation, batch.mask_matrices, root_square=True)
+            rsd = distance_loss(pred_cs[-1], batch.conformation, batch.mask_matrices, root_square=True)
             list_p_multi_mae.append(p_multi_mae.cpu().detach().numpy())
             list_p_total_mae.append(p_total_mae.cpu().item())
             list_rsd.append(rsd.cpu().item())

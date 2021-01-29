@@ -33,10 +33,10 @@ def generate_alignments(model: GeomNN, mol_info: Dict[str, np.ndarray]
     mask_matrices = MaskMatrices(mol_vertex_w, mol_vertex_b,
                                  vertex_edge_w1, vertex_edge_w2,
                                  vertex_edge_b1, vertex_edge_b2)
-    _, conf, local_alignments, global_alignments, *_ = model.forward(atom_ftr, bond_ftr, massive, mask_matrices,
+    _, confs, local_alignments, global_alignments, *_ = model.forward(atom_ftr, bond_ftr, massive, mask_matrices,
                                                                     return_local_alignment=True,
                                                                     return_global_alignment=True)
-    return conf.cpu().detach().numpy(), local_alignments, global_alignments
+    return confs[-1].cpu().detach().numpy(), local_alignments, global_alignments
 
 
 def ve_align2vv_align(align: np.ndarray):

@@ -84,7 +84,8 @@ class GeomNN(nn.Module):
                 mask_matrices: MaskMatrices,
                 given_q_ftr: torch.Tensor = None,
                 return_local_alignment=False, return_global_alignment=False, return_derive=False
-                ) -> Tuple[torch.Tensor, torch.Tensor, List[List[np.ndarray]], List[np.ndarray], List[np.ndarray],
+                ) -> Tuple[torch.Tensor, List[torch.Tensor],
+                           List[List[np.ndarray]], List[np.ndarray], List[np.ndarray],
                            List[np.ndarray], List[np.ndarray]]:
         hv_ftr, he_ftr, p_ftr, q_ftr = self.initializer.forward(atom_ftr, bond_ftr, mask_matrices)
 
@@ -93,6 +94,7 @@ class GeomNN(nn.Module):
         elif self.conf_type is ConfType.RDKIT:
             p_ftr, q_ftr = p_ftr * 0, given_q_ftr
 
+        conformations = [q_ftr]
         list_alignments = []
         list_he_ftr = []
         list_p_ftr = []
@@ -116,5 +118,5 @@ class GeomNN(nn.Module):
             list_he_ftr.append(he_ftr.cpu().detach().numpy())
 
         fingerprint, global_alignments = self.fingerprint_gen.forward(hv_ftr, mask_matrices, return_global_alignment)
-        conformation = q_ftr
-        return fingerprint, conformation, list_alignments, global_alignments, list_he_ftr, list_p_ftr, list_q_ftr
+        conformations.append(q_ftr)
+        return fingerprint, conformations, list_alignments, global_alignments, list_he_ftr, list_p_ftr, list_q_ftr
