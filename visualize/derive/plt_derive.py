@@ -63,7 +63,7 @@ def get_bonds_u_v_width_style(smiles: str) -> Tuple[list, list, list, list]:
 
 
 def plt_derive(pos: np.ndarray, direction: Union[np.ndarray, None], smiles: str,
-               title: str = 'plt_3d', d: str = 'visualize/derive'):
+               title: str = 'plt_3d', d: str = 'visualize/derive/graph'):
     fig = plt.figure(figsize=(8, 8))
     ax = Axes3D(fig)
     # ax = fig.add_subplot(111, projection='3d')

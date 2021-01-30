@@ -5,7 +5,7 @@ from typing import List
 
 
 def plt_predict_actual_bond_energy(predict: List[float], actual: List[float],
-                                   title: str = 'plt_3d', d: str = 'visualize/alignment'):
+                                   title: str = 'plt_3d', d: str = 'visualize/alignment/graph'):
     fig = plt.figure(figsize=(8, 8))
     plt.scatter(predict, actual)
     sns.regplot(predict, actual)

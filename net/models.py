@@ -100,7 +100,7 @@ class GeomNN(nn.Module):
         list_p_ftr = []
         list_q_ftr = []
         if return_derive:
-            list_p_ftr.append(p_ftr.cpu().detach().numpy())
+            list_p_ftr.append(self.decentralized_p_ftr(p_ftr, massive, mask_matrices).cpu().detach().numpy())
             list_q_ftr.append(q_ftr.cpu().detach().numpy())
         for i in range(self.n_layer):
             t_hv_ftr, t_he_ftr, alignments = self.mp_kernel.forward(hv_ftr, he_ftr, p_ftr, q_ftr,
@@ -110,7 +110,8 @@ class GeomNN(nn.Module):
                 for j in range(self.n_iteration):
                     p_ftr, q_ftr = self.drv_kernel.forward(hv_ftr, he_ftr, massive, p_ftr, q_ftr, mask_matrices)
                     if return_derive:
-                        list_p_ftr.append(p_ftr.cpu().detach().numpy())
+                        list_p_ftr.append(
+                            self.decentralized_p_ftr(p_ftr, massive, mask_matrices).cpu().detach().numpy())
                         list_q_ftr.append(q_ftr.cpu().detach().numpy())
 
             hv_ftr, he_ftr = t_hv_ftr, t_he_ftr
@@ -120,3 +121,11 @@ class GeomNN(nn.Module):
         fingerprint, global_alignments = self.fingerprint_gen.forward(hv_ftr, mask_matrices, return_global_alignment)
         conformations.append(q_ftr)
         return fingerprint, conformations, list_alignments, global_alignments, list_he_ftr, list_p_ftr, list_q_ftr
+
+    @staticmethod
+    def decentralized_p_ftr(p_ftr: torch.Tensor, massive: torch.Tensor, mask_matrices: MaskMatrices) -> torch.Tensor:
+        mvw = mask_matrices.mol_vertex_w
+        mp = mvw @ p_ftr
+        mm = mvw @ massive
+        mv = mp / mm
+        return p_ftr - (mvw.t() @ mv) * massive

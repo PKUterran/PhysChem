@@ -62,7 +62,7 @@ def get_bonds_u_v_width_style(smiles: str) -> Tuple[list, list, list, list]:
 
 
 def plt_local_alignment(pos: np.ndarray, smiles: str, local_alignment: np.ndarray,
-                        title: str = 'plt_3d', d: str = 'visualize/alignment'):
+                        title: str = 'plt_3d', d: str = 'visualize/alignment/graph'):
     n_edge = int(local_alignment.shape[1] / 2)
     local_alignment = local_alignment * np.sum(local_alignment > 1e-5, axis=1, keepdims=True)
     edge_weight = np.sum(local_alignment, axis=0)

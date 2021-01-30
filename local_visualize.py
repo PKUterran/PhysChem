@@ -13,9 +13,9 @@ if __name__ == '__main__':
             'c1cn(cn1)C2CC2',
             'NC(C)C(O)=O',
         ],
-        tag='QM9-M',
+        tag='QM9',
         special_config={
-            'MESSAGE_TYPE': 'triplet-mean',
+            # 'MESSAGE_TYPE': 'triplet-mean',
         },
     )
     # list_smiles = pd.read_csv('data/qm9/qm9.csv').values[3:40003, 1]

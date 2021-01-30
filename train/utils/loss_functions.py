@@ -11,12 +11,18 @@ from net.utils.model_utils import normalize_adj_rc
 
 def multi_roc(source: np.ndarray, target: np.ndarray) -> Tuple[float, List[float]]:
     assert source.shape == target.shape
-    not_nan_mask = np.logical_not(np.isnan(target))
+    nan_mask = np.isnan(target)
+    # not_nan_mask = np.logical_not(nan_mask)
+    tgt = target.copy()
+    src = source.copy()
+    tgt[nan_mask] = 0
+    src[nan_mask] = 0
     list_roc = []
     n_m = source.shape[1]
     for i in range(n_m):
         try:
-            roc = roc_auc_score(target[not_nan_mask[:, i], i], source[not_nan_mask[:, i], i])
+            # roc = roc_auc_score(target[not_nan_mask[:, i], i], source[not_nan_mask[:, i], i])
+            roc = roc_auc_score(target[:, i], source[:, i])
         except ValueError:
             roc = 1
         list_roc.append(roc)
