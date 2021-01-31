@@ -16,13 +16,13 @@ def multi_roc(source: np.ndarray, target: np.ndarray) -> Tuple[float, List[float
     tgt = target.copy()
     src = source.copy()
     tgt[nan_mask] = 0
-    src[nan_mask] = 0
+    src[nan_mask] = -1e6
     list_roc = []
     n_m = source.shape[1]
     for i in range(n_m):
         try:
             # roc = roc_auc_score(target[not_nan_mask[:, i], i], source[not_nan_mask[:, i], i])
-            roc = roc_auc_score(target[:, i], source[:, i])
+            roc = roc_auc_score(tgt[:, i], src[:, i])
         except ValueError:
             roc = 1
         list_roc.append(roc)
