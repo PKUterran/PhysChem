@@ -99,6 +99,12 @@ def train_qm9(special_config: dict = None,
     logs: List[Dict[str, float]] = []
     best_epoch = 0
     best_metric = 999
+    if config['CONF_LOSS'] == 'DL':
+        c_loss_fuc = distance_loss
+    elif config['CONF_LOSS'] == 'ADJ3':
+        c_loss_fuc = adj3_loss
+    else:
+        assert False, f"Unknown conformation loss function: {config['CONF_LOSS']}"
     try:
         if not os.path.exists(MODEL_DICT_DIR):
             os.mkdir(MODEL_DICT_DIR)
@@ -119,8 +125,8 @@ def train_qm9(special_config: dict = None,
                                            batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
-            c0_loss = adj3_loss(pred_cs[0], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
-            c1_loss = adj3_loss(pred_cs[-1], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+            c0_loss = c_loss_fuc(pred_cs[0], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+            c1_loss = c_loss_fuc(pred_cs[-1], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
             c_loss = c0_loss * 0.2 + c1_loss * 0.8
             loss = p_loss + config['LAMBDA'] * c_loss
             loss.backward()
@@ -146,8 +152,9 @@ def train_qm9(special_config: dict = None,
                                            batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
-            c0_loss = adj3_loss(pred_cs[0], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
-            c1_loss = adj3_loss(pred_cs[-1], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+
+            c0_loss = c_loss_fuc(pred_cs[0], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+            c1_loss = c_loss_fuc(pred_cs[-1], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
             c_loss = c0_loss * 0.2 + c1_loss * 0.8
             loss = p_loss + config['LAMBDA'] * c_loss
             list_p_loss.append(p_loss.cpu().item())

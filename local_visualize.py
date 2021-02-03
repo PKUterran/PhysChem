@@ -13,8 +13,9 @@ if __name__ == '__main__':
             'c1cn(cn1)C2CC2',
             'NC(C)C(O)=O',
         ],
-        tag='QM9',
+        tag='QM9-lambda10',
         special_config={
+            'LAMBDA': 10,
             # 'MESSAGE_TYPE': 'triplet-mean',
         },
     )

@@ -89,7 +89,7 @@ def adj3_loss(source: torch.Tensor, target: torch.Tensor, mask_matrices: MaskMat
 
 
 def distance_loss(source: torch.Tensor, target: torch.Tensor, mask_matrices: MaskMatrices,
-                  root_square=True) -> torch.Tensor:
+                  use_cuda=False, root_square=True) -> torch.Tensor:
     n_mol = mask_matrices.mol_vertex_w.shape[0]
     mvw = mask_matrices.mol_vertex_w
     vv = mvw.t() @ mvw
@@ -99,4 +99,4 @@ def distance_loss(source: torch.Tensor, target: torch.Tensor, mask_matrices: Mas
     if root_square:
         return torch.sqrt(torch.sum(((ds - dt) ** 2) * norm_vv))
     else:
-        return torch.sum((ds - dt) * norm_vv)
+        return torch.sum(torch.abs(ds - dt) * norm_vv)

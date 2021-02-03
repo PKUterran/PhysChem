@@ -25,6 +25,7 @@ DEFAULT_CONFIG = {
     'EPOCH': 300,
     'BATCH': 20,
     'PACK': 1,
+    'CONF_LOSS': 'ADJ3',
     'LAMBDA': 1,
     'LR': 2e-6,
     'GAMMA': 0.995,
@@ -81,11 +82,11 @@ TOX21_CONFIG.update({
     'N_GLOBAL': 2,
     'DROPOUT': 0.5,
 
-    'EPOCH': 400,
+    'EPOCH': 200,
     'BATCH': 2,
     'PACK': 64,
     'LR': 1e-4,
-    'GAMMA': 0.995,
+    'GAMMA': 0.99,
     'DECAY': 1e-5,
 
     'CONF_TYPE': ConfType.RDKIT,

@@ -31,7 +31,7 @@ class Force(nn.Module):
         uv_e = torch.cat([(vew_u + vew_v).t() @ v, e2], dim=1)
         delta_q = vew_u.t() @ q - vew_v.t() @ q
         unit_f_bond = delta_q / (torch.norm(delta_q, dim=1, keepdim=True) + self.ESP)
-        value_f_bond = self.fb_tanh(self.fb_tanh(self.fb_linear2(self.fb_relu(self.fb_linear1(uv_e)))))
+        value_f_bond = self.fb_tanh(self.fb_linear2(self.fb_relu(self.fb_linear1(uv_e))))
         f_bond = vew_u @ (unit_f_bond * value_f_bond)
 
         # relative force
