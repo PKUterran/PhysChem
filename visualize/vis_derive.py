@@ -6,6 +6,7 @@ from rdkit import Chem
 from data.encode import encode_smiles, get_massive_from_atom_features
 from net.utils.MaskMatrices import MaskMatrices, cuda_copy
 from net.models import GeomNN
+from train.utils.loss_functions import adj3_loss
 from train.utils.cache_batch import BatchCache
 from train.utils.rdkit import rdkit_mol_positions
 from .rebuild import rebuild_qm9
@@ -33,6 +34,7 @@ def generate_derive(model: GeomNN, mol_info: Dict[str, np.ndarray]
     mask_matrices = MaskMatrices(mol_vertex_w, mol_vertex_b,
                                  vertex_edge_w1, vertex_edge_w2,
                                  vertex_edge_b1, vertex_edge_b2)
+    # adj3_loss(None, None, mask_matrices, use_cuda=False)
     _, _, _, _, _, list_p_ftr, list_q_ftr = model.forward(atom_ftr, bond_ftr, massive, mask_matrices,
                                                           return_derive=True)
     return list_p_ftr, list_q_ftr

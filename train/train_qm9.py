@@ -15,7 +15,7 @@ from net.models import GeomNN, MLP
 from .config import QM9_CONFIG
 from .utils.cache_batch import Batch, BatchCache, load_batch_cache, load_encode_mols, batch_cuda_copy
 from .utils.seed import set_seed
-from .utils.loss_functions import multi_mse_loss, multi_mae_loss, adj3_loss, distance_loss
+from .utils.loss_functions import multi_mse_loss, multi_mae_loss, adj3_loss, distance_loss, hierarchical_adj3_loss
 from .utils.save_log import save_log
 
 MODEL_DICT_DIR = 'train/models'
@@ -103,6 +103,8 @@ def train_qm9(special_config: dict = None,
         c_loss_fuc = distance_loss
     elif config['CONF_LOSS'] == 'ADJ3':
         c_loss_fuc = adj3_loss
+    elif config['CONF_LOSS'] == 'H_ADJ3':
+        c_loss_fuc = hierarchical_adj3_loss
     else:
         assert False, f"Unknown conformation loss function: {config['CONF_LOSS']}"
     try:
@@ -122,12 +124,12 @@ def train_qm9(special_config: dict = None,
             if use_cuda:
                 batch = batch_cuda_copy(batch)
             fp, pred_cs, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
-                                           batch.rdkit_conf)
+                                            batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
-            c0_loss = c_loss_fuc(pred_cs[0], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
-            c1_loss = c_loss_fuc(pred_cs[-1], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
-            c_loss = c0_loss * 0.2 + c1_loss * 0.8
+            c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda) \
+                if config['CONF_LOSS'] == 'H_ADJ3' else \
+                c_loss_fuc(pred_cs[-1], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
             loss = p_loss + config['LAMBDA'] * c_loss
             loss.backward()
             optimizer.step()
@@ -149,13 +151,13 @@ def train_qm9(special_config: dict = None,
             if use_cuda:
                 batch = batch_cuda_copy(batch)
             fp, pred_cs, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
-                                           batch.rdkit_conf)
+                                            batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
 
-            c0_loss = c_loss_fuc(pred_cs[0], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
-            c1_loss = c_loss_fuc(pred_cs[-1], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
-            c_loss = c0_loss * 0.2 + c1_loss * 0.8
+            c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda) \
+                if config['CONF_LOSS'] == 'H_ADJ3' else \
+                c_loss_fuc(pred_cs[-1], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
             loss = p_loss + config['LAMBDA'] * c_loss
             list_p_loss.append(p_loss.cpu().item())
             list_c_loss.append(c_loss.cpu().item())

@@ -6,7 +6,7 @@ from typing import Tuple, List
 from sklearn.metrics import roc_auc_score
 
 from net.utils.MaskMatrices import MaskMatrices
-from net.utils.model_utils import normalize_adj_rc
+from net.utils.model_utils import normalize_adj_rc, nonzero
 
 
 def multi_roc(source: np.ndarray, target: np.ndarray) -> Tuple[float, List[float]]:
@@ -66,20 +66,46 @@ def distance_among(positions: torch.Tensor) -> torch.Tensor:
     return distance
 
 
+def generate_adj(mask_matrices: MaskMatrices, mode, use_cuda=False) -> torch.Tensor:
+    if mode == 'adj3':
+        vew1 = mask_matrices.vertex_edge_w1
+        vew2 = mask_matrices.vertex_edge_w2
+        adj_d = vew1 @ vew2.t()
+        i = torch.eye(adj_d.shape[0])
+        if use_cuda:
+            i = i.cuda()
+        adj = adj_d + adj_d.t() + i
+        adj_2 = adj @ adj
+        adj_3 = adj_2 @ adj
+        mean_adj_3 = normalize_adj_rc(nonzero(adj_3))
+        return mean_adj_3
+    elif mode == 'norm_adj3':
+        vew1 = mask_matrices.vertex_edge_w1
+        vew2 = mask_matrices.vertex_edge_w2
+        adj_d = vew1 @ vew2.t()
+        i = torch.eye(adj_d.shape[0])
+        if use_cuda:
+            i = i.cuda()
+        adj = adj_d + adj_d.t() + i
+        norm_adj = normalize_adj_rc(adj)
+        norm_adj_2 = norm_adj @ norm_adj
+        norm_adj_3 = norm_adj_2 @ norm_adj
+        mean_adj_3 = (norm_adj + norm_adj_2 + norm_adj_3) / 3
+        return mean_adj_3
+    elif mode == 'distance':
+        n_mol = mask_matrices.mol_vertex_w.shape[0]
+        mvw = mask_matrices.mol_vertex_w
+        vv = mvw.t() @ mvw
+        norm_vv = vv / ((torch.sum(vv, dim=1) ** 2) * n_mol)
+        return norm_vv
+    else:
+        assert False, f'{mode}'
+
+
 def adj3_loss(source: torch.Tensor, target: torch.Tensor, mask_matrices: MaskMatrices,
               use_cuda=False) -> torch.Tensor:
     n_atom = mask_matrices.mol_vertex_w.shape[1]
-    vew1 = mask_matrices.vertex_edge_w1
-    vew2 = mask_matrices.vertex_edge_w2
-    adj_d = vew1 @ vew2.t()
-    i = torch.eye(adj_d.shape[0])
-    if use_cuda:
-        i = i.cuda()
-    adj = adj_d + adj_d.t() + i
-    norm_adj = normalize_adj_rc(adj)
-    norm_adj_2 = norm_adj @ norm_adj
-    norm_adj_3 = norm_adj_2 @ norm_adj
-    mean_adj_3 = (norm_adj + norm_adj_2 + norm_adj_3) / 3
+    mean_adj_3 = generate_adj(mask_matrices, mode='adj3', use_cuda=use_cuda)
 
     ds = distance_among(source)
     dt = distance_among(target)
@@ -88,12 +114,33 @@ def adj3_loss(source: torch.Tensor, target: torch.Tensor, mask_matrices: MaskMat
     return loss
 
 
+def hierarchical_adj3_loss(sources: List[torch.Tensor], target: torch.Tensor, mask_matrices: MaskMatrices, weight=1.6,
+                           use_cuda=False) -> torch.Tensor:
+    n_s = len(sources)
+    n_atom = mask_matrices.mol_vertex_w.shape[1]
+    mean_adj_3 = generate_adj(mask_matrices, mode='adj3', use_cuda=use_cuda)
+
+    w, t = [], 1
+    for i in range(n_s):
+        w.append(t)
+        t *= weight
+    tw = sum(w)
+    w = [j / tw for j in w]
+
+    losses = []
+    for i in range(n_s):
+        ds = distance_among(sources[i])
+        dt = distance_among(target)
+        distance_2 = (ds - dt) ** 2
+        loss = torch.sum(distance_2 * mean_adj_3) * w[i] / n_atom
+        losses.append(loss)
+
+    return sum(losses)
+
+
 def distance_loss(source: torch.Tensor, target: torch.Tensor, mask_matrices: MaskMatrices,
                   use_cuda=False, root_square=True) -> torch.Tensor:
-    n_mol = mask_matrices.mol_vertex_w.shape[0]
-    mvw = mask_matrices.mol_vertex_w
-    vv = mvw.t() @ mvw
-    norm_vv = vv / ((torch.sum(vv, dim=1) ** 2) * n_mol)
+    norm_vv = generate_adj(mask_matrices, mode='distance', use_cuda=use_cuda)
     ds = distance_among(source)
     dt = distance_among(target)
     if root_square:

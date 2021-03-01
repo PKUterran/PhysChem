@@ -6,10 +6,8 @@ from typing import Union, List
 
 
 class Initializer(nn.Module):
-    H_DIMS = []
-    OUT_DIM = 32
-
     def __init__(self, atom_dim: int, bond_dim: int, hv_dim: int, he_dim: int, p_dim: int, q_dim: int,
+                 gcn_h_dims: List[int], gcn_o_dim: int, lstm_layers: int, lstm_o_dim: int,
                  use_cuda=False):
         super(Initializer, self).__init__()
         self.use_cuda = use_cuda
@@ -21,8 +19,15 @@ class Initializer(nn.Module):
         self.e_act = nn.Tanh()
         self.a_linear = nn.Linear(he_dim, 1, bias=True)
         self.a_act = nn.Sigmoid()
-        self.gcn = GCN(hv_dim, self.OUT_DIM, self.H_DIMS, use_cuda=use_cuda, residual=True)
-        self.lstm_encoder = LSTMEncoder(hv_dim + sum(self.H_DIMS) + self.OUT_DIM, p_dim + q_dim)
+        self.gcn = GCN(hv_dim, gcn_o_dim, gcn_h_dims, use_cuda=use_cuda, residual=True)
+        if lstm_o_dim == 0:
+            self.remap = False
+            self.lstm_encoder = LSTMEncoder(hv_dim + sum(gcn_h_dims) + gcn_o_dim, p_dim + q_dim, layers=lstm_layers)
+        else:
+            self.remap = True
+            self.lstm_encoder = LSTMEncoder(hv_dim + sum(gcn_h_dims) + gcn_o_dim, lstm_o_dim, layers=lstm_layers)
+            self.lstm_act = nn.Tanh()
+            self.lstm_remap = nn.Linear(lstm_o_dim, p_dim + q_dim)
 
     def forward(self, atom_ftr: torch.Tensor, bond_ftr: torch.Tensor,
                 mask_matrices: MaskMatrices, pq_none=False
@@ -43,7 +48,10 @@ class Initializer(nn.Module):
         adj = adj_d + adj_d.t()
         norm_adj = normalize_adj_r(adj)
         hv_neighbor_ftr = self.gcn(hv_ftr, norm_adj)
-        pq_ftr = self.lstm_encoder(hv_neighbor_ftr, mask_matrices)
+        if self.remap:
+            pq_ftr = self.lstm_remap(self.lstm_act(self.lstm_encoder(hv_neighbor_ftr, mask_matrices)))
+        else:
+            pq_ftr = self.lstm_encoder(hv_neighbor_ftr, mask_matrices)
         p_ftr, q_ftr = pq_ftr[:, :self.p_dim], pq_ftr[:, self.p_dim:]
 
         return hv_ftr, he_ftr, p_ftr, q_ftr

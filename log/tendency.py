@@ -14,7 +14,7 @@ def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
     fig, ax1 = plt.subplots()
     ax1.plot(epochs, train_p, color='red', linestyle='--')
     ax1.plot(epochs, test_p, color='red')
-    ax1.set_ylim(min(train_p) - 0.2, max(train_p) + 0.2)
+    # ax1.set_ylim(min(train_p) - 0.2, max(train_p) + 0.2)
 
     if show_conf:
         # train_c = [dic['train_loss'] for dic in log]
@@ -24,17 +24,23 @@ def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
         ax2 = ax1.twinx()
         ax2.plot(epochs, train_c, color='green', linestyle='--')
         ax2.plot(epochs, test_c, color='green')
-        ax2.set_ylim(min(train_c) - 0.1, max(train_c) + 0.1)
+        # ax2.set_ylim(min(train_c) - 0.1, max(train_c) + 0.1)
 
     plt.savefig(path)
     plt.close(fig)
 
 
 tuples = [
-    ('QM9', 'QM9-Xconf', False, False),
-    ('QM9', 'QM9-rdkit', False, True),
-    ('QM9', 'QM9', False, True),
-    ('QM9', 'QM9-lambda10', False, True),
+    # ('QM9', 'QM9-Xconf', False, False),
+    # ('QM9', 'QM9-rdkit', False, True),
+    # ('QM9', 'QM9', False, True),
+    # ('QM9', 'QM9-lambda10', False, True),
+    # ('QM9', 'QM9-DL', False, True),
+    # ('QM9', 'QM9-3400', False, True),
+    ('QM9', 'QM9-3400-init2', False, True),
+    ('QM9', 'QM9-3400-init3', False, True),
+    # ('QM9', 'QM9-10000', False, True),
+    # ('QM9', 'QM9-10000-short', False, True),
     # ('QM9', 'QM9-M-Xconf', False, False),
     # ('QM9', 'QM9-M-rdkit', False, True),
     # ('QM9', 'QM9-M', False, True),

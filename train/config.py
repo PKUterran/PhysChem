@@ -1,14 +1,24 @@
 from net.config import ConfType
 
-
 DEFAULT_CONFIG = {
     # model
     'CLASSIFIER_HIDDENS': [],
-    'HV_DIM': 64,
-    'HE_DIM': 32,
+
+    # 'INIT_GCN_H_DIMS': [],
+    # 'INIT_GCN_O_DIM': 32,
+    # 'INIT_LSTM_LAYERS': 1,
+    # 'INIT_LSTM_O_DIM': 0,
+
+    'INIT_GCN_H_DIMS': [128],
+    'INIT_GCN_O_DIM': 128,
+    'INIT_LSTM_LAYERS': 2,
+    'INIT_LSTM_O_DIM': 128,
+
+    'HV_DIM': 128,
+    'HE_DIM': 64,
     'HM_DIM': 256,
-    'MV_DIM': 64,
-    'ME_DIM': 32,
+    'MV_DIM': 128,
+    'ME_DIM': 64,
     'MM_DIM': 256,
     'PQ_DIM': 3,
     'N_LAYER': 2,
@@ -20,13 +30,14 @@ DEFAULT_CONFIG = {
     'GLOBAL_TYPE': 'inductive',
     'DERIVATION_TYPE': 'newton',
     'TAU': 0.25,
+    'DISSA': 1.0,
     'DROPOUT': 0.0,
 
     'EPOCH': 300,
     'BATCH': 20,
     'PACK': 1,
-    'CONF_LOSS': 'ADJ3',
-    'LAMBDA': 1,
+    'CONF_LOSS': 'H_ADJ3',
+    'LAMBDA': 100,
     'LR': 2e-6,
     'GAMMA': 0.995,
     'DECAY': 1e-5,
@@ -143,4 +154,3 @@ FREESOLV_CONFIG.update({
 
     'CONF_TYPE': ConfType.RDKIT,
 })
-

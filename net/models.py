@@ -22,6 +22,7 @@ class GeomNN(nn.Module):
         derivation_type = config['DERIVATION_TYPE']
         global_type = config['GLOBAL_TYPE']
         tau = config['TAU']
+        self.dissa = config['DISSA']
         dropout = config['DROPOUT']
         self.use_cuda = use_cuda
 
@@ -35,6 +36,10 @@ class GeomNN(nn.Module):
             he_dim=he_dim,
             p_dim=p_dim,
             q_dim=q_dim,
+            gcn_h_dims=config['INIT_GCN_H_DIMS'],
+            gcn_o_dim=config['INIT_GCN_O_DIM'],
+            lstm_layers=config['INIT_LSTM_LAYERS'],
+            lstm_o_dim=config['INIT_LSTM_O_DIM'],
             use_cuda=use_cuda
         )
         self.mp_kernel = ConfAwareMPNNKernel(
@@ -109,6 +114,9 @@ class GeomNN(nn.Module):
             if self.need_derive:
                 for j in range(self.n_iteration):
                     p_ftr, q_ftr = self.drv_kernel.forward(hv_ftr, he_ftr, massive, p_ftr, q_ftr, mask_matrices)
+                    if self.dissa < 1.0 - 1e-5:
+                        p_ftr *= self.dissa
+                    conformations.append(q_ftr)
                     if return_derive:
                         list_p_ftr.append(
                             self.decentralized_p_ftr(p_ftr, massive, mask_matrices).cpu().detach().numpy())
