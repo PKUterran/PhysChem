@@ -130,10 +130,10 @@ def train_qm9(special_config: dict = None,
                                             batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
-            if config['CONF_LOSS'] == 'H_ADJ3' or config['CONF_LOSS'] == 'H_ADJ4':
-                c_loss = c_loss_fuc(pred_cs[-1], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
-            else:
+            if config['CONF_LOSS'].startswith('H_'):
                 c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+            else:
+                c_loss = c_loss_fuc(pred_cs[-1], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
             loss = p_loss + config['LAMBDA'] * c_loss
             loss.backward()
             optimizer.step()
@@ -159,10 +159,10 @@ def train_qm9(special_config: dict = None,
             pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
 
-            if config['CONF_LOSS'] == 'H_ADJ3' or config['CONF_LOSS'] == 'H_ADJ4':
-                c_loss = c_loss_fuc(pred_cs[-1], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
-            else:
+            if config['CONF_LOSS'].startswith('H_'):
                 c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+            else:
+                c_loss = c_loss_fuc(pred_cs[-1], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
             loss = p_loss + config['LAMBDA'] * c_loss
             list_p_loss.append(p_loss.cpu().item())
             list_c_loss.append(c_loss.cpu().item())
