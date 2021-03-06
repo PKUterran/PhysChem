@@ -67,7 +67,18 @@ def distance_among(positions: torch.Tensor) -> torch.Tensor:
 
 
 def generate_adj(mask_matrices: MaskMatrices, mode, use_cuda=False) -> torch.Tensor:
-    if mode == 'adj3':
+    if mode == 'adj2':
+        vew1 = mask_matrices.vertex_edge_w1
+        vew2 = mask_matrices.vertex_edge_w2
+        adj_d = vew1 @ vew2.t()
+        i = torch.eye(adj_d.shape[0])
+        if use_cuda:
+            i = i.cuda()
+        adj = adj_d + adj_d.t() + i
+        adj_2 = adj @ adj
+        mean_adj_2 = normalize_adj_rc(nonzero(adj_2))
+        return mean_adj_2
+    elif mode == 'adj3':
         vew1 = mask_matrices.vertex_edge_w1
         vew2 = mask_matrices.vertex_edge_w2
         adj_d = vew1 @ vew2.t()
@@ -124,6 +135,30 @@ def adj3_loss(source: torch.Tensor, target: torch.Tensor, mask_matrices: MaskMat
     distance_2 = (ds - dt) ** 2
     loss = torch.sum(distance_2 * mean_adj_3) / n_atom
     return loss
+
+
+def hierarchical_adj2_loss(sources: List[torch.Tensor], target: torch.Tensor, mask_matrices: MaskMatrices, weight=1.6,
+                           use_cuda=False) -> torch.Tensor:
+    n_s = len(sources)
+    n_atom = mask_matrices.mol_vertex_w.shape[1]
+    mean_adj_2 = generate_adj(mask_matrices, mode='adj2', use_cuda=use_cuda)
+
+    w, t = [], 1
+    for i in range(n_s):
+        w.append(t)
+        t *= weight
+    tw = sum(w)
+    w = [j / tw for j in w]
+
+    losses = []
+    for i in range(n_s):
+        ds = distance_among(sources[i])
+        dt = distance_among(target)
+        distance_2 = (ds - dt) ** 2
+        loss = torch.sum(distance_2 * mean_adj_3) * w[i] / n_atom
+        losses.append(loss)
+
+    return sum(losses)
 
 
 def hierarchical_adj3_loss(sources: List[torch.Tensor], target: torch.Tensor, mask_matrices: MaskMatrices, weight=1.6,

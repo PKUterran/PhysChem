@@ -17,8 +17,9 @@ if __name__ == '__main__':
             'c1ccccc1',
             'Cc1cccc(c1C)Nc2ccccc2C(=O)O',
         ],
-        tag='QM9',
+        tag='QM9-H_ADJ4',
         special_config={
+            'CONF_LOSS': 'H_ADJ4',
             # 'INIT_GCN_H_DIMS': [128],
             # 'INIT_GCN_O_DIM': 128,
             # 'INIT_LSTM_LAYERS': 4,

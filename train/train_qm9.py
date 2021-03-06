@@ -16,7 +16,7 @@ from .config import QM9_CONFIG
 from .utils.cache_batch import Batch, BatchCache, load_batch_cache, load_encode_mols, batch_cuda_copy
 from .utils.seed import set_seed
 from .utils.loss_functions import multi_mse_loss, multi_mae_loss, adj3_loss, distance_loss, \
-    hierarchical_adj3_loss, hierarchical_adj4_loss
+    hierarchical_adj2_loss, hierarchical_adj3_loss, hierarchical_adj4_loss
 from .utils.save_log import save_log
 
 MODEL_DICT_DIR = 'train/models'
@@ -104,6 +104,8 @@ def train_qm9(special_config: dict = None,
         c_loss_fuc = distance_loss
     elif config['CONF_LOSS'] == 'ADJ3':
         c_loss_fuc = adj3_loss
+    elif config['CONF_LOSS'] == 'H_ADJ2':
+        c_loss_fuc = hierarchical_adj2_loss
     elif config['CONF_LOSS'] == 'H_ADJ3':
         c_loss_fuc = hierarchical_adj3_loss
     elif config['CONF_LOSS'] == 'H_ADJ4':
