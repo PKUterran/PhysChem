@@ -3,7 +3,7 @@ import torch
 import rdkit.Chem as Chem
 import numpy as np
 
-from data.qm9.load_qm9 import cache_qm9, load_qm9
+from data.geom_qm9.load_qm9 import cache_qm9, load_qm9
 from net.utils.model_utils import normalize_adj_r, normalize_adj_rc
 from train.utils.loss_functions import distance_among
 
@@ -56,10 +56,10 @@ def print_hi(name):
     # print(na1.numpy())
     # print(na2.numpy())
 
-    # utils qm9
+    # utils geom_qm9
     # cache_qm9()
 
-    # load qm9
+    # load geom_qm9
     # t0 = time.time()
     # m, n = load_qm9()
     # t1 = time.time()

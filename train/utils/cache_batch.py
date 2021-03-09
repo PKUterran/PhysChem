@@ -7,12 +7,15 @@ from typing import List, Dict, Tuple, Any, Union
 from tqdm import tqdm
 
 from data.encode import get_massive_from_atom_features, encode_mols
-from data.qm9.load_qm9 import get_mol_positions
 from net.utils.MaskMatrices import MaskMatrices, cuda_copy
 from train.utils.rdkit import rdkit_mol_positions
 
 CACHE_DIR = 'train/utils/cache'
 MOLS_DIR = 'train/utils/mols'
+
+
+def get_mol_positions(mol) -> np.ndarray:
+    return mol.GetConformer().GetPositions()
 
 
 class Batch:

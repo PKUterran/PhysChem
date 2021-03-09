@@ -155,7 +155,7 @@ def hierarchical_adj2_loss(sources: List[torch.Tensor], target: torch.Tensor, ma
         ds = distance_among(sources[i])
         dt = distance_among(target)
         distance_2 = (ds - dt) ** 2
-        loss = torch.sum(distance_2 * mean_adj_3) * w[i] / n_atom
+        loss = torch.sum(distance_2 * mean_adj_2) * w[i] / n_atom
         losses.append(loss)
 
     return sum(losses)

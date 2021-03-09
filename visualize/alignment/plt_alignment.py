@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import rdkit
@@ -89,7 +90,9 @@ def plt_local_alignment(pos: np.ndarray, smiles: str, local_alignment: np.ndarra
 
 
 def plt_global_alignment(pos: np.ndarray, smiles: str, global_alignment: np.ndarray,
-                         title: str = 'plt_3d', d: str = 'visualize/alignment'):
+                         title: str = 'plt_3d', d: str = 'visualize/alignment/graph'):
+    if not os.path.exists(d):
+        os.mkdir(d)
     global_alignment = global_alignment[0]
     colors = global_alignment / np.max(global_alignment)
 

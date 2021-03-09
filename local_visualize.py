@@ -17,9 +17,10 @@ if __name__ == '__main__':
             'c1ccccc1',
             'Cc1cccc(c1C)Nc2ccccc2C(=O)O',
         ],
-        tag='QM9-H_ADJ4',
+        tag='QM9',
         special_config={
-            'CONF_LOSS': 'H_ADJ4',
+            # 'CONF_LOSS': 'H_ADJ4',
+
             # 'INIT_GCN_H_DIMS': [128],
             # 'INIT_GCN_O_DIM': 128,
             # 'INIT_LSTM_LAYERS': 4,
@@ -55,7 +56,7 @@ if __name__ == '__main__':
         #     # 'MESSAGE_TYPE': 'triplet-mean',
         # },
     )
-    # list_smiles = pd.read_csv('data/qm9/qm9.csv').values[3:40003, 1]
+    # list_smiles = pd.read_csv('data/geom_qm9/geom_qm9.csv').values[3:40003, 1]
     # vis_bond(
     #     list_smiles=list_smiles,
     #     tag='QM9-M',

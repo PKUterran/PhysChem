@@ -41,7 +41,7 @@ def qm9_dict(start=0):
     #     print(positions)
     #     print(ss)
 
-    csv = pd.read_csv('../data/qm9/qm9.csv')
+    csv = pd.read_csv('../data/geom_qm9/qm9.csv')
     nd = csv.values
     smiles = nd[:, 1]
     all_smiles_len = len(smiles)
@@ -90,12 +90,12 @@ def qm9_dict(start=0):
             print('processed:{:.2f}%'.format(100 * total / len(smiles)))
         if total % 2000 == 0:
             print('saving...')
-            with open('../data/qm9/mid/csv2json_{}-{}.json'.format(
+            with open('../data/geom_qm9/mid/csv2json_{}-{}.json'.format(
                     start + total - 1999, start + total), 'w+', encoding='utf-8') as fp:
                 json.dump(csv2json, fp)
             csv2json.clear()
 
-    with open('../data/qm9/mid/csv2json_tail.json', 'w+', encoding='utf-8') as fp:
+    with open('../data/geom_qm9/mid/csv2json_tail.json', 'w+', encoding='utf-8') as fp:
         json.dump(csv2json, fp)
     print('hit rate: {:.1f}%'.format(hit * 100 / total))
 

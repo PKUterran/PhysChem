@@ -4,16 +4,20 @@ import torch
 import torch.optim as optim
 import numpy as np
 
+from enum import Enum
 from typing import List, Dict
 from itertools import chain
 from functools import reduce
 from tqdm import tqdm
 
+# from data.geom_qm9.load_qm9 import load_qm9 as load_geom_qm9
+from data.qm7.load_qm7 import load_qm7
+from data.qm8.load_qm8 import load_qm8
 from data.qm9.load_qm9 import load_qm9
 from net.config import ConfType
 from net.models import GeomNN, MLP
 from .config import QM9_CONFIG
-from .utils.cache_batch import Batch, BatchCache, load_batch_cache, load_encode_mols, batch_cuda_copy
+from .utils.cache_batch import Batch, load_batch_cache, load_encode_mols, batch_cuda_copy
 from .utils.seed import set_seed
 from .utils.loss_functions import multi_mse_loss, multi_mae_loss, adj3_loss, distance_loss, \
     hierarchical_adj2_loss, hierarchical_adj3_loss, hierarchical_adj4_loss
@@ -22,7 +26,13 @@ from .utils.save_log import save_log
 MODEL_DICT_DIR = 'train/models'
 
 
-def train_qm9(special_config: dict = None,
+class QMDataset(Enum):
+    QM7 = 1,
+    QM8 = 2,
+    QM9 = 3,
+
+
+def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
               use_cuda=False, max_num=-1, data_name='QM9', seed=0, force_save=False, tag='QM9',
               use_tqdm=False):
     # set parameters and seed
@@ -39,19 +49,20 @@ def train_qm9(special_config: dict = None,
 
     # load dataset
     print('Loading:')
-    mol_list_weight_mol, mol_properties = load_qm9(max_num)
-    mols = [list_weight_mol[0][1] for list_weight_mol in mol_list_weight_mol]
+    # mol_list_weight_mol, mol_properties = load_geom_qm9(max_num)
+    # mols = [list_weight_mol[0][1] for list_weight_mol in mol_list_weight_mol]
+    mols, mol_properties = load_qm9(max_num)
     mols_info = load_encode_mols(mols, name=data_name, force_save=force_save)
 
     # normalize properties and cache batches
     mean_p = np.mean(mol_properties, axis=0)
-    stddev_p = np.std((mol_properties - mean_p).tolist(), axis=0, ddof=1)
-    mad_p = np.array([1.189, 6.299, 0.016, 0.039, 0.040, 202.017,
-                      0.026, 31.072, 31.072, 31.072, 31.072, 3.204], dtype=np.float)
-    norm_p = (mol_properties - mean_p) / mad_p
+    stddev_p = np.std((mol_properties - mean_p).tolist(), axis=0, ddof=0)
+    # mad_p = np.array([1.189, 6.299, 0.016, 0.039, 0.040, 202.017,
+    #                   0.026, 31.072, 31.072, 31.072, 31.072, 3.204], dtype=np.float)
+    norm_p = (mol_properties - mean_p) / stddev_p
     print(f'\tmean: {mean_p}')
     print(f'\tstd: {stddev_p}')
-    print(f'\tmad: {mad_p}')
+    # print(f'\tmad: {mad_p}')
     print('Caching Batches...')
     try:
         batch_cache = load_batch_cache(data_name, mols, mols_info, norm_p, batch_size=config['BATCH'],
@@ -74,7 +85,7 @@ def train_qm9(special_config: dict = None,
     )
     classifier = MLP(
         in_dim=config['HM_DIM'],
-        out_dim=12,
+        out_dim=mol_properties.shape[1],
         hidden_dims=config['CLASSIFIER_HIDDENS'],
         use_cuda=use_cuda,
         bias=True
@@ -180,7 +191,7 @@ def train_qm9(special_config: dict = None,
         print(f'\t\t\tP LOSS: {sum(list_p_loss) / n_batch}')
         print(f'\t\t\tC LOSS: {sum(list_c_loss) / n_batch}')
         print(f'\t\t\tTOTAL LOSS: {sum(list_loss) / n_batch}')
-        print(f'\t\t\tPROPERTIES MULTI-MAE: {sum(list_p_multi_mae) * mad_p / n_batch}')
+        print(f'\t\t\tPROPERTIES MULTI-MAE: {sum(list_p_multi_mae) * stddev_p / n_batch}')
         print(f'\t\t\tPROPERTIES TOTAL MAE: {sum(list_p_total_mae) / n_batch}')
         print(f'\t\t\tCONFORMATION RS-DL: {sum(list_rsd) / n_batch}')
         logs[-1].update({
@@ -188,7 +199,7 @@ def train_qm9(special_config: dict = None,
             f'{batch_name}_c_loss': sum(list_c_loss) / n_batch,
             f'{batch_name}_loss': sum(list_loss) / n_batch,
             f'{batch_name}_p_metric': sum(list_p_total_mae) / n_batch,
-            f'{batch_name}_multi_p_metric': list(sum(list_p_multi_mae) * mad_p / n_batch),
+            f'{batch_name}_multi_p_metric': list(sum(list_p_multi_mae) * stddev_p / n_batch),
             f'{batch_name}_c_metric': sum(list_rsd) / n_batch,
         })
         return sum(list_p_total_mae) / n_batch
