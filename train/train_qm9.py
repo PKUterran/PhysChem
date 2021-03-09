@@ -51,8 +51,15 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
     print('Loading:')
     # mol_list_weight_mol, mol_properties = load_geom_qm9(max_num)
     # mols = [list_weight_mol[0][1] for list_weight_mol in mol_list_weight_mol]
-    mols, mol_properties = load_qm9(max_num)
-    mols_info = load_encode_mols(mols, name=data_name, force_save=force_save)
+    if dataset == QMDataset.QM7:
+        mols, mol_properties = load_qm7(max_num)
+        mols_info = load_encode_mols(mols, name=data_name, force_save=force_save)
+    elif dataset == QMDataset.QM8:
+        mols, mol_properties = load_qm8(max_num)
+        mols_info = load_encode_mols(mols, name=data_name, force_save=force_save)
+    else:
+        mols, mol_properties = load_qm9(max_num)
+        mols_info = load_encode_mols(mols, name=data_name, force_save=force_save)
 
     # normalize properties and cache batches
     mean_p = np.mean(mol_properties, axis=0)
@@ -233,4 +240,8 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
             torch.save(model.state_dict(), f'{MODEL_DICT_DIR}/{tag}-model.pkl')
             torch.save(classifier.state_dict(), f'{MODEL_DICT_DIR}/{tag}-classifier.pkl')
         logs[-1].update({'best_epoch': best_epoch})
-        save_log(logs, directory='QM9', tag=tag)
+        save_log(logs,
+                 directory='QM7' if dataset == QMDataset.QM7
+                 else 'QM8' if dataset == QMDataset.QM8
+                 else 'QM9',
+                 tag=tag)

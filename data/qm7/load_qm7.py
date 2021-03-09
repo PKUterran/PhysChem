@@ -10,13 +10,12 @@ from data.config import QM7_CSV_PATH, QM7_SDF_PATH, QM7_PICKLE_PATH
 
 def dump_qm7():
     supplier = Chem.SDMolSupplier(QM7_SDF_PATH)
-    mols = list(supplier)
-    not_none_mask = [i for i in range(len(mols)) if mols[i] is not None]
+    mols = [m for m in list(supplier) if m is not None and m.GetProp("_Name").startswith("gdb7k")]
+    indices = [int(m.GetProp("_Name")[6: 10]) for m in mols]
     df = pd.read_csv(QM7_CSV_PATH)
     csv: np.ndarray = df.values
     properties = csv[:, 0: 1].astype(np.float)
-    mols = [mols[i] for i in not_none_mask]
-    properties = properties[not_none_mask, :]
+    properties = properties[indices, :]
     with open(QM7_PICKLE_PATH, 'wb+') as fp:
         pickle.dump((mols, properties), fp)
 
