@@ -1,3 +1,4 @@
+import os
 import json
 import matplotlib.pyplot as plt
 
@@ -33,8 +34,9 @@ def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
 tuples = [
     # ('QM9', 'QM9-Xconf', False, False),
     # ('QM9', 'QM9-rdkit', False, True),
-    ('QM9', 'QM9', False, True),
-    ('QM9', 'QM9-H_ADJ4', False, True),
+    # ('QM9', 'QM9', False, True),
+    ('QM7', 'QM7', False, True),
+    # ('QM9', 'QM9-H_ADJ4', False, True),
     # ('QM9', 'QM9-lambda10', False, True),
     # ('QM9', 'QM9-DL', False, True),
     # ('QM9', 'QM9-3400', False, True),
@@ -63,6 +65,8 @@ tuples = [
 ]
 
 for d, f, h, t in tuples:
+    if not os.path.exists(d):
+        os.mkdir(d)
     json_path = f'{d}/{f}.json'
     graph_path = f'{d}/{f}.png'
     with open(json_path) as fp:
