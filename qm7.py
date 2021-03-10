@@ -1,6 +1,24 @@
 from net.config import ConfType
 from train.train_qm9 import train_qm9, QMDataset
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--seed', type=int, default=0)
+parser.add_argument('--pos', type=int, default=0)
+arg = parser.parse_args()
+seed = arg.seed
+pos = arg.pos
+
+if pos == 0:
+    conf_type = ConfType.NONE
+    name = 'QM7-Xconf'
+elif pos == 1:
+    conf_type = ConfType.RDKIT
+    name = 'QM7-rdkit'
+else:
+    conf_type = ConfType.NEWTON
+    name = 'QM7'
+
 train_qm9(
     special_config={
         'CLASSIFIER_HIDDENS': [],
@@ -29,13 +47,13 @@ train_qm9(
         'DISSA': 1.0,
         'DROPOUT': 0.0,
 
-        'EPOCH': 300,
+        'EPOCH': 200,
         'BATCH': 64,
         'PACK': 1,
         'CONF_LOSS': 'H_ADJ3',
         'LAMBDA': 100,
-        'LR': 1e-4,
-        'GAMMA': 0.995,
+        'LR': 2e-5,
+        'GAMMA': 0.99,
         'DECAY': 1e-5,
 
         'CONF_TYPE': ConfType.NEWTON,
@@ -43,9 +61,9 @@ train_qm9(
     dataset=QMDataset.QM7,
     use_cuda=True,
     max_num=-1,
-    data_name='QM7',
+    data_name=f'{name}@{seed}',
     seed=0,
     force_save=True,
-    tag='QM7',
+    tag=f'{name}@{seed}',
     use_tqdm=False,
 )
