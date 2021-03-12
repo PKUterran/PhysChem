@@ -45,15 +45,15 @@ train_qm9(
         'DERIVATION_TYPE': 'newton',
         'TAU': 0.25,
         'DISSA': 1.0,
-        'DROPOUT': 0.0,
+        'DROPOUT': 0.5,
 
         'EPOCH': 200,
         'BATCH': 64,
         'PACK': 1,
         'CONF_LOSS': 'H_ADJ3',
-        'LAMBDA': 10,
+        'LAMBDA': 1,
         'LR': 1e-5,
-        'GAMMA': 0.98,
+        'GAMMA': 0.995,
         'DECAY': 1e-5,
 
         'CONF_TYPE': conf_type,
