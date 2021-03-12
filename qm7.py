@@ -53,7 +53,7 @@ train_qm9(
         'CONF_LOSS': 'H_ADJ3',
         'LAMBDA': 1,
         'LR': 1e-5,
-        'GAMMA': 0.995,
+        'GAMMA': 0.98,
         'DECAY': 1e-5,
 
         'CONF_TYPE': conf_type,
@@ -62,7 +62,7 @@ train_qm9(
     use_cuda=True,
     max_num=-1,
     data_name=f'{name}@{seed}',
-    seed=0,
+    seed=seed,
     force_save=True,
     tag=f'{name}@{seed}',
     use_tqdm=False,
