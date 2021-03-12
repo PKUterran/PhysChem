@@ -13,14 +13,17 @@ def eval_pc(log: dict, higher_is_better=False) -> float:
 
 
 tuples = [
-    ('Lipop', 'Lipop', False),
-    ('Lipop', 'Lipop-Xconf', False),
+    # ('Lipop', 'Lipop', False),
+    # ('Lipop', 'Lipop-Xconf', False),
     # ('TOX21', 'TOX21', True),
     # ('TOX21', 'TOX21-Xconf', True),
-    ('ESOL', 'ESOL', False),
-    ('ESOL', 'ESOL-Xconf', False),
-    ('FreeSolv', 'FreeSolv', False),
-    ('FreeSolv', 'FreeSolv-Xconf', False),
+    # ('ESOL', 'ESOL', False),
+    # ('ESOL', 'ESOL-Xconf', False),
+    # ('FreeSolv', 'FreeSolv', False),
+    # ('FreeSolv', 'FreeSolv-Xconf', False),
+    ('QM7', 'QM7', False),
+    ('QM7', 'QM7-rdkit', False),
+    ('QM7', 'QM7-Xconf', False),
 ]
 
 for d, f, h in tuples:
