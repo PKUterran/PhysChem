@@ -10,7 +10,7 @@ from data.config import QM8_CSV_PATH, QM8_SDF_PATH, QM8_PICKLE_PATH
 
 def dump_qm8():
     supplier = Chem.SDMolSupplier(QM8_SDF_PATH)
-    mols = [m for m in supplier if m is not None and m.GetProp("_Name").startswith("gdb")]
+    mols = [m for m in list(supplier) if m is not None and m.GetProp("_Name").startswith("gdb")]
     indices = [int(m.GetProp("_Name")[4:]) - 1 for m in mols]
     df = pd.read_csv(QM8_CSV_PATH)
     csv: np.ndarray = df.values

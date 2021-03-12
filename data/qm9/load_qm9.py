@@ -10,7 +10,7 @@ from data.config import QM9_CSV_PATH, QM9_SDF_PATH, QM9_PICKLE_PATH
 
 def dump_qm9():
     supplier = Chem.SDMolSupplier(QM9_SDF_PATH)
-    mols = [m for m in supplier if m is not None and m.GetProp("_Name").startswith("gdb")]
+    mols = [m for m in list(supplier) if m is not None and m.GetProp("_Name").startswith("gdb")]
     indices = [int(m.GetProp("_Name")[4:]) - 1 for m in mols]
     df = pd.read_csv(QM9_CSV_PATH)
     csv: np.ndarray = df.values
