@@ -11,13 +11,13 @@ pos = arg.pos
 
 if pos == 0:
     conf_type = ConfType.NONE
-    name = 'QM7-Xconf'
+    name = 'QM8-Xconf'
 elif pos == 1:
     conf_type = ConfType.RDKIT
-    name = 'QM7-rdkit'
+    name = 'QM8-rdkit'
 else:
     conf_type = ConfType.NEWTON
-    name = 'QM7'
+    name = 'QM8'
 
 train_qm9(
     special_config={
@@ -48,17 +48,17 @@ train_qm9(
         'DROPOUT': 0.5,
 
         'EPOCH': 200,
-        'BATCH': 50,
+        'BATCH': 32,
         'PACK': 1,
         'CONF_LOSS': 'H_ADJ3',
         'LAMBDA': 1,
-        'LR': 1e-5,
+        'LR': 5e-6,
         'GAMMA': 0.98,
         'DECAY': 1e-5,
 
         'CONF_TYPE': conf_type,
     },
-    dataset=QMDataset.QM7,
+    dataset=QMDataset.QM8,
     use_cuda=True,
     max_num=-1,
     data_name=f'{name}@{seed}',

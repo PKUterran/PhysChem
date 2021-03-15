@@ -199,13 +199,17 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
         print(f'\t\t\tC LOSS: {sum(list_c_loss) / n_batch}')
         print(f'\t\t\tTOTAL LOSS: {sum(list_loss) / n_batch}')
         print(f'\t\t\tPROPERTIES MULTI-MAE: {sum(list_p_multi_mae) * stddev_p / n_batch}')
-        print(f'\t\t\tPROPERTIES TOTAL MAE: {sum(list_p_total_mae) / n_batch}')
+        if dataset == QMDataset.QM8:
+            total_mae = np.mean(sum(list_p_multi_mae) * stddev_p / n_batch)
+        else:
+            total_mae = sum(list_p_total_mae) / n_batch
+        print(f'\t\t\tPROPERTIES TOTAL MAE: {total_mae}')
         print(f'\t\t\tCONFORMATION RS-DL: {sum(list_rsd) / n_batch}')
         logs[-1].update({
             f'{batch_name}_p_loss': sum(list_p_loss) / n_batch,
             f'{batch_name}_c_loss': sum(list_c_loss) / n_batch,
             f'{batch_name}_loss': sum(list_loss) / n_batch,
-            f'{batch_name}_p_metric': sum(list_p_total_mae) / n_batch,
+            f'{batch_name}_p_metric': total_mae,
             f'{batch_name}_multi_p_metric': list(sum(list_p_multi_mae) * stddev_p / n_batch),
             f'{batch_name}_c_metric': sum(list_rsd) / n_batch,
         })

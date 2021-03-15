@@ -28,6 +28,7 @@ tuples = [
 
 for d, f, h in tuples:
     results = []
+    # for seed in DEFAULT_SEEDS[:2] + DEFAULT_SEEDS[3:]:
     for seed in DEFAULT_SEEDS:
         try:
             json_path = f'{d}/{f}@{seed}.json'
@@ -42,3 +43,4 @@ for d, f, h in tuples:
     avg = np.mean(results)
     std = np.std(results)
     print('{}: {:.4f} +- {:.4f}'.format(f, avg, std))
+    # print('{}: {:.4f} +- {:.4f}'.format(f, avg * 222, std * 222))

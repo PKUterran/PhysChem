@@ -13,8 +13,8 @@ QM7_SDF_PATH = 'data/qm7/gdb7.sdf'
 QM7_CSV_PATH = 'data/qm7/gdb7.sdf.csv'
 QM7_PICKLE_PATH = 'data/qm7/qm7.pickle'
 
-QM8_SDF_PATH = 'data/qm8/gdb8.sdf'
-QM8_CSV_PATH = 'data/qm8/gdb8.sdf.csv'
+QM8_SDF_PATH = 'data/qm8/qm8.sdf'
+QM8_CSV_PATH = 'data/qm8/qm8.sdf.csv'
 QM8_PICKLE_PATH = 'data/qm8/qm8.pickle'
 
 QM9_SDF_PATH = 'data/qm9/gdb9.sdf'
