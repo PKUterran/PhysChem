@@ -51,8 +51,8 @@ train_qm9(
         'BATCH': 32,
         'PACK': 1,
         'CONF_LOSS': 'H_ADJ3',
-        'LAMBDA': 1,
-        'LR': 5e-6,
+        'LAMBDA': 10,
+        'LR': 3e-6,
         'GAMMA': 0.98,
         'DECAY': 1e-5,
 
