@@ -92,12 +92,12 @@ class GeomNN(nn.Module):
                 ) -> Tuple[torch.Tensor, List[torch.Tensor],
                            List[List[np.ndarray]], List[np.ndarray], List[np.ndarray],
                            List[np.ndarray], List[np.ndarray]]:
-        hv_ftr, he_ftr, p_ftr, q_ftr = self.initializer.forward(atom_ftr, bond_ftr, mask_matrices)
+        hv_ftr, he_ftr, p_ftr, q_ftr = self.initializer.forward(atom_ftr, bond_ftr, mask_matrices, not self.need_derive)
 
         if self.conf_type is ConfType.NONE:
-            p_ftr, q_ftr = p_ftr * 0, q_ftr * 0
+            p_ftr = q_ftr = torch.zeros(size=[atom_ftr.shape[0], 3], dtype=torch.float32)
         elif self.conf_type is ConfType.RDKIT:
-            p_ftr, q_ftr = p_ftr * 0, given_q_ftr
+            p_ftr, q_ftr = torch.zeros(size=[atom_ftr.shape[0], 3], dtype=torch.float32), given_q_ftr
 
         conformations = [q_ftr]
         list_alignments = []

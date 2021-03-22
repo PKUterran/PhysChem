@@ -10,10 +10,11 @@ from .utils.model_utils import activation_select
 
 class MLP(nn.Module):
     def __init__(self, in_dim: int, out_dim: int, hidden_dims: list = None, activation: str = 'no',
-                 use_cuda=False, bias=True, residual=False):
+                 use_cuda=False, bias=True, residual=False, dropout=0.0):
         super(MLP, self).__init__()
         self.use_cuda = use_cuda
         self.residual = residual
+        self.dropout = nn.Dropout(p=dropout)
 
         if not hidden_dims:
             hidden_dims = []
@@ -25,7 +26,7 @@ class MLP(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         for i, linear in enumerate(self.linears):
-            x2 = linear(x)
+            x2 = linear(self.dropout(x))
             if i < len(self.linears) - 1:
                 x2 = self.layer_act(x2)
             if self.residual:

@@ -201,9 +201,8 @@ class ConformationGenerator(nn.Module):
     def __init__(self, q_dim: int, h_dims: list,
                  dropout=0.0):
         super(ConformationGenerator, self).__init__()
-        self.mlp = MLP(q_dim, 3, h_dims)
-        self.dropout = nn.Dropout(p=dropout)
+        self.mlp = MLP(q_dim, 3, h_dims, dropout=dropout)
 
     def forward(self, q_ftr: torch.Tensor) -> torch.Tensor:
-        conf3d = self.dropout(self.mlp(q_ftr))
+        conf3d = self.mlp(q_ftr)
         return conf3d

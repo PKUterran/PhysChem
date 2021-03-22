@@ -36,6 +36,8 @@ tuples = [
     # ('QM9', 'QM9-rdkit', False, True),
     # ('QM9', 'QM9', False, True),
     ('QM8', 'QM8@0', False, True),
+    ('QM8', 'QM8-rdkit@0', False, True),
+    ('QM8', 'QM8-Xconf@0', False, True),
     # ('QM7', 'QM7@16880611', False, True),
     # ('QM7', 'QM7-rdkit@16880611', False, True),
     # ('QM7', 'QM7-Xconf@16880611', False, True),
