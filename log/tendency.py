@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 
 def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
     epochs = [dic['epoch'] for dic in log]
-    train_p = [dic['train_p_metric'] for dic in log]
-    valid_p = [dic['validate_p_metric'] for dic in log]
-    test_p = [dic['test_p_metric'] for dic in log]
+    train_p = [dic['train_c_metric'] for dic in log]
+    valid_p = [dic['validate_c_metric'] for dic in log]
+    test_p = [dic['test_c_metric'] for dic in log]
     ps = zip(valid_p, test_p)
     ps = sorted(ps, key=lambda x: x[0], reverse=higher_is_better)
     print('{}: {:.4f}'.format(path, ps[0][1]))
@@ -35,12 +35,14 @@ tuples = [
     # ('QM9', 'QM9-Xconf', False, False),
     # ('QM9', 'QM9-rdkit', False, True),
     # ('QM9', 'QM9', False, True),
-    ('QM8', 'QM8@0', False, True),
-    ('QM8', 'QM8-rdkit@0', False, True),
-    ('QM8', 'QM8-Xconf@0', False, True),
+    # ('QM8', 'QM8@0', False, True),
+    # ('QM8', 'QM8-rdkit@0', False, True),
+    # ('QM8', 'QM8-Xconf@0', False, True),
     # ('QM7', 'QM7@16880611', False, True),
     # ('QM7', 'QM7-rdkit@16880611', False, True),
     # ('QM7', 'QM7-Xconf@16880611', False, True),
+    ('QM7', 'CVGAE-QM7-rdkit@16880611', False, False),
+    # ('QM7', 'CVGAE-QM7-Xconf@16880611', False, True),
     # ('QM9', 'QM9-H_ADJ4', False, True),
     # ('QM9', 'QM9-lambda10', False, True),
     # ('QM9', 'QM9-DL', False, True),

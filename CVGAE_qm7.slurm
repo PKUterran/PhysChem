@@ -11,13 +11,13 @@
 
 # module add anaconda/3-5.0.0.1
 # source activate ysw_pytorch
-python qm7.py --seed 16880611 --pos 1
-python qm7.py --seed 16880611 --pos 0
-#python qm7.py --seed 17760704 --pos 1
-#python qm7.py --seed 17760704 --pos 0
-#python qm7.py --seed 17890714 --pos 1
-#python qm7.py --seed 17890714 --pos 0
-#python qm7.py --seed 19491001 --pos 1
-#python qm7.py --seed 19491001 --pos 0
-#python qm7.py --seed 19900612 --pos 1
-#python qm7.py --seed 19900612 --pos 0
+python CVGAE_qm7.py --seed 16880611 --pos 1
+python CVGAE_qm7.py --seed 16880611 --pos 0
+#python CVGAE_qm7.py --seed 17760704 --pos 1
+#python CVGAE_qm7.py --seed 17760704 --pos 0
+#python CVGAE_qm7.py --seed 17890714 --pos 1
+#python CVGAE_qm7.py --seed 17890714 --pos 0
+#python CVGAE_qm7.py --seed 19491001 --pos 1
+#python CVGAE_qm7.py --seed 19491001 --pos 0
+#python CVGAE_qm7.py --seed 19900612 --pos 1
+#python CVGAE_qm7.py --seed 19900612 --pos 0

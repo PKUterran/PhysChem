@@ -38,6 +38,7 @@ class CVGAE(nn.Module):
     def __init__(self, atom_dim: int, bond_dim: int, config: dict,
                  use_cuda=False):
         super(CVGAE, self).__init__()
+        self.use_cuda = use_cuda
         hv_dim = config['HV_DIM']
         he_dim = config['HE_DIM']
         self.hv_dim = hv_dim
@@ -78,9 +79,10 @@ class CVGAE(nn.Module):
             prior_x_out = self.pred_mpnn.forward(hv_ftr + prior_z_sample, he_ftr, mask_matrices)
             return prior_x_out
 
-    @staticmethod
-    def _draw_sample(mu: torch.Tensor, lsgms: torch.Tensor, T=1):
-        epsilon = torch.normal(0., 1., size=lsgms.shape)
+    def _draw_sample(self, mu: torch.Tensor, lsgms: torch.Tensor, T=1):
+        epsilon = torch.normal(torch.zeros(size=lsgms.shape, dtype=torch.float32), 1.)
+        if self.use_cuda:
+            epsilon = epsilon.cuda()
         sample = torch.mul(torch.exp(0.5 * lsgms) * T, epsilon)
         sample = torch.add(mu, sample)
         return sample
