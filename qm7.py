@@ -15,9 +15,12 @@ if pos == 0:
 elif pos == 1:
     conf_type = ConfType.RDKIT
     name = 'QM7-rdkit'
-else:
+elif pos == 2:
     conf_type = ConfType.NEWTON
     name = 'QM7'
+else:
+    conf_type = ConfType.ONLY
+    name = 'QM7-Oconf'
 
 train_qm9(
     special_config={
@@ -48,7 +51,7 @@ train_qm9(
         'DROPOUT': 0.5,
 
         'EPOCH': 200,
-        'BATCH': 50,
+        'BATCH': 40,
         'PACK': 1,
         'CONF_LOSS': 'H_ADJ3',
         'LAMBDA': 1,

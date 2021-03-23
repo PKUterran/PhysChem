@@ -28,6 +28,7 @@ class GeomNN(nn.Module):
 
         self.conf_type = config['CONF_TYPE']
         self.need_derive = self.conf_type is not ConfType.NONE and self.conf_type is not ConfType.RDKIT
+        self.need_mp = self.conf_type is not ConfType.ONLY
 
         self.initializer = Initializer(
             atom_dim=atom_dim,
@@ -42,19 +43,20 @@ class GeomNN(nn.Module):
             lstm_o_dim=config['INIT_LSTM_O_DIM'],
             use_cuda=use_cuda
         )
-        self.mp_kernel = ConfAwareMPNNKernel(
-            hv_dim=hv_dim,
-            he_dim=he_dim,
-            mv_dim=mv_dim,
-            me_dim=me_dim,
-            p_dim=p_dim,
-            q_dim=q_dim,
-            hops=n_hop,
-            use_cuda=use_cuda,
-            dropout=dropout,
-            message_type=message_type,
-            union_type=union_type
-        )
+        if self.need_mp:
+            self.mp_kernel = ConfAwareMPNNKernel(
+                hv_dim=hv_dim,
+                he_dim=he_dim,
+                mv_dim=mv_dim,
+                me_dim=me_dim,
+                p_dim=p_dim,
+                q_dim=q_dim,
+                hops=n_hop,
+                use_cuda=use_cuda,
+                dropout=dropout,
+                message_type=message_type,
+                union_type=union_type
+            )
         if self.need_derive:
             self.drv_kernel = InformedDerivationKernel(
                 hv_dim=hv_dim,
@@ -108,9 +110,7 @@ class GeomNN(nn.Module):
             list_p_ftr.append(self.decentralized_p_ftr(p_ftr, massive, mask_matrices).cpu().detach().numpy())
             list_q_ftr.append(q_ftr.cpu().detach().numpy())
         for i in range(self.n_layer):
-            t_hv_ftr, t_he_ftr, alignments = self.mp_kernel.forward(hv_ftr, he_ftr, p_ftr, q_ftr,
-                                                                    mask_matrices, return_local_alignment)
-
+            t_p_ftr, t_q_ftr = p_ftr, q_ftr
             if self.need_derive:
                 for j in range(self.n_iteration):
                     p_ftr, q_ftr = self.drv_kernel.forward(hv_ftr, he_ftr, massive, p_ftr, q_ftr, mask_matrices)
@@ -122,8 +122,10 @@ class GeomNN(nn.Module):
                             self.decentralized_p_ftr(p_ftr, massive, mask_matrices).cpu().detach().numpy())
                         list_q_ftr.append(q_ftr.cpu().detach().numpy())
 
-            hv_ftr, he_ftr = t_hv_ftr, t_he_ftr
-            list_alignments.append(alignments)
+            if self.need_mp:
+                hv_ftr, he_ftr, alignments = self.mp_kernel.forward(hv_ftr, he_ftr, t_p_ftr, t_q_ftr,
+                                                                    mask_matrices, return_local_alignment)
+                list_alignments.append(alignments)
             list_he_ftr.append(he_ftr.cpu().detach().numpy())
 
         fingerprint, global_alignments = self.fingerprint_gen.forward(hv_ftr, mask_matrices, return_global_alignment)

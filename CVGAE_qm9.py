@@ -4,18 +4,16 @@ from train.CVGAE.train_qm9 import train_qm9, QMDataset
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--seed', type=int, default=0)
 parser.add_argument('--pos', type=int, default=0)
 arg = parser.parse_args()
-seed = arg.seed
 pos = arg.pos
 
 if pos == 0:
     conf_type = ConfType.NONE
-    name = 'QM7-Xconf'
+    name = 'QM9-Xconf'
 else:
     conf_type = ConfType.RDKIT
-    name = 'QM7-rdkit'
+    name = 'QM9-rdkit'
 
 train_qm9(
     special_config={
@@ -23,21 +21,21 @@ train_qm9(
         'HE_DIM': 64,
 
         'EPOCH': 300,
-        'BATCH': 50,
+        'BATCH': 20,
         'SAMPLE': 5,
         'LAMBDA': 1,
-        'LR': 1e-5,
+        'LR': 2e-6,
         'GAMMA': 0.995,
         'DECAY': 1e-5,
 
         'CONF_TYPE': conf_type,
     },
-    dataset=QMDataset.QM7,
+    dataset=QMDataset.QM9,
     use_cuda=True,
     max_num=-1,
-    data_name=f'CVGAE-{name}@{seed}',
-    seed=seed,
-    force_save=True,
-    tag=f'CVGAE-{name}@{seed}',
+    data_name=f'CVGAE-{name}',
+    seed=0,
+    force_save=False,
+    tag=f'CVGAE-{name}',
     use_tqdm=False,
 )

@@ -44,6 +44,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
     for k, v in config.items():
         print(f'\t\t{k}: {v}')
     rdkit_support = config['CONF_TYPE'] == ConfType.RDKIT
+    conf_only = config['CONF_TYPE'] == ConfType.ONLY
     set_seed(seed, use_cuda=use_cuda)
     np.set_printoptions(suppress=True, precision=3, linewidth=200)
 
@@ -154,7 +155,10 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
                 c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
             else:
                 c_loss = c_loss_fuc(pred_cs[-1], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
-            loss = p_loss + config['LAMBDA'] * c_loss
+            if conf_only:
+                loss = config['LAMBDA'] * c_loss
+            else:
+                loss = p_loss + config['LAMBDA'] * c_loss
             loss.backward()
             optimizer.step()
 
@@ -183,7 +187,10 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
                 c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
             else:
                 c_loss = c_loss_fuc(pred_cs[-1], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
-            loss = p_loss + config['LAMBDA'] * c_loss
+            if conf_only:
+                loss = config['LAMBDA'] * c_loss
+            else:
+                loss = p_loss + config['LAMBDA'] * c_loss
             list_p_loss.append(p_loss.cpu().item())
             list_c_loss.append(c_loss.cpu().item())
             list_loss.append(loss.cpu().item())
