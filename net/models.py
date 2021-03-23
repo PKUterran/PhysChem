@@ -98,8 +98,12 @@ class GeomNN(nn.Module):
 
         if self.conf_type is ConfType.NONE:
             p_ftr = q_ftr = torch.zeros(size=[atom_ftr.shape[0], 3], dtype=torch.float32)
+            if self.use_cuda:
+                p_ftr, q_ftr = p_ftr.cuda(), q_ftr.cuda()
         elif self.conf_type is ConfType.RDKIT:
             p_ftr, q_ftr = torch.zeros(size=[atom_ftr.shape[0], 3], dtype=torch.float32), given_q_ftr
+            if self.use_cuda:
+                p_ftr = p_ftr.cuda()
 
         conformations = [q_ftr]
         list_alignments = []
