@@ -11,8 +11,8 @@
 
 # module add anaconda/3-5.0.0.1
 # source activate ysw_pytorch
-python CVGAE_qm7.py --seed 16880611
-python CVGAE_qm7.py --seed 17760704
-python CVGAE_qm7.py --seed 17890714
-python CVGAE_qm7.py --seed 19491001
-python CVGAE_qm7.py --seed 19900612
+python HamEng_qm7.py --seed 16880611
+python HamEng_qm7.py --seed 17760704
+python HamEng_qm7.py --seed 17890714
+python HamEng_qm7.py --seed 19491001
+python HamEng_qm7.py --seed 19900612
