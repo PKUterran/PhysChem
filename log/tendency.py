@@ -39,12 +39,12 @@ def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
 
 
 tuples = [
-    ('QM9', 'QM9-Xconf', False, True),
-    ('QM9', 'QM9-rdkit', False, True),
-    ('QM9', 'QM9', False, True),
-    ('QM9', 'QM9-Oconf', False, True),
-    ('QM9', 'CVGAE-QM9-rdkit', False, True),
-    ('QM9', 'CVGAE-QM9-Xconf', False, True),
+    # ('QM9', 'QM9-Xconf', False, True),
+    # ('QM9', 'QM9-rdkit', False, True),
+    # ('QM9', 'QM9', False, True),
+    # ('QM9', 'QM9-Oconf', False, True),
+    # ('QM9', 'CVGAE-QM9-rdkit', False, True),
+    # ('QM9', 'CVGAE-QM9-Xconf', False, True),
     # ('QM8', 'QM8@0', False, True),
     # ('QM8', 'QM8-rdkit@0', False, True),
     # ('QM8', 'QM8-Xconf@0', False, True),
@@ -78,9 +78,9 @@ tuples = [
     # ('ESOL', 'ESOL-M@16880611', False, False),
     # ('ESOL', 'ESOL-Xconf', False, False),
 
-    # ('FreeSolv', 'FreeSolv', False, False),
-    # ('FreeSolv', 'FreeSolv-M@16880611', False, False),
-    # ('FreeSolv', 'FreeSolv-Xconf', False, False),
+    ('FreeSolv', 'FreeSolv', False, False),
+    ('FreeSolv', 'FreeSolv-RGT@16880611', False, False),
+    ('FreeSolv', 'FreeSolv-Xconf', False, False),
 ]
 
 for d, f, h, t in tuples:
