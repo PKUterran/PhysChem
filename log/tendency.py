@@ -55,32 +55,21 @@ tuples = [
     # ('QM7', 'QM7-Oconf@16880611', False, True),
     # ('QM7', 'CVGAE-QM7-rdkit@16880611', False, False),
     # ('QM7', 'CVGAE-QM7-Xconf@16880611', False, False),
-    # ('QM9', 'QM9-H_ADJ4', False, True),
-    # ('QM9', 'QM9-lambda10', False, True),
-    # ('QM9', 'QM9-DL', False, True),
-    # ('QM9', 'QM9-3400', False, True),
-    # ('QM9', 'QM9-3400-init2', False, True),
-    # ('QM9', 'QM9-3400-init3', False, True),
-    # ('QM9', 'QM9-10000', False, True),
-    # ('QM9', 'QM9-10000-short', False, True),
-    # ('QM9', 'QM9-M-Xconf', False, False),
-    # ('QM9', 'QM9-M-rdkit', False, True),
-    # ('QM9', 'QM9-M', False, True),
 
-    # ('Lipop', 'Lipop', False, False),
-    # ('Lipop', 'Lipop-M@16880611', False, False),
-    # ('Lipop', 'Lipop-Xconf', False, False),
+    ('Lipop', 'Lipop@16880611', False, False),
+    ('Lipop', 'Lipop-RGT@16880611', False, True),
+    ('Lipop', 'Lipop-Xconf@16880611', False, False),
 
     # ('TOX21', 'TOX21', True, True),
     # ('TOX21', 'TOX21-Xconf', True, True),
 
-    # ('ESOL', 'ESOL', False, False),
-    # ('ESOL', 'ESOL-M@16880611', False, False),
-    # ('ESOL', 'ESOL-Xconf', False, False),
+    ('ESOL', 'ESOL@16880611', False, False),
+    ('ESOL', 'ESOL-RGT@16880611', False, True),
+    ('ESOL', 'ESOL-Xconf@16880611', False, False),
 
-    ('FreeSolv', 'FreeSolv', False, False),
-    ('FreeSolv', 'FreeSolv-RGT@16880611', False, False),
-    ('FreeSolv', 'FreeSolv-Xconf', False, False),
+    ('FreeSolv', 'FreeSolv@16880611', False, False),
+    ('FreeSolv', 'FreeSolv-RGT@16880611', False, True),
+    ('FreeSolv', 'FreeSolv-Xconf@16880611', False, False),
 ]
 
 for d, f, h, t in tuples:

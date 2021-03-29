@@ -43,7 +43,8 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
     print('\t CONFIG:')
     for k, v in config.items():
         print(f'\t\t{k}: {v}')
-    rdkit_support = config['CONF_TYPE'] == ConfType.RDKIT
+    rdkit_support = config['CONF_TYPE'] == ConfType.RDKIT or config['CONF_TYPE'] == ConfType.NEWTON_RGT
+    rdkit_groundtruth = config['CONF_TYPE'] == ConfType.NEWTON_RGT
     conf_only = config['CONF_TYPE'] == ConfType.ONLY
     set_seed(seed, use_cuda=use_cuda)
     np.set_printoptions(suppress=True, precision=3, linewidth=200)
@@ -74,11 +75,11 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
     print('Caching Batches...')
     try:
         batch_cache = load_batch_cache(data_name, mols, mols_info, norm_p, batch_size=config['BATCH'],
-                                       needs_rdkit_conf=rdkit_support,
+                                       needs_rdkit_conf=rdkit_support, contains_ground_truth_conf=not rdkit_groundtruth,
                                        use_cuda=use_cuda, use_tqdm=use_tqdm, force_save=force_save)
     except EOFError:
         batch_cache = load_batch_cache(data_name, mols, mols_info, norm_p, batch_size=config['BATCH'],
-                                       needs_rdkit_conf=rdkit_support,
+                                       needs_rdkit_conf=rdkit_support, contains_ground_truth_conf=not rdkit_groundtruth,
                                        use_cuda=use_cuda, use_tqdm=use_tqdm, force_save=True)
 
     # build model

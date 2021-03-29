@@ -41,7 +41,6 @@ tuples = [
 for d, f, h in tuples:
     p_results = []
     c_results = []
-    # for seed in DEFAULT_SEEDS[:2] + DEFAULT_SEEDS[3:]:
     for seed in DEFAULT_SEEDS:
         try:
             json_path = f'{d}/{f}@{seed}.json'
