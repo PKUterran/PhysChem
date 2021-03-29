@@ -9,6 +9,7 @@ arg = parser.parse_args()
 seed = arg.seed
 pos = arg.pos
 
+extra_config = {}
 if pos == 0:
     name = 'FreeSolv-Xconf'
     conf_type = ConfType.NONE
@@ -18,14 +19,15 @@ elif pos == 1:
 else:
     name = 'FreeSolv-RGT'
     conf_type = ConfType.NEWTON_RGT
+    extra_config = {'LR': 2e-5, 'BATCH': 2, 'PACK': 64}
 
 train_single_regression(
     dataset=SingleRegressionDataset.FREESOLV,
     data_name=f'{name}@{seed}',
     tag=f'{name}@{seed}',
-    special_config={
+    special_config=dict({
         'CONF_TYPE': conf_type,
-    },
+    }, **extra_config),
     use_cuda=True,
     max_num=-1,
     seed=seed,

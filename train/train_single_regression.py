@@ -135,8 +135,11 @@ def train_single_regression(
                                             batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             p_loss = mse_loss(pred_p, batch.properties)
-            c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
-            loss = p_loss + config['LAMBDA'] * c_loss
+            if conf_supervised:
+                c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+                loss = p_loss + config['LAMBDA'] * c_loss
+            else:
+                loss = p_loss
             # loss.backward()
             # optimizer.step()
             losses.append(loss)
@@ -153,6 +156,7 @@ def train_single_regression(
         n_batch = len(batches)
         list_loss = []
         list_p_rmse = []
+        list_c_loss = []
         list_rsd = []
         if use_tqdm:
             batches = tqdm(batches, total=n_batch)
@@ -163,23 +167,32 @@ def train_single_regression(
                                             batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             p_loss = mse_loss(pred_p, batch.properties)
-            c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
-            loss = p_loss + config['LAMBDA'] * c_loss
+            if conf_supervised:
+                c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+                loss = p_loss + config['LAMBDA'] * c_loss
+                rsd = distance_loss(pred_cs[-1], batch.conformation, batch.mask_matrices, root_square=True)
+                list_rsd.append(rsd.cpu().item())
+                list_c_loss.append(loss.cpu().item())
+            else:
+                loss = p_loss
             list_loss.append(loss.cpu().item())
 
             p_rmse = rmse_loss(pred_p, batch.properties)
             list_p_rmse.append(p_rmse.item() * stddev_p[0])
-            rsd = distance_loss(pred_cs[-1], batch.conformation, batch.mask_matrices, root_square=True)
-            list_rsd.append(rsd.cpu().item())
 
         print(f'\t\t\tLOSS: {sum(list_loss) / n_batch}')
         print(f'\t\t\tRMSE: {sum(list_p_rmse) / n_batch}')
-        print(f'\t\t\tRMSE: {sum(list_rsd) / n_batch}')
         logs[-1].update({
             f'{batch_name}_loss': sum(list_loss) / n_batch,
             f'{batch_name}_p_metric': sum(list_p_rmse) / n_batch,
-            f'{batch_name}_c_metric': sum(list_rsd) / n_batch,
         })
+        if conf_supervised:
+            print(f'\t\t\tC LOSS: {sum(list_c_loss) / n_batch}')
+            print(f'\t\t\tDL-RS: {sum(list_rsd) / n_batch}')
+            logs[-1].update({
+                f'{batch_name}_c_loss': sum(list_c_loss) / n_batch,
+                f'{batch_name}_c_metric': sum(list_rsd) / n_batch,
+            })
 
     for _ in range(config['EPOCH']):
         epoch += 1
