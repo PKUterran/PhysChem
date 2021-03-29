@@ -9,12 +9,22 @@ arg = parser.parse_args()
 seed = arg.seed
 pos = arg.pos
 
+if pos == 0:
+    name = 'Lipop-Xconf'
+    conf_type = ConfType.NONE
+elif pos == 1:
+    name = 'Lipop'
+    conf_type = ConfType.RDKIT
+else:
+    name = 'Lipop-RGT'
+    conf_type = ConfType.NEWTON_RGT
+
 train_single_regression(
     dataset=SingleRegressionDataset.LIPOP,
-    data_name='Lipop@{}'.format(seed) if pos else 'Lipop-Xconf@{}'.format(seed),
-    tag='Lipop@{}'.format(seed) if pos else 'Lipop-Xconf@{}'.format(seed),
+    data_name=f'{name}@{seed}',
+    tag=f'{name}@{seed}',
     special_config={
-        'CONF_TYPE': ConfType.RDKIT if pos else ConfType.NONE,
+        'CONF_TYPE': conf_type,
     },
     use_cuda=True,
     max_num=-1,

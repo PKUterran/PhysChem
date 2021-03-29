@@ -6,3 +6,4 @@ class ConfType(Enum):
     RDKIT = 1,
     NEWTON = 2,
     ONLY = 3,
+    NEWTON_RGT = 4,

@@ -70,34 +70,9 @@ LIPOP_CONFIG.update({
     'EPOCH': 250,
     'BATCH': 2,
     'PACK': 16,
+    'LAMBDA': 1,
     'LR': 1e-4,
     'GAMMA': 0.995,
-    'DECAY': 1e-5,
-
-    'CONF_TYPE': ConfType.RDKIT,
-})
-
-TOX21_CONFIG = DEFAULT_CONFIG.copy()
-TOX21_CONFIG.update({
-    'CLASSIFIER_HIDDENS': [],
-    'HV_DIM': 200,
-    'HE_DIM': 200,
-    'HM_DIM': 200,
-    'MV_DIM': 200,
-    'ME_DIM': 200,
-    'MM_DIM': 200,
-
-    'N_LAYER': 1,
-    'N_ITERATION': 1,
-    'N_HOP': 2,
-    'N_GLOBAL': 2,
-    'DROPOUT': 0.5,
-
-    'EPOCH': 200,
-    'BATCH': 2,
-    'PACK': 64,
-    'LR': 1e-4,
-    'GAMMA': 0.99,
     'DECAY': 1e-5,
 
     'CONF_TYPE': ConfType.RDKIT,
@@ -114,7 +89,7 @@ ESOL_CONFIG.update({
     'MM_DIM': 160,
 
     'N_LAYER': 2,
-    'N_ITERATION': 1,
+    'N_ITERATION': 4,
     'N_HOP': 1,
     'N_GLOBAL': 2,
     'DROPOUT': 0.2,
@@ -122,6 +97,7 @@ ESOL_CONFIG.update({
     'EPOCH': 400,
     'BATCH': 2,
     'PACK': 128,
+    'LAMBDA': 1,
     'LR': 3e-3,
     'GAMMA': 0.995,
     'DECAY': 1e-5,
@@ -140,7 +116,7 @@ FREESOLV_CONFIG.update({
     'MM_DIM': 120,
 
     'N_LAYER': 2,
-    'N_ITERATION': 1,
+    'N_ITERATION': 4,
     'N_HOP': 1,
     'N_GLOBAL': 2,
     'DROPOUT': 0.2,
@@ -148,8 +124,36 @@ FREESOLV_CONFIG.update({
     'EPOCH': 400,
     'BATCH': 2,
     'PACK': 128,
+    'LAMBDA': 1,
     'LR': 3e-3,
     'GAMMA': 0.995,
+    'DECAY': 1e-5,
+
+    'CONF_TYPE': ConfType.RDKIT,
+})
+
+TOX21_CONFIG = DEFAULT_CONFIG.copy()
+TOX21_CONFIG.update({
+    'CLASSIFIER_HIDDENS': [],
+    'HV_DIM': 200,
+    'HE_DIM': 200,
+    'HM_DIM': 200,
+    'MV_DIM': 200,
+    'ME_DIM': 200,
+    'MM_DIM': 200,
+
+    'N_LAYER': 2,
+    'N_ITERATION': 4,
+    'N_HOP': 1,
+    'N_GLOBAL': 2,
+    'DROPOUT': 0.5,
+
+    'EPOCH': 200,
+    'BATCH': 2,
+    'PACK': 64,
+    'LAMBDA': 1,
+    'LR': 1e-4,
+    'GAMMA': 0.99,
     'DECAY': 1e-5,
 
     'CONF_TYPE': ConfType.RDKIT,

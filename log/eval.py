@@ -63,7 +63,7 @@ for d, f, h in tuples:
         avg = np.mean(p_results)
         std = np.std(p_results)
         if d == 'QM7':
-            print('{}: {:.4f} +- {:.4f}'.format(f, avg * 222, std * 222))
+            print('{}: {:.4f} +- {:.4f}'.format(f, avg * 223.918853, std * 223.918853))
         else:
             print('{}: {:.4f} +- {:.4f}'.format(f, avg, std))
     if len(c_results):

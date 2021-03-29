@@ -19,7 +19,7 @@ from net.components import MLP
 from .config import LIPOP_CONFIG, ESOL_CONFIG, FREESOLV_CONFIG
 from .utils.cache_batch import Batch, BatchCache, load_batch_cache, load_encode_mols, batch_cuda_copy
 from .utils.seed import set_seed
-from .utils.loss_functions import mse_loss, rmse_loss
+from .utils.loss_functions import mse_loss, rmse_loss, hierarchical_adj3_loss, distance_loss
 from .utils.save_log import save_log
 
 
@@ -49,7 +49,8 @@ def train_single_regression(
     print('\t CONFIG:')
     for k, v in config.items():
         print(f'\t\t{k}: {v}')
-    rdkit_support = config['CONF_TYPE'] == ConfType.RDKIT
+    rdkit_support = config['CONF_TYPE'] == ConfType.RDKIT or config['CONF_TYPE'] == ConfType.NEWTON_RGT
+    conf_supervised = config['CONF_TYPE'] == ConfType.NEWTON_RGT
     set_seed(seed, use_cuda=use_cuda)
     np.set_printoptions(suppress=True, precision=3, linewidth=200)
 
@@ -117,6 +118,7 @@ def train_single_regression(
     # train
     epoch = 0
     logs: List[Dict[str, float]] = []
+    c_loss_fuc = hierarchical_adj3_loss
 
     def train(batches: List[Batch]):
         model.train()
@@ -129,11 +131,12 @@ def train_single_regression(
         for i, batch in enumerate(batches):
             if use_cuda:
                 batch = batch_cuda_copy(batch)
-            fp, _, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
-                                      batch.rdkit_conf)
+            fp, pred_cs, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
+                                            batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             p_loss = mse_loss(pred_p, batch.properties)
-            loss = p_loss
+            c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+            loss = p_loss + config['LAMBDA'] * c_loss
             # loss.backward()
             # optimizer.step()
             losses.append(loss)
@@ -150,26 +153,32 @@ def train_single_regression(
         n_batch = len(batches)
         list_loss = []
         list_p_rmse = []
+        list_rsd = []
         if use_tqdm:
             batches = tqdm(batches, total=n_batch)
         for batch in batches:
             if use_cuda:
                 batch = batch_cuda_copy(batch)
-            fp, _, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
-                                      batch.rdkit_conf)
+            fp, pred_cs, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
+                                            batch.rdkit_conf)
             pred_p = classifier.forward(fp)
             p_loss = mse_loss(pred_p, batch.properties)
-            loss = p_loss
+            c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+            loss = p_loss + config['LAMBDA'] * c_loss
             list_loss.append(loss.cpu().item())
 
             p_rmse = rmse_loss(pred_p, batch.properties)
             list_p_rmse.append(p_rmse.item() * stddev_p[0])
+            rsd = distance_loss(pred_cs[-1], batch.conformation, batch.mask_matrices, root_square=True)
+            list_rsd.append(rsd.cpu().item())
 
         print(f'\t\t\tLOSS: {sum(list_loss) / n_batch}')
         print(f'\t\t\tRMSE: {sum(list_p_rmse) / n_batch}')
+        print(f'\t\t\tRMSE: {sum(list_rsd) / n_batch}')
         logs[-1].update({
             f'{batch_name}_loss': sum(list_loss) / n_batch,
             f'{batch_name}_p_metric': sum(list_p_rmse) / n_batch,
+            f'{batch_name}_c_metric': sum(list_rsd) / n_batch,
         })
 
     for _ in range(config['EPOCH']):

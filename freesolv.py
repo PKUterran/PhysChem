@@ -9,12 +9,22 @@ arg = parser.parse_args()
 seed = arg.seed
 pos = arg.pos
 
+if pos == 0:
+    name = 'FreeSolv-Xconf'
+    conf_type = ConfType.NONE
+elif pos == 1:
+    name = 'FreeSolv'
+    conf_type = ConfType.RDKIT
+else:
+    name = 'FreeSolv-RGT'
+    conf_type = ConfType.NEWTON_RGT
+
 train_single_regression(
     dataset=SingleRegressionDataset.FREESOLV,
-    data_name='FreeSolv@{}'.format(seed) if pos else 'FreeSolv-Xconf@{}'.format(seed),
-    tag='FreeSolv@{}'.format(seed) if pos else 'FreeSolv-Xconf@{}'.format(seed),
+    data_name=f'{name}@{seed}',
+    tag=f'{name}@{seed}',
     special_config={
-        'CONF_TYPE': ConfType.RDKIT if pos else ConfType.NONE,
+        'CONF_TYPE': conf_type,
     },
     use_cuda=True,
     max_num=-1,
