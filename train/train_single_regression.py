@@ -46,6 +46,8 @@ def train_single_regression(
         assert False
     if special_config is not None:
         config.update(special_config)
+    if config['CONF_TYPE'] == ConfType.NEWTON_RGT:
+        config['PACK'] = int(config['PACK'] / 4)
     print('\t CONFIG:')
     for k, v in config.items():
         print(f'\t\t{k}: {v}')
