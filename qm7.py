@@ -18,9 +18,12 @@ elif pos == 1:
 elif pos == 2:
     conf_type = ConfType.NEWTON
     name = 'QM7'
-else:
+elif pos == 3:
     conf_type = ConfType.ONLY
     name = 'QM7-Oconf'
+else:
+    conf_type = ConfType.REAL
+    name = 'QM7-real'
 
 train_qm9(
     special_config={
