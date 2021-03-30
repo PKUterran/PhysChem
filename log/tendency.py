@@ -39,12 +39,14 @@ def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
 
 
 tuples = [
-    # ('QM9', 'QM9-Xconf', False, True),
-    # ('QM9', 'QM9-rdkit', False, True),
-    # ('QM9', 'QM9', False, True),
-    # ('QM9', 'QM9-Oconf', False, True),
-    # ('QM9', 'CVGAE-QM9-rdkit', False, True),
-    # ('QM9', 'CVGAE-QM9-Xconf', False, True),
+    ('QM9', 'QM9-Xconf', False, True),
+    ('QM9', 'QM9-rdkit', False, True),
+    ('QM9', 'QM9', False, True),
+    ('QM9', 'QM9-Oconf', False, True),
+    ('QM9', 'QM9-real', False, False),
+    ('QM9', 'CVGAE-QM9-rdkit', False, True),
+    ('QM9', 'CVGAE-QM9-Xconf', False, True),
+    ('QM9', 'HamEng-QM9', False, True),
     # ('QM8', 'QM8@0', False, True),
     # ('QM8', 'QM8-rdkit@0', False, True),
     # ('QM8', 'QM8-Xconf@0', False, True),

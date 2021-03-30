@@ -37,6 +37,7 @@ tuples = [
     ('QM7', 'QM7-rdkit', False),
     ('QM7', 'QM7-Xconf', False),
     ('QM7', 'QM7-Oconf', False),
+    ('QM7', 'QM7-real', False),
     ('QM7', 'CVGAE-QM7-rdkit', False),
     ('QM7', 'CVGAE-QM7-Xconf', False),
 ]
