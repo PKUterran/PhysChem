@@ -7,6 +7,8 @@ from rdkit.Chem.rdchem import Mol as Molecule
 from data.encode import encode_mols, get_massive_from_atom_features
 from net.utils.MaskMatrices import MaskMatrices, cuda_copy
 from net.models import GeomNN
+from net.baseline.CVGAE.PredX_MPNN import CVGAE
+from net.baseline.HamEng.models import HamiltonianPositionProducer
 from train.utils.loss_functions import adj3_loss
 from train.utils.cache_batch import BatchCache, get_mol_positions
 from train.utils.rdkit import rdkit_mol_positions

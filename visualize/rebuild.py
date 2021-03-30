@@ -3,7 +3,8 @@ from typing import Tuple
 
 from net.models import GeomNN, MLP
 from train.config import QM9_CONFIG
-
+from net.baseline.CVGAE.PredX_MPNN import CVGAE
+from net.baseline.HamEng.models import HamiltonianPositionProducer
 
 def rebuild_qm9(atom_dim, bond_dim, tag='QM9', special_config: dict = None, use_cuda=False) -> Tuple[GeomNN, MLP]:
     print(f'For {tag}:')
@@ -33,5 +34,28 @@ def rebuild_qm9(atom_dim, bond_dim, tag='QM9', special_config: dict = None, use_
     classifier.load_state_dict(classifier_dicts)
     model.eval()
     classifier.eval()
+
+    return model, classifier
+
+
+def rebuild_cvgae(atom_dim, bond_dim, tag='CVGAE-QM9-rdkit', special_config: dict = None, use_cuda=False
+                  ) -> Tuple[CVGAE, MLP]:
+    print(f'For {tag}:')
+    config = QM9_CONFIG.copy()
+    if special_config is not None:
+        config.update(special_config)
+    print('\t CONFIG:')
+    for k, v in config.items():
+        print(f'\t\t{k}: {v}')
+
+    model = CVGAE(
+        atom_dim=atom_dim,
+        bond_dim=bond_dim,
+        config=config,
+        use_cuda=use_cuda
+    )
+    model_dicts = torch.load(f'train/models/CVGAE/{tag}-model.pkl', map_location=torch.device('cpu'))
+    model.load_state_dict(model_dicts)
+    model.eval()
 
     return model, classifier
