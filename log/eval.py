@@ -21,14 +21,17 @@ def eval_c(log: dict, higher_is_better=False) -> float:
 
 
 tuples = [
-    # ('Lipop', 'Lipop', False),
-    # ('Lipop', 'Lipop-Xconf', False),
+    ('Lipop', 'Lipop', False),
+    ('Lipop', 'Lipop-RGT', False),
+    ('Lipop', 'Lipop-Xconf', False),
     # ('TOX21', 'TOX21', True),
     # ('TOX21', 'TOX21-Xconf', True),
-    # ('ESOL', 'ESOL', False),
-    # ('ESOL', 'ESOL-Xconf', False),
-    # ('FreeSolv', 'FreeSolv', False),
-    # ('FreeSolv', 'FreeSolv-Xconf', False),
+    ('ESOL', 'ESOL', False),
+    ('ESOL', 'ESOL-RGT', False),
+    ('ESOL', 'ESOL-Xconf', False),
+    ('FreeSolv', 'FreeSolv', False),
+    ('FreeSolv', 'FreeSolv-RGT', False),
+    ('FreeSolv', 'FreeSolv-Xconf', False),
     ('QM7', 'HamEng', False),
     ('QM7', 'QM7', False),
     ('QM7', 'QM7-rdkit', False),

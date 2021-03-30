@@ -34,8 +34,8 @@ def generate_alignments(model: GeomNN, mol_info: Dict[str, np.ndarray]
                                  vertex_edge_w1, vertex_edge_w2,
                                  vertex_edge_b1, vertex_edge_b2)
     _, confs, local_alignments, global_alignments, *_ = model.forward(atom_ftr, bond_ftr, massive, mask_matrices,
-                                                                    return_local_alignment=True,
-                                                                    return_global_alignment=True)
+                                                                      return_local_alignment=True,
+                                                                      return_global_alignment=True)
     return confs[-1].cpu().detach().numpy(), local_alignments, global_alignments
 
 
