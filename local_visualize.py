@@ -4,37 +4,23 @@ from data.qm9.load_qm9 import load_qm9
 from net.config import ConfType
 from visualize.vis_alignment import vis_alignment
 from visualize.vis_bond import vis_bond
-from visualize.vis_derive import vis_derive_with_mols, vis_derive_with_smiles
+from visualize.vis_derive import vis_derive_with_mols
 
 
 def vis_derive_script():
     mols, _ = load_qm9()
     vis_derive_with_mols(
         list_mols=[
-            mols[123],
-            mols[456],
-            mols[789],
+            mols[10],
+            mols[110],
+            mols[1110],
+            mols[11110],
+            mols[111110],
         ],
         tag='QM9',
         special_config={
 
         },)
-    # vis_derive_with_smiles(
-    #     list_smiles=[
-    #         'c1ccccc1C#N',
-    #         'c1ccccc1C(O)=O',
-    #         'c1cn(cn1)C2CC2',
-    #         'NC(C)C(O)=O',
-    #         'CCCCCC',
-    #         'C1CCCCC1',
-    #         'c1ccccc1',
-    #         'Cc1cccc(c1C)Nc2ccccc2C(=O)O',
-    #     ],
-    #     tag='QM9',
-    #     special_config={
-    #
-    #     },
-    # )
 
 
 if __name__ == '__main__':

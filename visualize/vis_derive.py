@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 from rdkit import Chem
 from rdkit.Chem.rdchem import Mol as Molecule
 
@@ -12,11 +12,12 @@ from net.baseline.HamEng.models import HamiltonianPositionProducer
 from train.utils.loss_functions import adj3_loss
 from train.utils.cache_batch import BatchCache, get_mol_positions
 from train.utils.rdkit import rdkit_mol_positions
-from .rebuild import rebuild_qm9
+from .rebuild import rebuild_qm9, rebuild_cvgae, rebuild_hameng
 from .derive.plt_derive import plt_derive, log_pos_json
 
 
-def generate_derive(model: GeomNN, mol_info: Dict[str, np.ndarray]
+def generate_derive(model: Union[GeomNN, CVGAE, HamiltonianPositionProducer],
+                    mol_info: Dict[str, np.ndarray]
                     ) -> Tuple[List[np.ndarray], List[np.ndarray]]:
     af, bf, us, vs = mol_info['af'], mol_info['bf'], mol_info['us'], mol_info['vs']
     massive = get_massive_from_atom_features(af)
@@ -38,8 +39,19 @@ def generate_derive(model: GeomNN, mol_info: Dict[str, np.ndarray]
                                  vertex_edge_w1, vertex_edge_w2,
                                  vertex_edge_b1, vertex_edge_b2)
     # adj3_loss(None, None, mask_matrices, use_cuda=False)
-    _, _, _, _, _, list_p_ftr, list_q_ftr = model.forward(atom_ftr, bond_ftr, massive, mask_matrices,
-                                                          return_derive=True)
+    if isinstance(model, GeomNN):
+        _, _, _, _, _, list_p_ftr, list_q_ftr = model.forward(atom_ftr, bond_ftr, massive, mask_matrices,
+                                                              return_derive=True)
+    elif isinstance(model, CVGAE):
+        list_p_ftr = []
+        q_ftr = model.forward(atom_ftr, bond_ftr, mask_matrices, is_training=False)
+        list_q_ftr = [q_ftr.detach().numpy()]
+    elif isinstance(model, HamiltonianPositionProducer):
+        list_p_ftr, list_q_ftr, *_ = model.forward(atom_ftr, bond_ftr, massive, mask_matrices, return_multi=True)
+        list_p_ftr = [p.detach().numpy() for p in list_p_ftr]
+        list_q_ftr = [q.detach().numpy() for q in list_q_ftr]
+    else:
+        assert False, f'### {type(model)} ###'
     return list_p_ftr, list_q_ftr
 
 
@@ -63,17 +75,32 @@ def vis_derive_with_mols(list_mols: List[Molecule], tag: str, special_config: di
     mols_info = encode_mols(list_mols)
     atom_dim, bond_dim = mols_info[0]['af'].shape[1], mols_info[0]['bf'].shape[1]
     model, classifier = rebuild_qm9(atom_dim, bond_dim, tag, special_config, use_cuda)
+    cvgae_model = rebuild_cvgae(atom_dim, bond_dim, use_cuda=use_cuda)
+    hameng_model = rebuild_hameng(atom_dim, bond_dim, use_cuda=use_cuda)
     for idx, mol_info in enumerate(mols_info):
-        list_p, list_q = generate_derive(model, mol_info)
-
+        print(f'### Generating SMILES {list_smiles[idx]} ###')
+        # real
         conf = get_mol_positions(list_mols[idx])
         log_pos_json(conf, None, list_mols[idx], list_smiles[idx], f'm{idx}_real')
         plt_derive(conf, None, list_mols[idx], f'm{idx}_real')
 
+        # rdkit
         conf = rdkit_mol_positions(list_mols[idx])
         log_pos_json(conf, None, list_mols[idx], list_smiles[idx], f'm{idx}_rdkit')
         plt_derive(conf, None, list_mols[idx], f'm{idx}_rdkit')
 
+        # CVGAE
+        _, list_q = generate_derive(cvgae_model, mol_info)
+        log_pos_json(list_q[0], None, list_mols[idx], list_smiles[idx], f'm{idx}_cvgae')
+        plt_derive(list_q[0], None, list_mols[idx], f'm{idx}_cvgae')
+
+        # HamEng
+        list_p, list_q = generate_derive(hameng_model, mol_info)
+        log_pos_json(list_q[-1], list_p[-1], list_mols[idx], list_smiles[idx], f'm{idx}_hameng')
+        plt_derive(list_q[-1], list_p[-1], list_mols[idx], f'm{idx}_hameng')
+
+        # GeomNN
+        list_p, list_q = generate_derive(model, mol_info)
         for t, (p, q) in enumerate(zip(list_p, list_q)):
             log_pos_json(q, p, list_mols[idx], list_smiles[idx], f'm{idx}_derive_{t}')
             plt_derive(q, p, list_mols[idx], f'm{idx}_derive_{t}')

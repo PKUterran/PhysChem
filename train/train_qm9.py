@@ -43,6 +43,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
     print('\t CONFIG:')
     for k, v in config.items():
         print(f'\t\t{k}: {v}')
+    real_support = config['CONF_TYPE'] == ConfType.REAL
     rdkit_support = config['CONF_TYPE'] == ConfType.RDKIT or config['CONF_TYPE'] == ConfType.NEWTON_RGT
     rdkit_groundtruth = config['CONF_TYPE'] == ConfType.NEWTON_RGT
     conf_only = config['CONF_TYPE'] == ConfType.ONLY
@@ -149,7 +150,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
             if use_cuda:
                 batch = batch_cuda_copy(batch)
             fp, pred_cs, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
-                                            batch.rdkit_conf)
+                                            batch.rdkit_conf if not real_support else batch.conformation)
             pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
             if config['CONF_LOSS'].startswith('H_'):
@@ -180,7 +181,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
             if use_cuda:
                 batch = batch_cuda_copy(batch)
             fp, pred_cs, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
-                                            batch.rdkit_conf)
+                                            batch.rdkit_conf if not real_support else batch.conformation)
             pred_p = classifier.forward(fp)
             p_loss = multi_mse_loss(pred_p, batch.properties)
 

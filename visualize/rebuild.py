@@ -3,8 +3,11 @@ from typing import Tuple
 
 from net.models import GeomNN, MLP
 from train.config import QM9_CONFIG
+from train.CVGAE.config import QM9_CONFIG as CVGAE_CONFIG
+from train.HamEng.config import FITTER_CONFIG_QM9 as HAMENG_CONFIG
 from net.baseline.CVGAE.PredX_MPNN import CVGAE
 from net.baseline.HamEng.models import HamiltonianPositionProducer
+
 
 def rebuild_qm9(atom_dim, bond_dim, tag='QM9', special_config: dict = None, use_cuda=False) -> Tuple[GeomNN, MLP]:
     print(f'For {tag}:')
@@ -39,9 +42,9 @@ def rebuild_qm9(atom_dim, bond_dim, tag='QM9', special_config: dict = None, use_
 
 
 def rebuild_cvgae(atom_dim, bond_dim, tag='CVGAE-QM9-rdkit', special_config: dict = None, use_cuda=False
-                  ) -> Tuple[CVGAE, MLP]:
+                  ) -> CVGAE:
     print(f'For {tag}:')
-    config = QM9_CONFIG.copy()
+    config = CVGAE_CONFIG.copy()
     if special_config is not None:
         config.update(special_config)
     print('\t CONFIG:')
@@ -58,4 +61,27 @@ def rebuild_cvgae(atom_dim, bond_dim, tag='CVGAE-QM9-rdkit', special_config: dic
     model.load_state_dict(model_dicts)
     model.eval()
 
-    return model, classifier
+    return model
+
+
+def rebuild_hameng(atom_dim, bond_dim, tag='HamEng-QM9', special_config: dict = None, use_cuda=False
+                   ) -> HamiltonianPositionProducer:
+    print(f'For {tag}:')
+    config = HAMENG_CONFIG.copy()
+    if special_config is not None:
+        config.update(special_config)
+    print('\t CONFIG:')
+    for k, v in config.items():
+        print(f'\t\t{k}: {v}')
+
+    model = HamiltonianPositionProducer(
+        n_dim=atom_dim,
+        e_dim=bond_dim,
+        config=config,
+        use_cuda=use_cuda
+    )
+    model_dicts = torch.load(f'train/models/HamNet/{tag}-model.pkl', map_location=torch.device('cpu'))
+    model.load_state_dict(model_dicts)
+    model.eval()
+
+    return model

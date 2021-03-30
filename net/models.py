@@ -27,7 +27,7 @@ class GeomNN(nn.Module):
         self.use_cuda = use_cuda
 
         self.conf_type = config['CONF_TYPE']
-        self.need_derive = self.conf_type is not ConfType.NONE and self.conf_type is not ConfType.RDKIT
+        self.need_derive = self.conf_type not in [ConfType.NONE, ConfType.RDKIT, ConfType.REAL]
         self.need_mp = self.conf_type is not ConfType.ONLY
 
         self.initializer = Initializer(
@@ -100,7 +100,7 @@ class GeomNN(nn.Module):
             p_ftr = q_ftr = torch.zeros(size=[atom_ftr.shape[0], 3], dtype=torch.float32)
             if self.use_cuda:
                 p_ftr, q_ftr = p_ftr.cuda(), q_ftr.cuda()
-        elif self.conf_type is ConfType.RDKIT:
+        elif self.conf_type in [ConfType.RDKIT, ConfType.REAL]:
             p_ftr, q_ftr = torch.zeros(size=[atom_ftr.shape[0], 3], dtype=torch.float32), given_q_ftr
             if self.use_cuda:
                 p_ftr = p_ftr.cuda()
