@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J Lipop             # 作业名是 test
+#SBATCH -J Lipop-1             # 作业名是 test
 #SBATCH -p GPU               # 提交到 cpu 分区
 #SBATCH -N 1                 # 使用一个节点
 #SBATCH --cpus-per-task=4    # 每个进程占用一个 cpu 核心
@@ -12,17 +12,7 @@
 # module add anaconda/3-5.0.0.1
 # source activate ysw_pytorch
 python lipop.py --seed 16880611 --pos 2
-# python lipop.py --seed 16880611 --pos 1
-# python lipop.py --seed 16880611 --pos 0
 python lipop.py --seed 17760704 --pos 2
-# python lipop.py --seed 17760704 --pos 1
-# python lipop.py --seed 17760704 --pos 0
 python lipop.py --seed 17890714 --pos 2
-# python lipop.py --seed 17890714 --pos 1
-# python lipop.py --seed 17890714 --pos 0
 python lipop.py --seed 19491001 --pos 2
-# python lipop.py --seed 19491001 --pos 1
-# python lipop.py --seed 19491001 --pos 0
 python lipop.py --seed 19900612 --pos 2
-# python lipop.py --seed 19900612 --pos 1
-# python lipop.py --seed 19900612 --pos 0
