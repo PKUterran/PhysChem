@@ -3,8 +3,8 @@ from train.train_single_regression import train_single_regression, SingleRegress
 
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument('--seed', type=int, default=0)
-parser.add_argument('--pos', type=int, default=0)
+parser.add_argument('--seed', type=int, default=16880611)
+parser.add_argument('--pos', type=int, default=2)
 arg = parser.parse_args()
 seed = arg.seed
 pos = arg.pos

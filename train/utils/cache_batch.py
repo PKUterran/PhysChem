@@ -101,6 +101,8 @@ class BatchCache:
             massive = get_massive_from_atom_features(atom_ftr)
             n_atoms = [self.mols_info[m]['af'].shape[0] for m in mask]
             n_bonds = [self.mols_info[m]['bf'].shape[0] for m in mask]
+            if sum(n_bonds) == 0:
+                continue
             ms = []
             us = []
             vs = []
