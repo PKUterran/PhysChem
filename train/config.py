@@ -68,7 +68,7 @@ LIPOP_CONFIG.update({
 
     'EPOCH': 400,
     'BATCH': 1,
-    'PACK': 25,
+    'PACK': 12,
     'LAMBDA': 1,
     'LR': 1e-4,
     'GAMMA': 0.995,
@@ -95,7 +95,7 @@ ESOL_CONFIG.update({
 
     'EPOCH': 400,
     'BATCH': 1,
-    'PACK': 160,
+    'PACK': 80,
     'LAMBDA': 1,
     'LR': 3e-3,
     'GAMMA': 0.995,
@@ -122,7 +122,7 @@ FREESOLV_CONFIG.update({
 
     'EPOCH': 400,
     'BATCH': 1,
-    'PACK': 160,
+    'PACK': 80,
     'LAMBDA': 1,
     'LR': 3e-3,
     'GAMMA': 0.995,
