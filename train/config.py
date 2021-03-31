@@ -68,8 +68,8 @@ LIPOP_CONFIG.update({
     'MESSAGE_TYPE': 'triplet-mean',
 
     'EPOCH': 250,
-    'BATCH': 2,
-    'PACK': 16,
+    'BATCH': 1,
+    'PACK': 25,
     'LAMBDA': 1,
     'LR': 1e-4,
     'GAMMA': 0.995,
@@ -95,8 +95,8 @@ ESOL_CONFIG.update({
     'DROPOUT': 0.2,
 
     'EPOCH': 400,
-    'BATCH': 2,
-    'PACK': 128,
+    'BATCH': 1,
+    'PACK': 160,
     'LAMBDA': 1,
     'LR': 3e-3,
     'GAMMA': 0.995,
@@ -122,8 +122,8 @@ FREESOLV_CONFIG.update({
     'DROPOUT': 0.2,
 
     'EPOCH': 400,
-    'BATCH': 2,
-    'PACK': 128,
+    'BATCH': 1,
+    'PACK': 160,
     'LAMBDA': 1,
     'LR': 3e-3,
     'GAMMA': 0.995,

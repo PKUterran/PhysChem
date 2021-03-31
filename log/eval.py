@@ -63,6 +63,7 @@ for d, f, h in tuples:
         except FileNotFoundError:
             pass
     if len(p_results):
+        print(p_results)
         avg = np.mean(p_results)
         std = np.std(p_results)
         if d == 'QM7':

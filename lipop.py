@@ -19,7 +19,7 @@ elif pos == 1:
 else:
     name = 'Lipop-RGT'
     conf_type = ConfType.NEWTON_RGT
-    extra_config = {'LR': 1e-5, 'BATCH': 2, 'PACK': 8}
+    extra_config = {'LR': 1e-5}
 
 train_single_regression(
     dataset=SingleRegressionDataset.LIPOP,

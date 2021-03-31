@@ -19,7 +19,7 @@ elif pos == 1:
 else:
     name = 'ESOL-RGT'
     conf_type = ConfType.NEWTON_RGT
-    extra_config = {'LR': 3e-4, 'BATCH': 2, 'PACK': 64}
+    extra_config = {'LR': 3e-4}
 
 train_single_regression(
     dataset=SingleRegressionDataset.ESOL,

@@ -155,6 +155,7 @@ def train_single_regression(
         optimizer.zero_grad()
         n_batch = len(batches)
         list_loss = []
+        list_p_mse = []
         list_p_rmse = []
         list_c_loss = []
         list_rsd = []
@@ -177,13 +178,17 @@ def train_single_regression(
                 loss = p_loss
             list_loss.append(loss.cpu().item())
 
+            p_mse = mse_loss(pred_p, batch.properties)
             p_rmse = rmse_loss(pred_p, batch.properties)
+            list_p_mse.append(p_mse.item() * stddev_p[0] * stddev_p[0])
             list_p_rmse.append(p_rmse.item() * stddev_p[0])
 
         print(f'\t\t\tLOSS: {sum(list_loss) / n_batch}')
+        print(f'\t\t\tMSE: {sum(list_p_mse) / n_batch}')
         print(f'\t\t\tRMSE: {sum(list_p_rmse) / n_batch}')
         logs[-1].update({
             f'{batch_name}_loss': sum(list_loss) / n_batch,
+            f'{batch_name}_b_metric': (sum(list_p_mse) / n_batch) ** 0.5,
             f'{batch_name}_p_metric': sum(list_p_rmse) / n_batch,
         })
         if conf_supervised:
