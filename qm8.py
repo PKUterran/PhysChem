@@ -15,9 +15,15 @@ if pos == 0:
 elif pos == 1:
     conf_type = ConfType.RDKIT
     name = 'QM8-rdkit'
-else:
+elif pos == 2:
     conf_type = ConfType.NEWTON
     name = 'QM8'
+elif pos == 3:
+    conf_type = ConfType.ONLY
+    name = 'QM8-Oconf'
+else:
+    conf_type = ConfType.REAL
+    name = 'QM8-real'
 
 train_qm9(
     special_config={
