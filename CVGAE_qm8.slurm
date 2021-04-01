@@ -13,3 +13,7 @@
 # source activate ysw_pytorch
 python CVGAE_qm8.py --seed 16880611 --pos 1
 python CVGAE_qm8.py --seed 16880611 --pos 0
+python CVGAE_qm8.py --seed 17760704 --pos 1
+python CVGAE_qm8.py --seed 17760704 --pos 0
+python CVGAE_qm8.py --seed 17890714 --pos 1
+python CVGAE_qm8.py --seed 17890714 --pos 0

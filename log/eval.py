@@ -40,6 +40,14 @@ tuples = [
     ('QM7', 'QM7-real', False),
     ('QM7', 'CVGAE-QM7-rdkit', False),
     ('QM7', 'CVGAE-QM7-Xconf', False),
+    ('QM8', 'HamEng', False),
+    ('QM8', 'QM8', False),
+    ('QM8', 'QM8-rdkit', False),
+    ('QM8', 'QM8-Xconf', False),
+    ('QM8', 'QM8-Oconf', False),
+    ('QM8', 'QM8-real', False),
+    ('QM8', 'CVGAE-QM8-rdkit', False),
+    ('QM8', 'CVGAE-QM8-Xconf', False),
 ]
 
 for d, f, h in tuples:
@@ -63,11 +71,13 @@ for d, f, h in tuples:
         except FileNotFoundError:
             pass
     if len(p_results):
-        print(p_results)
+        # print(p_results)
         avg = np.mean(p_results)
         std = np.std(p_results)
         if d == 'QM7':
             print('{}: {:.4f} +- {:.4f}'.format(f, avg * 223.918853, std * 223.918853))
+        elif d == 'QM8':
+            print('{}: {:.4f} +- {:.4f}'.format(f, avg / 16, std / 16))
         else:
             print('{}: {:.4f} +- {:.4f}'.format(f, avg, std))
     if len(c_results):

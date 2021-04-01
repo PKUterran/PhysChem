@@ -11,5 +11,9 @@
 
 # module add anaconda/3-5.0.0.1
 # source activate ysw_pytorch
-python qm8.py --seed 16880611 --pos 3
-python qm8.py --seed 16880611 --pos 4
+# python qm8.py --seed 16880611 --pos 3
+# python qm8.py --seed 16880611 --pos 4
+python qm8.py --seed 17760704 --pos 3
+python qm8.py --seed 17760704 --pos 4
+python qm8.py --seed 17890714 --pos 3
+python qm8.py --seed 17890714 --pos 4
