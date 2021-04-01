@@ -3,7 +3,7 @@ from train.train_qm9 import train_qm9, QMDataset
 
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument('--seed', type=int, default=0)
+parser.add_argument('--seed', type=int, default=16880611)
 parser.add_argument('--pos', type=int, default=0)
 arg = parser.parse_args()
 seed = arg.seed
@@ -52,7 +52,7 @@ train_qm9(
         'PACK': 1,
         'CONF_LOSS': 'H_ADJ3',
         'LAMBDA': 10,
-        'LR': 3e-6,
+        'LR': 5e-6,
         'GAMMA': 0.98,
         'DECAY': 1e-5,
 

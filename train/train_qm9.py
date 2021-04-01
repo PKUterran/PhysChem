@@ -67,12 +67,17 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
     # normalize properties and cache batches
     mean_p = np.mean(mol_properties, axis=0)
     stddev_p = np.std((mol_properties - mean_p).tolist(), axis=0, ddof=0)
+    weights = torch.tensor(stddev_p ** 2, dtype=torch.float32) * 500
+    if use_cuda:
+        weights = weights.cuda()
     # mad_p = np.array([1.189, 6.299, 0.016, 0.039, 0.040, 202.017,
     #                   0.026, 31.072, 31.072, 31.072, 31.072, 3.204], dtype=np.float)
     norm_p = (mol_properties - mean_p) / stddev_p
     print(f'\tmean: {mean_p}')
     print(f'\tstd: {stddev_p}')
     # print(f'\tmad: {mad_p}')
+    if dataset == QMDataset.QM8:
+        print(f'\tweights: {weights.cpu().numpy()}')
     print('Caching Batches...')
     try:
         batch_cache = load_batch_cache(data_name, mols, mols_info, norm_p, batch_size=config['BATCH'],
@@ -152,7 +157,11 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
             fp, pred_cs, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
                                             batch.rdkit_conf if not real_support else batch.conformation)
             pred_p = classifier.forward(fp)
-            p_loss = multi_mse_loss(pred_p, batch.properties)
+            if dataset == QMDataset.QM8:
+                p_losses = multi_mse_loss(pred_p, batch.properties, explicit=True)
+                p_loss = sum(p_losses * weights)
+            else:
+                p_loss = multi_mse_loss(pred_p, batch.properties)
             if config['CONF_LOSS'].startswith('H_'):
                 c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
             else:
@@ -183,8 +192,11 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
             fp, pred_cs, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
                                             batch.rdkit_conf if not real_support else batch.conformation)
             pred_p = classifier.forward(fp)
-            p_loss = multi_mse_loss(pred_p, batch.properties)
-
+            if dataset == QMDataset.QM8:
+                p_losses = multi_mse_loss(pred_p, batch.properties, explicit=True)
+                p_loss = sum(p_losses * weights)
+            else:
+                p_loss = multi_mse_loss(pred_p, batch.properties)
             if config['CONF_LOSS'].startswith('H_'):
                 c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
             else:
@@ -209,7 +221,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
         print(f'\t\t\tTOTAL LOSS: {sum(list_loss) / n_batch}')
         print(f'\t\t\tPROPERTIES MULTI-MAE: {sum(list_p_multi_mae) * stddev_p / n_batch}')
         if dataset == QMDataset.QM8:
-            total_mae = np.mean(sum(list_p_multi_mae) * stddev_p / n_batch)
+            total_mae = np.sum(sum(list_p_multi_mae) * stddev_p / n_batch)
         else:
             total_mae = sum(list_p_total_mae) / n_batch
         print(f'\t\t\tPROPERTIES TOTAL MAE: {total_mae}')

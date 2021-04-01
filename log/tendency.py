@@ -47,9 +47,9 @@ tuples = [
     ('QM9', 'CVGAE-QM9-rdkit', False, True),
     ('QM9', 'CVGAE-QM9-Xconf', False, True),
     ('QM9', 'HamEng-QM9', False, True),
-    # ('QM8', 'QM8@0', False, True),
-    # ('QM8', 'QM8-rdkit@0', False, True),
-    # ('QM8', 'QM8-Xconf@0', False, True),
+    ('QM8', 'QM8@16880611', False, True),
+    ('QM8', 'QM8-rdkit@16880611', False, True),
+    ('QM8', 'QM8-Xconf@16880611', False, True),
     # ('QM7', 'HamEng@16880611', False, True),
     # ('QM7', 'QM7@16880611', False, True),
     # ('QM7', 'QM7-rdkit@16880611', False, True),
@@ -79,6 +79,9 @@ for d, f, h, t in tuples:
         os.mkdir(d)
     json_path = f'{d}/{f}.json'
     graph_path = f'{d}/{f}.png'
-    with open(json_path) as fp:
-        log = json.load(fp)
+    try:
+        with open(json_path) as fp:
+            log = json.load(fp)
+    except FileNotFoundError:
+        continue
     tendency_pc(log, graph_path, h, t)
