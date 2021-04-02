@@ -1,5 +1,5 @@
 from net.config import ConfType
-from train.train_tox21 import train_tox21
+from train.train_multi_classification import train_multi_classification
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -10,7 +10,7 @@ seed = arg.seed
 pos = arg.pos
 
 if seed == 0:
-    train_tox21(
+    train_multi_classification(
         data_name='TOX21' if pos else 'TOX21-Xconf',
         tag='TOX21' if pos else 'TOX21-Xconf',
         special_config={
@@ -24,7 +24,7 @@ if seed == 0:
     )
     exit(0)
 
-train_tox21(
+train_multi_classification(
     data_name='TOX21@{}'.format(seed) if pos else 'TOX21-Xconf@{}'.format(seed),
     tag='TOX21@{}'.format(seed) if pos else 'TOX21-Xconf@{}'.format(seed),
     special_config={

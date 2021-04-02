@@ -148,8 +148,8 @@ TOX21_CONFIG.update({
     'DROPOUT': 0.5,
 
     'EPOCH': 200,
-    'BATCH': 2,
-    'PACK': 64,
+    'BATCH': 1,
+    'PACK': 128,
     'LAMBDA': 1,
     'LR': 1e-4,
     'GAMMA': 0.99,

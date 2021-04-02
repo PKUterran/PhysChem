@@ -9,6 +9,10 @@ from net.utils.MaskMatrices import MaskMatrices
 from net.utils.model_utils import normalize_adj_rc, nonzero
 
 
+def multi_cross_entropy():
+    pass
+
+
 def multi_roc(source: np.ndarray, target: np.ndarray) -> Tuple[float, List[float]]:
     assert source.shape == target.shape
     nan_mask = np.isnan(target)

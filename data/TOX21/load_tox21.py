@@ -21,8 +21,8 @@ def dump_tox21():
         pickle.dump((mols, properties), fp)
 
 
-def load_tox21(max_num=-1) -> Tuple[List[Molecule], np.ndarray]:
-    if not os.path.exists(TOX21_PICKLE_PATH):
+def load_tox21(max_num=-1, force_save=False) -> Tuple[List[Molecule], np.ndarray]:
+    if not os.path.exists(TOX21_PICKLE_PATH) or force_save:
         dump_tox21()
     with open(TOX21_PICKLE_PATH, 'rb') as fp:
         mols, properties = pickle.load(fp)
