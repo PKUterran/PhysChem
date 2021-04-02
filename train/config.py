@@ -157,3 +157,29 @@ TOX21_CONFIG.update({
 
     'CONF_TYPE': ConfType.RDKIT,
 })
+SARS_CONFIG = DEFAULT_CONFIG.copy()
+SARS_CONFIG.update({
+    'CLASSIFIER_HIDDENS': [],
+    'HV_DIM': 200,
+    'HE_DIM': 200,
+    'HM_DIM': 200,
+    'MV_DIM': 200,
+    'ME_DIM': 200,
+    'MM_DIM': 200,
+
+    'N_LAYER': 2,
+    'N_ITERATION': 4,
+    'N_HOP': 1,
+    'N_GLOBAL': 2,
+    'DROPOUT': 0.5,
+
+    'EPOCH': 200,
+    'BATCH': 1,
+    'PACK': 64,
+    'LAMBDA': 1,
+    'LR': 1e-4,
+    'GAMMA': 0.99,
+    'DECAY': 1e-5,
+
+    'CONF_TYPE': ConfType.RDKIT,
+})

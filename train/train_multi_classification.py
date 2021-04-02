@@ -15,10 +15,10 @@ from data.sars.load_sars import load_sars
 from net.config import ConfType
 from net.models import GeomNN
 from net.components import MLP
-from .config import TOX21_CONFIG
+from .config import TOX21_CONFIG, SARS_CONFIG
 from .utils.cache_batch import Batch, BatchCache, load_batch_cache, load_encode_mols, batch_cuda_copy
 from .utils.seed import set_seed
-from .utils.loss_functions import multi_roc
+from .utils.loss_functions import multi_roc, hierarchical_adj3_loss
 from .utils.save_log import save_log
 
 
@@ -32,13 +32,17 @@ def train_multi_classification(special_config: dict = None, dataset=MultiClassif
                                use_tqdm=False):
     # set parameters and seed
     print(f'For {tag}:')
-    config = TOX21_CONFIG.copy()
+    if dataset == MultiClassificationDataset.TOX21:
+        config = TOX21_CONFIG.copy()
+    else:
+        config = SARS_CONFIG.copy()
     if special_config is not None:
         config.update(special_config)
     print('\t CONFIG:')
     for k, v in config.items():
         print(f'\t\t{k}: {v}')
-    rdkit_support = config['CONF_TYPE'] == ConfType.RDKIT
+    rdkit_support = config['CONF_TYPE'] == ConfType.RDKIT or config['CONF_TYPE'] == ConfType.NEWTON_RGT
+    conf_supervised = config['CONF_TYPE'] == ConfType.NEWTON_RGT
     set_seed(seed, use_cuda=use_cuda)
     np.set_printoptions(suppress=True, precision=3, linewidth=200)
 
@@ -67,6 +71,9 @@ def train_multi_classification(special_config: dict = None, dataset=MultiClassif
     weight_label_class = (np.repeat(np.expand_dims(cnt_notnan, -1), n_class, axis=-1) / n_class) * cnt_label_class ** -1
     print(f'\t\tLabel-Class: \n{cnt_label_class}')
     print(f'\t\tWeights: \n{weight_label_class}')
+    weight_label_class = torch.tensor(weight_label_class, dtype=torch.float32)
+    if use_cuda:
+        weight_label_class = weight_label_class.cuda()
 
     # cache batches
     print('Caching Batches...')
@@ -92,6 +99,7 @@ def train_multi_classification(special_config: dict = None, dataset=MultiClassif
     classifiers = [MLP(
         in_dim=config['HM_DIM'],
         out_dim=n_class,
+        activation='softmax',
         hidden_dims=config['CLASSIFIER_HIDDENS'],
         use_cuda=use_cuda,
         bias=True
@@ -117,13 +125,12 @@ def train_multi_classification(special_config: dict = None, dataset=MultiClassif
     epoch = 0
     logs: List[Dict[str, float]] = []
     loss_funcs = [nn.CrossEntropyLoss(weight=weight_label_class[i]) for i in range(n_label)]
+    c_loss_fuc = hierarchical_adj3_loss
 
     def nan_masked(s: torch.Tensor, t: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        nan_mask = torch.isnan(t).type(torch.float32)
-        not_nan_mask = -nan_mask + 1.0
-        s = s * not_nan_mask + nan_mask * -1e6
-        t = t * not_nan_mask
-        t[torch.isnan(t)] = 0
+        notnan_mask = ~torch.isnan(t)
+        s = s[notnan_mask, :]
+        t = t[notnan_mask]
         return s, t
 
     def train(batches: List[Batch]):
@@ -138,12 +145,21 @@ def train_multi_classification(special_config: dict = None, dataset=MultiClassif
         for i, batch in enumerate(batches):
             if use_cuda:
                 batch = batch_cuda_copy(batch)
-            fp, _, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
-                                      batch.rdkit_conf)
-            pred_p = classifier.forward(fp)
-            pred_p_, properties_ = nan_masked(pred_p, batch.properties)
-            p_loss = loss_func(pred_p_, properties_)
-            loss = p_loss
+            fp, pred_cs, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
+                                            batch.rdkit_conf)
+            p_losses = []
+            for j, cls in enumerate(classifiers):
+                pred_p = cls.forward(fp)
+                pred_p_, properties_ = nan_masked(pred_p, batch.properties[:, j])
+                if pred_p_.shape[0] == 0:
+                    continue
+                p_losses.append(loss_funcs[j](pred_p_, properties_.type(torch.long)))
+            p_loss = sum(p_losses)
+            if conf_supervised:
+                c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+                loss = p_loss + config['LAMBDA'] * c_loss
+            else:
+                loss = p_loss
             # loss.backward()
             # optimizer.step()
             losses.append(loss)
@@ -159,26 +175,35 @@ def train_multi_classification(special_config: dict = None, dataset=MultiClassif
         optimizer.zero_grad()
         n_batch = len(batches)
         list_loss = []
-        list_pred_p = []
+        list_preds_p = [[] for _ in range(n_label)]
         list_properties = []
         if use_tqdm:
             batches = tqdm(batches, total=n_batch)
         for batch in batches:
             if use_cuda:
                 batch = batch_cuda_copy(batch)
-            fp, _, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
-                                      batch.rdkit_conf)
-            pred_p = classifier.forward(fp)
-            pred_p_, properties_ = nan_masked(pred_p, batch.properties)
-            p_loss = loss_func(pred_p_, properties_)
-            loss = p_loss
+            fp, pred_cs, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
+                                            batch.rdkit_conf)
+            p_losses = []
+            for j, cls in enumerate(classifiers):
+                pred_p = cls.forward(fp)
+                pred_p_, properties_ = nan_masked(pred_p, batch.properties[:, j])
+                if pred_p_.shape[0] == 0:
+                    continue
+                p_losses.append(loss_funcs[j](pred_p_, properties_.type(torch.long)))
+                list_preds_p[j].append(pred_p_.cpu().detach().numpy())
+            p_loss = sum(p_losses)
+            if conf_supervised:
+                c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+                loss = p_loss + config['LAMBDA'] * c_loss
+            else:
+                loss = p_loss
             list_loss.append(loss.cpu().item())
 
-            list_pred_p.append(pred_p.cpu().detach().numpy())
             list_properties.append(batch.properties.cpu().numpy())
-        pred_p = np.vstack(list_pred_p)
+        list_pred_p = [np.vstack(preds_p) for preds_p in list_preds_p]
         properties = np.vstack(list_properties)
-        p_total_roc, p_multi_roc = multi_roc(pred_p, properties)
+        p_total_roc, p_multi_roc = multi_roc(list_pred_p, properties)
 
         print(f'\t\t\tLOSS: {sum(list_loss) / n_batch}')
         print(f'\t\t\tAVG-ROC: {p_total_roc}')

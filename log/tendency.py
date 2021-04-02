@@ -68,9 +68,6 @@ tuples = [
     ('Lipop', 'Lipop-RGT@16880611', False, True),
     ('Lipop', 'Lipop-Xconf@16880611', False, False),
 
-    # ('TOX21', 'TOX21', True, True),
-    # ('TOX21', 'TOX21-Xconf', True, True),
-
     ('ESOL', 'ESOL@16880611', False, False),
     ('ESOL', 'ESOL-RGT@16880611', False, True),
     ('ESOL', 'ESOL-Xconf@16880611', False, False),
@@ -78,6 +75,14 @@ tuples = [
     ('FreeSolv', 'FreeSolv@16880611', False, False),
     ('FreeSolv', 'FreeSolv-RGT@16880611', False, True),
     ('FreeSolv', 'FreeSolv-Xconf@16880611', False, False),
+
+    ('TOX21', 'TOX21@16880611', True, True),
+    ('TOX21', 'TOX21-RGT@16880611', False, True),
+    ('TOX21', 'TOX21-Xconf@16880611', True, True),
+
+    ('sars', 'sars@16880611', True, True),
+    ('sars', 'sars-RGT@16880611', False, True),
+    ('sars', 'sars-Xconf@16880611', True, True),
 ]
 
 for d, f, h, t in tuples:

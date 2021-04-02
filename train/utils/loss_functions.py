@@ -9,24 +9,15 @@ from net.utils.MaskMatrices import MaskMatrices
 from net.utils.model_utils import normalize_adj_rc, nonzero
 
 
-def multi_cross_entropy():
-    pass
-
-
-def multi_roc(source: np.ndarray, target: np.ndarray) -> Tuple[float, List[float]]:
-    assert source.shape == target.shape
-    nan_mask = np.isnan(target)
-    # not_nan_mask = np.logical_not(nan_mask)
-    tgt = target.copy()
-    src = source.copy()
-    tgt[nan_mask] = 0
-    src[nan_mask] = -1e6
+def multi_roc(source: List[np.ndarray], target: np.ndarray) -> Tuple[float, List[float]]:
     list_roc = []
-    n_m = source.shape[1]
+    n_m = len(source)
     for i in range(n_m):
+        tgt = target[:, i]
+        tgt = tgt[np.logical_not(np.isnan(tgt))]
+        src = np.sum(source[i] * np.array([list(range(source[i].shape[1]))], dtype=np.float), axis=1)
         try:
-            # roc = roc_auc_score(target[not_nan_mask[:, i], i], source[not_nan_mask[:, i], i])
-            roc = roc_auc_score(tgt[:, i], src[:, i])
+            roc = roc_auc_score(tgt, src)
         except ValueError:
             roc = 1
         list_roc.append(roc)
