@@ -15,7 +15,7 @@ def multi_roc(source: List[np.ndarray], target: np.ndarray) -> Tuple[float, List
     for i in range(n_m):
         target_i = target[:, i]
         target_i = target_i[np.logical_not(np.isnan(target_i))]
-        src = source[i]
+        src = torch.softmax(torch.from_numpy(source[i]), dim=-1).numpy()
         tgt = np.zeros_like(src)
         for j in range(target_i.shape[0]):
             tgt[j, int(target_i[j])] = 1.

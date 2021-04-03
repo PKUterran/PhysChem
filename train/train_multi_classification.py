@@ -99,7 +99,6 @@ def train_multi_classification(special_config: dict = None, dataset=MultiClassif
     classifiers = [MLP(
         in_dim=config['HM_DIM'],
         out_dim=n_class,
-        activation='softmax',
         hidden_dims=config['CLASSIFIER_HIDDENS'],
         use_cuda=use_cuda,
         bias=True
@@ -171,7 +170,7 @@ def train_multi_classification(special_config: dict = None, dataset=MultiClassif
     def evaluate(batches: List[Batch], batch_name: str):
         model.eval()
         for cls in classifiers:
-            cls.train()
+            cls.eval()
         optimizer.zero_grad()
         n_batch = len(batches)
         list_loss = []
