@@ -13,9 +13,12 @@ def multi_roc(source: List[np.ndarray], target: np.ndarray) -> Tuple[float, List
     list_roc = []
     n_m = len(source)
     for i in range(n_m):
-        tgt = target[:, i]
-        tgt = tgt[np.logical_not(np.isnan(tgt))]
-        src = np.sum(source[i] * np.array([list(range(source[i].shape[1]))], dtype=np.float), axis=1)
+        target_i = target[:, i]
+        target_i = target_i[np.logical_not(np.isnan(target_i))]
+        src = source[i]
+        tgt = np.zeros_like(src)
+        for j in range(target_i.shape[0]):
+            tgt[j, int(target_i[j])] = 1.
         try:
             roc = roc_auc_score(tgt, src)
         except ValueError:

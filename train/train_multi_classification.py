@@ -18,7 +18,7 @@ from net.components import MLP
 from .config import TOX21_CONFIG, SARS_CONFIG
 from .utils.cache_batch import Batch, BatchCache, load_batch_cache, load_encode_mols, batch_cuda_copy
 from .utils.seed import set_seed
-from .utils.loss_functions import multi_roc, hierarchical_adj3_loss
+from .utils.loss_functions import multi_roc, hierarchical_adj3_loss, distance_loss
 from .utils.save_log import save_log
 
 
@@ -59,13 +59,13 @@ def train_multi_classification(special_config: dict = None, dataset=MultiClassif
     # label normalization
     n_label = mol_properties.shape[1]
     cnt_notnan = []
-    cnt_label_class = np.zeros(shape=[n_label, n_class], dtype=np.float)
+    cnt_label_class = np.ones(shape=[n_label, n_class], dtype=np.float)
     for i in range(n_label):
         labels_i = mol_properties[:, i]
         labels_i = labels_i[np.logical_not(np.isnan(labels_i))]
         cnt_notnan.append(len(labels_i))
         n_class_b = len(set(labels_i))
-        assert n_class == n_class_b, f'{n_class} vs {n_class_b}'
+        # assert n_class == n_class_b, f'{n_class} vs {n_class_b}'
         for label in labels_i:
             cnt_label_class[i][int(label)] += 1.
     weight_label_class = (np.repeat(np.expand_dims(cnt_notnan, -1), n_class, axis=-1) / n_class) * cnt_label_class ** -1
@@ -177,6 +177,8 @@ def train_multi_classification(special_config: dict = None, dataset=MultiClassif
         list_loss = []
         list_preds_p = [[] for _ in range(n_label)]
         list_properties = []
+        list_c_loss = []
+        list_rsd = []
         if use_tqdm:
             batches = tqdm(batches, total=n_batch)
         for batch in batches:
@@ -196,6 +198,9 @@ def train_multi_classification(special_config: dict = None, dataset=MultiClassif
             if conf_supervised:
                 c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
                 loss = p_loss + config['LAMBDA'] * c_loss
+                rsd = distance_loss(pred_cs[-1], batch.conformation, batch.mask_matrices, root_square=True)
+                list_rsd.append(rsd.cpu().item())
+                list_c_loss.append(loss.cpu().item())
             else:
                 loss = p_loss
             list_loss.append(loss.cpu().item())
@@ -213,6 +218,13 @@ def train_multi_classification(special_config: dict = None, dataset=MultiClassif
             f'{batch_name}_p_metric': p_total_roc,
             f'{batch_name}_p_multi_metric': p_multi_roc,
         })
+        if conf_supervised:
+            print(f'\t\t\tC LOSS: {sum(list_c_loss) / n_batch}')
+            print(f'\t\t\tDL-RS: {sum(list_rsd) / n_batch}')
+            logs[-1].update({
+                f'{batch_name}_c_loss': sum(list_c_loss) / n_batch,
+                f'{batch_name}_c_metric': sum(list_rsd) / n_batch,
+            })
 
     for _ in range(config['EPOCH']):
         epoch += 1

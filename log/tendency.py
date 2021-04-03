@@ -21,14 +21,20 @@ def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
         # ax1.set_ylim(min(train_p) - 0.2, max(train_p) + 0.2)
 
     if show_conf:
-        # train_c = [dic['train_loss'] for dic in log]
-        # test_c = [dic['test_loss'] for dic in log]
-        train_c = [dic['train_c_metric'] for dic in log]
-        valid_c = [dic['validate_c_metric'] for dic in log]
-        test_c = [dic['test_c_metric'] for dic in log]
+        if 'TOX21' in path or 'sars' in path:
+            train_c = [dic['train_loss'] for dic in log]
+            valid_c = [dic['validate_loss'] for dic in log]
+            test_c = [dic['test_loss'] for dic in log]
+        else:
+            train_c = [dic['train_c_metric'] for dic in log]
+            valid_c = [dic['validate_c_metric'] for dic in log]
+            test_c = [dic['test_c_metric'] for dic in log]
         ps = zip(valid_c, test_c)
         ps = sorted(ps, key=lambda x: x[0], reverse=False)
-        print('{}: {:.4f} (conf)'.format(path, ps[0][1]))
+        if 'TOX21' in path or 'sars' in path:
+            print('{}: {:.4f} (loss)'.format(path, ps[0][1]))
+        else:
+            print('{}: {:.4f} (conf)'.format(path, ps[0][1]))
         ax2 = ax1.twinx()
         ax2.plot(epochs, train_c, color='green', linestyle='--')
         ax2.plot(epochs, test_c, color='green')

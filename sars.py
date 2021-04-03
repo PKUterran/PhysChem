@@ -32,6 +32,6 @@ train_multi_classification(
     use_cuda=True,
     max_num=-1,
     seed=seed,
-    force_save=True,
+    force_save=False,
     use_tqdm=False
 )
