@@ -21,7 +21,7 @@ def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
         # ax1.set_ylim(min(train_p) - 0.2, max(train_p) + 0.2)
 
     if show_conf:
-        if 'TOX21' in path or 'sars' in path:
+        if ('TOX21' in path or 'sars' in path) and 'RGT' not in path:
             train_c = [dic['train_loss'] for dic in log]
             valid_c = [dic['validate_loss'] for dic in log]
             test_c = [dic['test_loss'] for dic in log]
@@ -31,7 +31,7 @@ def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
             test_c = [dic['test_c_metric'] for dic in log]
         ps = zip(valid_c, test_c)
         ps = sorted(ps, key=lambda x: x[0], reverse=False)
-        if 'TOX21' in path or 'sars' in path:
+        if ('TOX21' in path or 'sars' in path) and 'RGT' not in path:
             print('{}: {:.4f} (loss)'.format(path, ps[0][1]))
         else:
             print('{}: {:.4f} (conf)'.format(path, ps[0][1]))
@@ -45,28 +45,28 @@ def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
 
 
 tuples = [
-    ('QM9', 'QM9', False, True),
-    ('QM9', 'QM9-Xconf', False, True),
-    ('QM9', 'QM9-rdkit', False, True),
-    ('QM9', 'QM9-Oconf', False, True),
-    ('QM9', 'QM9-real', False, False),
-    ('QM9', 'CVGAE-QM9-rdkit', False, True),
-    ('QM9', 'CVGAE-QM9-Xconf', False, True),
-    ('QM9', 'HamEng-QM9', False, True),
-    ('QM8', 'QM8@16880611', False, True),
-    ('QM8', 'QM8-rdkit@16880611', False, True),
-    ('QM8', 'QM8-Xconf@16880611', False, True),
-    ('QM8', 'QM8-Oconf@16880611', False, True),
-    ('QM8', 'QM8-real@16880611', False, False),
-    ('QM8', 'CVGAE-QM8-rdkit@16880611', False, True),
-    ('QM8', 'CVGAE-QM8-Xconf@16880611', False, True),
-    ('QM8', 'HamEng@16880611', False, True),
+    # ('QM9', 'QM9', False, True),
+    # ('QM9', 'QM9-Xconf', False, True),
+    # ('QM9', 'QM9-rdkit', False, True),
+    # ('QM9', 'QM9-Oconf', False, True),
+    # ('QM9', 'QM9-real', False, False),
+    # ('QM9', 'CVGAE-QM9-rdkit', False, True),
+    # ('QM9', 'CVGAE-QM9-Xconf', False, True),
+    # ('QM9', 'HamEng-QM9', False, True),
+    # ('QM8', 'QM8@16880611', False, True),
+    # ('QM8', 'QM8-rdkit@16880611', False, True),
+    # ('QM8', 'QM8-Xconf@16880611', False, True),
+    # ('QM8', 'QM8-Oconf@16880611', False, True),
+    # ('QM8', 'QM8-real@16880611', False, False),
+    # ('QM8', 'CVGAE-QM8-rdkit@16880611', False, True),
+    # ('QM8', 'CVGAE-QM8-Xconf@16880611', False, True),
+    # ('QM8', 'HamEng@16880611', False, True),
     # ('QM7', 'HamEng@16880611', False, True),
     # ('QM7', 'QM7@16880611', False, True),
     # ('QM7', 'QM7-rdkit@16880611', False, True),
     # ('QM7', 'QM7-Xconf@16880611', False, True),
     # ('QM7', 'QM7-Oconf@16880611', False, True),
-    ('QM7', 'QM7-real@16880611', False, False),
+    # ('QM7', 'QM7-real@16880611', False, False),
     # ('QM7', 'CVGAE-QM7-rdkit@16880611', False, False),
     # ('QM7', 'CVGAE-QM7-Xconf@16880611', False, False),
 
@@ -83,11 +83,11 @@ tuples = [
     ('FreeSolv', 'FreeSolv-Xconf@16880611', False, False),
 
     ('TOX21', 'TOX21@16880611', True, True),
-    ('TOX21', 'TOX21-RGT@16880611', False, True),
+    ('TOX21', 'TOX21-RGT@16880611', True, True),
     ('TOX21', 'TOX21-Xconf@16880611', True, True),
 
     ('sars', 'sars@16880611', True, True),
-    ('sars', 'sars-RGT@16880611', False, True),
+    ('sars', 'sars-RGT@16880611', True, True),
     ('sars', 'sars-Xconf@16880611', True, True),
 ]
 

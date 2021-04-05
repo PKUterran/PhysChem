@@ -13,6 +13,6 @@
 # source activate ysw_pytorch
 python tox21.py --seed 16880611 --pos 2
 python tox21.py --seed 17760704 --pos 2
-python tox21.py --seed 17890714 --pos 2
-python tox21.py --seed 19491001 --pos 2
-python tox21.py --seed 19900612 --pos 2
+# python tox21.py --seed 17890714 --pos 2
+# python tox21.py --seed 19491001 --pos 2
+# python tox21.py --seed 19900612 --pos 2

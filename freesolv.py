@@ -19,7 +19,7 @@ elif pos == 1:
 else:
     name = 'FreeSolv-RGT'
     conf_type = ConfType.NEWTON_RGT
-    extra_config = {'LR': 3e-4}
+    extra_config = {}
 
 train_single_regression(
     dataset=SingleRegressionDataset.FREESOLV,

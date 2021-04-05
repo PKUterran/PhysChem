@@ -20,7 +20,7 @@ elif pos == 1:
 else:
     name = 'sars-RGT'
     conf_type = ConfType.NEWTON_RGT
-    extra_config = {'LR': 1e-5}
+    extra_config = {}
 
 train_multi_classification(
     dataset=MultiClassificationDataset.SARS_COV_2,
