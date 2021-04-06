@@ -97,6 +97,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
     )
     if use_cuda:
         model.cuda()
+        conf_gen.cuda()
 
     # initialize optimization
     parameters = list(chain(model.parameters(), conf_gen.parameters()))
@@ -124,6 +125,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
 
     def train(batches: List[Batch], batch_name: str = 'train'):
         model.train()
+        conf_gen.train()
         optimizer.zero_grad()
         n_batch = len(batches)
         list_loss = []
@@ -133,7 +135,8 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
             if use_cuda:
                 batch = batch_cuda_copy(batch)
             _, pred_c, _, _, _, _ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices)
-            c_loss = c_loss_fuc(pred_c, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+            conf = conf_gen.forward(pred_c)
+            c_loss = c_loss_fuc(conf, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
             loss = c_loss
             loss.backward()
             optimizer.step()
@@ -146,6 +149,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
 
     def evaluate(batches: List[Batch], batch_name: str) -> float:
         model.eval()
+        conf_gen.eval()
         optimizer.zero_grad()
         n_batch = len(batches)
         list_rsd = []
@@ -155,7 +159,8 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
             if use_cuda:
                 batch = batch_cuda_copy(batch)
             _, pred_c, _, _, _, _ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices)
-            rsd = distance_loss(pred_c, batch.conformation, batch.mask_matrices, root_square=True)
+            conf = conf_gen.forward(pred_c)
+            rsd = distance_loss(conf, batch.conformation, batch.mask_matrices, root_square=True)
             list_rsd.append(rsd.cpu().item())
 
         print(f'\t\t\tCONFORMATION RS-DL: {sum(list_rsd) / n_batch}')
@@ -191,6 +196,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
             best_epoch = epoch
             print(f'\tSaving Model...')
             torch.save(model.state_dict(), f'{MODEL_DICT_DIR}/{tag}-model.pkl')
+            torch.save(conf_gen.state_dict(), f'{MODEL_DICT_DIR}/{tag}-conf_gen.pkl')
         logs[-1].update({'best_epoch': best_epoch})
         save_log(logs,
                  directory='QM7' if dataset == QMDataset.QM7

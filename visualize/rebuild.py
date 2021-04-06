@@ -42,7 +42,7 @@ def rebuild_qm9(atom_dim, bond_dim, tag='QM9', special_config: dict = None, use_
 
 
 def rebuild_cvgae(atom_dim, bond_dim, tag='CVGAE-QM9-rdkit', special_config: dict = None, use_cuda=False
-                  ) -> CVGAE:
+                  ) -> [CVGAE, MLP]:
     print(f'For {tag}:')
     config = CVGAE_CONFIG.copy()
     if special_config is not None:
@@ -57,15 +57,24 @@ def rebuild_cvgae(atom_dim, bond_dim, tag='CVGAE-QM9-rdkit', special_config: dic
         config=config,
         use_cuda=use_cuda
     )
+    conf_gen = MLP(
+        in_dim=2 * config['HV_DIM'],
+        out_dim=3,
+        use_cuda=use_cuda,
+        bias=False
+    )
     model_dicts = torch.load(f'train/models/CVGAE/{tag}-model.pkl', map_location=torch.device('cpu'))
+    conf_dicts = torch.load(f'train/models/CVGAE/{tag}-conf_gen.pkl', map_location=torch.device('cpu'))
     model.load_state_dict(model_dicts)
+    conf_gen.load_state_dict(conf_dicts)
     model.eval()
+    conf_gen.eval()
 
-    return model
+    return model, conf_gen
 
 
 def rebuild_hameng(atom_dim, bond_dim, tag='HamEng-QM9', special_config: dict = None, use_cuda=False
-                   ) -> HamiltonianPositionProducer:
+                   ) -> Tuple[HamiltonianPositionProducer, MLP]:
     print(f'For {tag}:')
     config = HAMENG_CONFIG.copy()
     if special_config is not None:
@@ -80,8 +89,17 @@ def rebuild_hameng(atom_dim, bond_dim, tag='HamEng-QM9', special_config: dict = 
         config=config,
         use_cuda=use_cuda
     )
+    conf_gen = MLP(
+        in_dim=config['PQ_DIM'],
+        out_dim=3,
+        use_cuda=use_cuda,
+        bias=False
+    )
     model_dicts = torch.load(f'train/models/HamNet/{tag}-model.pkl', map_location=torch.device('cpu'))
+    conf_dicts = torch.load(f'train/models/HamNet/{tag}-conf_gen.pkl', map_location=torch.device('cpu'))
     model.load_state_dict(model_dicts)
+    conf_gen.load_state_dict(conf_dicts)
     model.eval()
+    conf_gen.eval()
 
-    return model
+    return model, conf_gen

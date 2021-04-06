@@ -15,6 +15,7 @@ from data.qm7.load_qm7 import load_qm7
 from data.qm8.load_qm8 import load_qm8
 from data.qm9.load_qm9 import load_qm9
 from net.config import ConfType
+from net.models import MLP
 from net.baseline.CVGAE.PredX_MPNN import CVGAE
 from .config import QM9_CONFIG
 from train.utils.cache_batch import Batch, load_batch_cache, load_encode_mols, batch_cuda_copy
@@ -89,17 +90,24 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
         config=config,
         use_cuda=use_cuda
     )
+    conf_gen = MLP(
+        in_dim=2 * config['HV_DIM'],
+        out_dim=3,
+        use_cuda=use_cuda,
+        bias=False
+    )
     if use_cuda:
         model.cuda()
+        conf_gen.cuda()
 
     # initialize optimization
-    parameters = list(model.parameters())
+    parameters = list(chain(model.parameters(), conf_gen.parameters()))
     optimizer = optim.Adam(params=parameters, lr=config['LR'], weight_decay=config['DECAY'])
     scheduler = optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=1, gamma=config['GAMMA'])
     print('##### Parameters #####')
 
     param_size = 0
-    for name, param in model.named_parameters():
+    for name, param in chain(model.named_parameters(), conf_gen.named_parameters()):
         print(f'\t\t{name}: {param.shape}')
         param_size += reduce(lambda x, y: x * y, param.shape)
     print(f'\tNumber of parameters: {param_size}')
@@ -118,6 +126,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
 
     def train(batches: List[Batch], batch_name: str = 'train'):
         model.train()
+        conf_gen.train()
         optimizer.zero_grad()
         n_batch = len(batches)
         list_c_loss = []
@@ -135,7 +144,8 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
             for _ in range(config['SAMPLE']):
                 pred_c, klds_z, klds_0 = model.forward(batch.atom_ftr, batch.bond_ftr, batch.mask_matrices,
                                                        is_training=True, given_pos=batch.conformation)
-                c_loss = c_loss_fuc(pred_c, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+                conf = conf_gen.forward(pred_c)
+                c_loss = c_loss_fuc(conf, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
                 kz_loss = torch.mean(klds_z)
                 k0_loss = torch.mean(klds_0)
                 c_losses.append(c_loss)
@@ -165,6 +175,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
 
     def evaluate(batches: List[Batch], batch_name: str) -> float:
         model.eval()
+        conf_gen.eval()
         optimizer.zero_grad()
         n_batch = len(batches)
         list_rsd = []
@@ -177,7 +188,8 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
             for _ in range(config['SAMPLE']):
                 pred_c = model.forward(batch.atom_ftr, batch.bond_ftr, batch.mask_matrices,
                                        is_training=False, given_pos=batch.rdkit_conf)
-                rsd = distance_loss(pred_c, batch.conformation, batch.mask_matrices, root_square=True)
+                conf = conf_gen.forward(pred_c)
+                rsd = distance_loss(conf, batch.conformation, batch.mask_matrices, root_square=True)
                 rsds.append(rsd)
 
             list_rsd.append((sum(rsds) / len(rsds)).cpu().item())
@@ -215,6 +227,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
             best_epoch = epoch
             print(f'\tSaving Model...')
             torch.save(model.state_dict(), f'{MODEL_DICT_DIR}/{tag}-model.pkl')
+            torch.save(conf_gen.state_dict(), f'{MODEL_DICT_DIR}/{tag}-conf_gen.pkl')
         logs[-1].update({'best_epoch': best_epoch})
         save_log(logs,
                  directory='QM7' if dataset == QMDataset.QM7

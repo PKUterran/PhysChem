@@ -1,12 +1,12 @@
 import numpy as np
 import torch
-from typing import List, Dict, Tuple, Union
+from typing import List, Dict, Tuple, Union, Any
 from rdkit import Chem
 from rdkit.Chem.rdchem import Mol as Molecule
 
 from data.encode import encode_mols, get_massive_from_atom_features
 from net.utils.MaskMatrices import MaskMatrices, cuda_copy
-from net.models import GeomNN
+from net.models import GeomNN, MLP
 from net.baseline.CVGAE.PredX_MPNN import CVGAE
 from net.baseline.HamEng.models import HamiltonianPositionProducer
 from train.utils.loss_functions import adj3_loss
@@ -17,7 +17,7 @@ from .derive.plt_derive import plt_derive, log_pos_json
 
 
 def generate_derive(model: Union[GeomNN, CVGAE, HamiltonianPositionProducer],
-                    mol_info: Dict[str, np.ndarray]
+                    mol_info: Dict[str, np.ndarray], conf_gen: MLP = None
                     ) -> Tuple[List[np.ndarray], List[np.ndarray]]:
     af, bf, us, vs = mol_info['af'], mol_info['bf'], mol_info['us'], mol_info['vs']
     massive = get_massive_from_atom_features(af)
@@ -45,11 +45,11 @@ def generate_derive(model: Union[GeomNN, CVGAE, HamiltonianPositionProducer],
     elif isinstance(model, CVGAE):
         list_p_ftr = []
         q_ftr = model.forward(atom_ftr, bond_ftr, mask_matrices, is_training=False)
-        list_q_ftr = [q_ftr.detach().numpy()]
+        list_q_ftr = [conf_gen.forward(q_ftr).detach().numpy()]
     elif isinstance(model, HamiltonianPositionProducer):
         list_p_ftr, list_q_ftr, *_ = model.forward(atom_ftr, bond_ftr, massive, mask_matrices, return_multi=True)
-        list_p_ftr = [p.detach().numpy() for p in list_p_ftr]
-        list_q_ftr = [q.detach().numpy() for q in list_q_ftr]
+        list_p_ftr = [conf_gen.forward(p).detach().numpy() for p in list_p_ftr]
+        list_q_ftr = [conf_gen.forward(q).detach().numpy() for q in list_q_ftr]
     else:
         assert False, f'### {type(model)} ###'
     return list_p_ftr, list_q_ftr
@@ -75,8 +75,8 @@ def vis_derive_with_mols(list_mols: List[Molecule], tag: str, special_config: di
     mols_info = encode_mols(list_mols)
     atom_dim, bond_dim = mols_info[0]['af'].shape[1], mols_info[0]['bf'].shape[1]
     model, classifier = rebuild_qm9(atom_dim, bond_dim, tag, special_config, use_cuda)
-    cvgae_model = rebuild_cvgae(atom_dim, bond_dim, use_cuda=use_cuda)
-    hameng_model = rebuild_hameng(atom_dim, bond_dim, use_cuda=use_cuda)
+    cvgae_model, conf_gen = rebuild_cvgae(atom_dim, bond_dim, use_cuda=use_cuda)
+    hameng_model, conf_gen = rebuild_hameng(atom_dim, bond_dim, use_cuda=use_cuda)
     for idx, mol_info in enumerate(mols_info):
         print(f'### Generating SMILES {list_smiles[idx]} ###')
         # real
@@ -90,12 +90,12 @@ def vis_derive_with_mols(list_mols: List[Molecule], tag: str, special_config: di
         plt_derive(conf, None, list_mols[idx], f'm{idx}_rdkit')
 
         # CVGAE
-        _, list_q = generate_derive(cvgae_model, mol_info)
+        _, list_q = generate_derive(cvgae_model, mol_info, conf_gen)
         log_pos_json(list_q[0], None, list_mols[idx], list_smiles[idx], f'm{idx}_cvgae')
         plt_derive(list_q[0], None, list_mols[idx], f'm{idx}_cvgae')
 
         # HamEng
-        list_p, list_q = generate_derive(hameng_model, mol_info)
+        list_p, list_q = generate_derive(hameng_model, mol_info, conf_gen)
         log_pos_json(list_q[-1], list_p[-1], list_mols[idx], list_smiles[idx], f'm{idx}_hameng')
         plt_derive(list_q[-1], list_p[-1], list_mols[idx], f'm{idx}_hameng')
 
