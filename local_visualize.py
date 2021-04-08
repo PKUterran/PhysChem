@@ -11,11 +11,10 @@ def vis_derive_script():
     mols, _ = load_qm9()
     vis_derive_with_mols(
         list_mols=[
-            mols[10],
-            mols[110],
-            mols[1110],
-            mols[11110],
-            mols[111110],
+            mols[99],
+            mols[999],
+            mols[9999],
+            mols[99999],
         ],
         tag='QM9',
         special_config={

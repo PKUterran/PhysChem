@@ -75,8 +75,8 @@ def vis_derive_with_mols(list_mols: List[Molecule], tag: str, special_config: di
     mols_info = encode_mols(list_mols)
     atom_dim, bond_dim = mols_info[0]['af'].shape[1], mols_info[0]['bf'].shape[1]
     model, classifier = rebuild_qm9(atom_dim, bond_dim, tag, special_config, use_cuda)
-    cvgae_model, conf_gen = rebuild_cvgae(atom_dim, bond_dim, use_cuda=use_cuda)
-    hameng_model, conf_gen = rebuild_hameng(atom_dim, bond_dim, use_cuda=use_cuda)
+    cvgae_model, conf_gen_c = rebuild_cvgae(atom_dim, bond_dim, use_cuda=use_cuda)
+    hameng_model, conf_gen_h = rebuild_hameng(atom_dim, bond_dim, use_cuda=use_cuda)
     for idx, mol_info in enumerate(mols_info):
         print(f'### Generating SMILES {list_smiles[idx]} ###')
         # real
@@ -90,12 +90,12 @@ def vis_derive_with_mols(list_mols: List[Molecule], tag: str, special_config: di
         plt_derive(conf, None, list_mols[idx], f'm{idx}_rdkit')
 
         # CVGAE
-        _, list_q = generate_derive(cvgae_model, mol_info, conf_gen)
+        _, list_q = generate_derive(cvgae_model, mol_info, conf_gen_c)
         log_pos_json(list_q[0], None, list_mols[idx], list_smiles[idx], f'm{idx}_cvgae')
         plt_derive(list_q[0], None, list_mols[idx], f'm{idx}_cvgae')
 
         # HamEng
-        list_p, list_q = generate_derive(hameng_model, mol_info, conf_gen)
+        list_p, list_q = generate_derive(hameng_model, mol_info, conf_gen_h)
         log_pos_json(list_q[-1], list_p[-1], list_mols[idx], list_smiles[idx], f'm{idx}_hameng')
         plt_derive(list_q[-1], list_p[-1], list_mols[idx], f'm{idx}_hameng')
 
