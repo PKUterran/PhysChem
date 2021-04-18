@@ -45,50 +45,60 @@ def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
 
 
 tuples = [
-    ('QM9', 'QM9', False, True),
-    ('QM9', 'QM9-Xconf', False, True),
-    ('QM9', 'QM9-rdkit', False, True),
-    ('QM9', 'QM9-Oconf', False, True),
-    ('QM9', 'QM9-real', False, False),
-    ('QM9', 'CVGAE-QM9-rdkit', False, True),
-    ('QM9', 'CVGAE-QM9-Xconf', False, True),
-    ('QM9', 'HamEng-QM9', False, True),
-    ('QM8', 'QM8@16880611', False, True),
-    ('QM8', 'QM8-rdkit@16880611', False, True),
-    ('QM8', 'QM8-Xconf@16880611', False, True),
-    ('QM8', 'QM8-Oconf@16880611', False, True),
-    ('QM8', 'QM8-real@16880611', False, False),
-    ('QM8', 'CVGAE-QM8-rdkit@16880611', False, True),
-    ('QM8', 'CVGAE-QM8-Xconf@16880611', False, True),
-    ('QM8', 'HamEng@16880611', False, True),
-    ('QM7', 'HamEng@16880611', False, True),
-    ('QM7', 'QM7@16880611', False, True),
-    ('QM7', 'QM7-rdkit@16880611', False, True),
-    ('QM7', 'QM7-Xconf@16880611', False, True),
-    ('QM7', 'QM7-Oconf@16880611', False, True),
-    ('QM7', 'QM7-real@16880611', False, False),
-    ('QM7', 'CVGAE-QM7-rdkit@16880611', False, False),
-    ('QM7', 'CVGAE-QM7-Xconf@16880611', False, False),
-
-    ('Lipop', 'Lipop@16880611', False, False),
-    ('Lipop', 'Lipop-RGT@16880611', False, True),
-    ('Lipop', 'Lipop-Xconf@16880611', False, False),
-
-    ('ESOL', 'ESOL@16880611', False, False),
-    ('ESOL', 'ESOL-RGT@16880611', False, True),
-    ('ESOL', 'ESOL-Xconf@16880611', False, False),
-
-    ('FreeSolv', 'FreeSolv@16880611', False, False),
-    ('FreeSolv', 'FreeSolv-RGT@16880611', False, True),
-    ('FreeSolv', 'FreeSolv-Xconf@16880611', False, False),
-
-    ('TOX21', 'TOX21@16880611', True, True),
-    ('TOX21', 'TOX21-RGT@16880611', True, True),
-    ('TOX21', 'TOX21-Xconf@16880611', True, True),
-
+    # ('QM9', 'QM9', False, True),
+    # ('QM9', 'QM9-Xconf', False, True),
+    # ('QM9', 'QM9-rdkit', False, True),
+    # ('QM9', 'QM9-Oconf', False, True),
+    # ('QM9', 'QM9-real', False, False),
+    # ('QM9', 'CVGAE-QM9-rdkit', False, True),
+    # ('QM9', 'CVGAE-QM9-Xconf', False, True),
+    # ('QM9', 'HamEng-QM9', False, True),
+    # ('QM8', 'QM8@16880611', False, True),
+    # ('QM8', 'QM8-rdkit@16880611', False, True),
+    # ('QM8', 'QM8-Xconf@16880611', False, True),
+    # ('QM8', 'QM8-Oconf@16880611', False, True),
+    # ('QM8', 'QM8-real@16880611', False, False),
+    # ('QM8', 'CVGAE-QM8-rdkit@16880611', False, True),
+    # ('QM8', 'CVGAE-QM8-Xconf@16880611', False, True),
+    # ('QM8', 'HamEng@16880611', False, True),
+    # ('QM7', 'HamEng@16880611', False, True),
+    # ('QM7', 'QM7@16880611', False, True),
+    # ('QM7', 'QM7-rdkit@16880611', False, True),
+    # ('QM7', 'QM7-Xconf@16880611', False, True),
+    # ('QM7', 'QM7-Oconf@16880611', False, True),
+    # ('QM7', 'QM7-real@16880611', False, False),
+    # ('QM7', 'CVGAE-QM7-rdkit@16880611', False, False),
+    # ('QM7', 'CVGAE-QM7-Xconf@16880611', False, False),
+    #
+    # ('Lipop', 'Lipop@16880611', False, False),
+    # ('Lipop', 'Lipop-RGT@16880611', False, True),
+    # ('Lipop', 'Lipop-Xconf@16880611', False, False),
+    #
+    # ('ESOL', 'ESOL@16880611', False, False),
+    # ('ESOL', 'ESOL-RGT@16880611', False, True),
+    # ('ESOL', 'ESOL-Xconf@16880611', False, False),
+    #
+    # ('FreeSolv', 'FreeSolv@16880611', False, False),
+    # ('FreeSolv', 'FreeSolv-RGT@16880611', False, True),
+    # ('FreeSolv', 'FreeSolv-Xconf@16880611', False, False),
+    #
+    # ('TOX21', 'TOX21@16880611', True, True),
+    # ('TOX21', 'TOX21-RGT@16880611', True, True),
+    # ('TOX21', 'TOX21-Xconf@16880611', True, True),
+    #
     ('sars', 'sars@16880611', True, True),
     ('sars', 'sars-RGT@16880611', True, True),
     ('sars', 'sars-Xconf@16880611', True, True),
+
+    ('QM9', 'ps-Le1I2', False, True),  # Le1I2
+    ('QM9', 'ps-Le1I4', False, True),  # Le1I4
+    ('QM9', 'ps-Le1I8', False, True),  # Le1I8
+    ('QM9', 'ps-Le2I2', False, True),  # Le2I2
+    ('QM9', 'QM9', False, True),       # Le2I4
+    ('QM9', 'ps-Le2I7', False, True),  # Le2I8
+    ('QM9', 'ps-Le3I2', False, True),  # Le3I2
+    ('QM9', 'ps-Le4I4', False, True),  # Le3I4
+    ('QM9', 'ps-Le3I8', False, True),  # Le3I8
 ]
 
 for d, f, h, t in tuples:
