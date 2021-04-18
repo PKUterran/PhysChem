@@ -90,6 +90,9 @@ tuples = [
     ('sars', 'sars-RGT@16880611', True, True),
     ('sars', 'sars-Xconf@16880611', True, True),
 
+    ('QM9', 'ps-Le0I2', False, True),  # Le0I2
+    ('QM9', 'ps-Le0I4', False, True),  # Le0I4
+    ('QM9', 'ps-Le0I8', False, True),  # Le0I8
     ('QM9', 'ps-Le1I2', False, True),  # Le1I2
     ('QM9', 'ps-Le1I4', False, True),  # Le1I4
     ('QM9', 'ps-Le1I8', False, True),  # Le1I8

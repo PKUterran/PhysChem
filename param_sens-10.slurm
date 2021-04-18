@@ -11,4 +11,4 @@
 
 # module add anaconda/3-5.0.0.1
 # source activate ysw_pytorch
-python param_sens.py --name 'Le0I2' --lam 1. --iteration 2
+python param_sens.py --name 'Le0I4' --lam 1. --iteration 4
