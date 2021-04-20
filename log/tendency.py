@@ -86,9 +86,9 @@ tuples = [
     # ('TOX21', 'TOX21-RGT@16880611', True, True),
     # ('TOX21', 'TOX21-Xconf@16880611', True, True),
     #
-    ('sars', 'sars@16880611', True, True),
-    ('sars', 'sars-RGT@16880611', True, True),
-    ('sars', 'sars-Xconf@16880611', True, True),
+    # ('sars', 'sars@16880611', True, True),
+    # ('sars', 'sars-RGT@16880611', True, True),
+    # ('sars', 'sars-Xconf@16880611', True, True),
 
     ('QM9', 'ps-Le0I2', False, True),  # Le0I2
     ('QM9', 'ps-Le0I4', False, True),  # Le0I4

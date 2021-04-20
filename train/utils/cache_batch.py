@@ -25,7 +25,7 @@ class Batch:
                  rdkit_conf: torch.Tensor = None):
         self.n_atom = atom_ftr.shape[0]
         self.n_bond = bond_ftr.shape[0]
-        self.n_mol = mask_matrices.mol_vertex_w.shape[0]
+        self.n_mol = properties.shape[0]
 
         self.atom_ftr = atom_ftr
         self.bond_ftr = bond_ftr
@@ -41,7 +41,7 @@ def batch_cuda_copy(batch: Batch) -> Batch:
         atom_ftr=batch.atom_ftr.cuda(),
         bond_ftr=batch.bond_ftr.cuda(),
         massive=batch.massive.cuda(),
-        mask_matrices=cuda_copy(batch.mask_matrices),
+        mask_matrices=cuda_copy(batch.mask_matrices) if batch.mask_matrices is not None else None,
         properties=batch.properties.cuda() if batch.properties is not None else None,
         conformation=batch.conformation.cuda() if batch.conformation is not None else None,
         rdkit_conf=batch.rdkit_conf.cuda() if batch.rdkit_conf is not None else None,
@@ -50,7 +50,7 @@ def batch_cuda_copy(batch: Batch) -> Batch:
 
 class BatchCache:
     def __init__(self, mols: List[Any], mols_info: List[Dict[str, np.ndarray]], mol_properties: np.ndarray,
-                 needs_rdkit_conf=False, contains_ground_truth_conf=True,
+                 needs_rdkit_conf=False, contains_ground_truth_conf=True, need_mask_matrices=True,
                  use_cuda=False, batch_size=32,
                  use_tqdm=False):
         assert len(mols_info) == mol_properties.shape[0]
@@ -63,6 +63,7 @@ class BatchCache:
         self.mol_properties = mol_properties
         self.needs_rdkit_conf = needs_rdkit_conf
         self.contains_ground_truth_conf = contains_ground_truth_conf
+        self.need_mask_matrices = need_mask_matrices
         self.use_cuda = use_cuda
         self.use_tqdm = use_tqdm
 
@@ -112,21 +113,10 @@ class BatchCache:
                 us.extend(self.mols_info[m]['us'] + prev_bonds)
                 vs.extend(self.mols_info[m]['vs'] + prev_bonds)
 
-            mol_vertex_w, mol_vertex_b = self.produce_mask_matrix(len(mask), ms)
-            vertex_edge_w1, vertex_edge_b1 = self.produce_mask_matrix(sum(n_atoms), us)
-            vertex_edge_w2, vertex_edge_b2 = self.produce_mask_matrix(sum(n_atoms), vs)
-
             properties = self.mol_properties[mask, :].astype(np.float)
-
             atom_ftr = torch.from_numpy(atom_ftr).type(torch.float32)
             bond_ftr = torch.from_numpy(bond_ftr).type(torch.float32)
             massive = torch.from_numpy(massive).type(torch.float32)
-            mol_vertex_w = torch.from_numpy(mol_vertex_w).type(torch.float32)
-            mol_vertex_b = torch.from_numpy(mol_vertex_b).type(torch.float32)
-            vertex_edge_w1 = torch.from_numpy(vertex_edge_w1).type(torch.float32)
-            vertex_edge_b1 = torch.from_numpy(vertex_edge_b1).type(torch.float32)
-            vertex_edge_w2 = torch.from_numpy(vertex_edge_w2).type(torch.float32)
-            vertex_edge_b2 = torch.from_numpy(vertex_edge_b2).type(torch.float32)
             properties = torch.from_numpy(properties).type(torch.float32)
 
             if self.contains_ground_truth_conf:
@@ -144,9 +134,22 @@ class BatchCache:
             else:
                 rdkit_conf = None
 
-            mask_matrices = MaskMatrices(mol_vertex_w, mol_vertex_b,
-                                         vertex_edge_w1, vertex_edge_w2,
-                                         vertex_edge_b1, vertex_edge_b2)
+            if self.need_mask_matrices:
+                mol_vertex_w, mol_vertex_b = self.produce_mask_matrix(len(mask), ms)
+                vertex_edge_w1, vertex_edge_b1 = self.produce_mask_matrix(sum(n_atoms), us)
+                vertex_edge_w2, vertex_edge_b2 = self.produce_mask_matrix(sum(n_atoms), vs)
+                mol_vertex_w = torch.from_numpy(mol_vertex_w).type(torch.float32)
+                mol_vertex_b = torch.from_numpy(mol_vertex_b).type(torch.float32)
+                vertex_edge_w1 = torch.from_numpy(vertex_edge_w1).type(torch.float32)
+                vertex_edge_b1 = torch.from_numpy(vertex_edge_b1).type(torch.float32)
+                vertex_edge_w2 = torch.from_numpy(vertex_edge_w2).type(torch.float32)
+                vertex_edge_b2 = torch.from_numpy(vertex_edge_b2).type(torch.float32)
+                mask_matrices = MaskMatrices(mol_vertex_w, mol_vertex_b,
+                                             vertex_edge_w1, vertex_edge_w2,
+                                             vertex_edge_b1, vertex_edge_b2)
+            else:
+                mask_matrices = None
+
             batch = Batch(atom_ftr, bond_ftr, massive, mask_matrices, properties, conformation, rdkit_conf)
             batches.append(batch)
 
@@ -165,7 +168,7 @@ class BatchCache:
 
 
 def load_batch_cache(name: str, mols: List[Any], mols_info: List[Dict[str, np.ndarray]], mol_properties: np.ndarray,
-                     needs_rdkit_conf=False, contains_ground_truth_conf=True,
+                     needs_rdkit_conf=False, contains_ground_truth_conf=True, need_mask_matrices=True,
                      use_cuda=False, batch_size=32,
                      force_save=False, use_tqdm=False) -> BatchCache:
     if not os.path.exists(CACHE_DIR):
@@ -176,6 +179,7 @@ def load_batch_cache(name: str, mols: List[Any], mols_info: List[Dict[str, np.nd
         batch_cache = BatchCache(mols, mols_info, mol_properties,
                                  needs_rdkit_conf=needs_rdkit_conf,
                                  contains_ground_truth_conf=contains_ground_truth_conf,
+                                 need_mask_matrices=need_mask_matrices,
                                  use_cuda=use_cuda, batch_size=batch_size, use_tqdm=use_tqdm)
         with open(pickle_path, 'wb+') as fp:
             pickle.dump(batch_cache, fp)

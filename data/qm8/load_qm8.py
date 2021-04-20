@@ -11,6 +11,7 @@ from data.config import QM8_CSV_PATH, QM8_SDF_PATH, QM8_PICKLE_PATH
 def dump_qm8():
     supplier = Chem.SDMolSupplier(QM8_SDF_PATH)
     mols = [m for m in supplier if m is not None and m.GetProp("_Name").startswith("gdb")]
+    mols = [Chem.RemoveAllHs(mol) for mol in mols]
     indices = [int(m.GetProp("_Name")[4:].split('\t')[0]) for m in mols]
     i_m = zip(indices, mols)
     i_m = [(i, m) for i, m in i_m]
@@ -23,7 +24,7 @@ def dump_qm8():
     r_indices = []
     for idx in indices:
         r_indices.append(p_indices.index(idx))
-    properties = csv[:, list(range(1, 9)) + list(range(13, 17))].astype(np.float)
+    properties = csv[:, list(range(1, 17))].astype(np.float)
     properties = properties[r_indices, :]
 
     with open(QM8_PICKLE_PATH, 'wb+') as fp:
