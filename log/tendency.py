@@ -90,18 +90,18 @@ tuples = [
     # ('sars', 'sars-RGT@16880611', True, True),
     # ('sars', 'sars-Xconf@16880611', True, True),
 
-    ('QM9', 'ps-Le0I2', False, True),  # Le0I2
-    ('QM9', 'ps-Le0I4', False, True),  # Le0I4
-    ('QM9', 'ps-Le0I8', False, True),  # Le0I8
-    ('QM9', 'ps-Le1I2', False, True),  # Le1I2
-    ('QM9', 'ps-Le1I4', False, True),  # Le1I4
-    ('QM9', 'ps-Le1I8', False, True),  # Le1I8
-    ('QM9', 'ps-Le2I2', False, True),  # Le2I2
-    ('QM9', 'QM9', False, True),       # Le2I4
-    ('QM9', 'ps-Le2I7', False, True),  # Le2I8
-    ('QM9', 'ps-Le3I2', False, True),  # Le3I2
-    ('QM9', 'ps-Le4I4', False, True),  # Le3I4
-    ('QM9', 'ps-Le3I8', False, True),  # Le3I8
+    ('QM9', 'ps-l0', False, True),  # lambda = 1
+    ('QM9', 'ps-l1', False, True),  # lambda = 10
+    ('QM9', 'ps-l3', False, True),  # lambda = 1000
+
+    ('QM9', 'ps-p12', False, True),  # iteration=2, tau=1/4
+    ('QM9', 'ps-p13', False, True),  # iteration=2, tau=1/2
+    ('QM9', 'ps-p21', False, True),  # iteration=4, tau=1/8
+    ('QM9', 'QM9', False, True),    # iteration=4, tau=1/4
+    ('QM9', 'ps-p23', False, True),  # iteration=4, tau=1/2
+    ('QM9', 'ps-p31', False, True),  # iteration=8, tau=1/8
+    ('QM9', 'ps-p32', False, True),  # iteration=8, tau=1/4
+    ('QM9', 'ps-p33', False, True),  # iteration=8, tau=1/2
 ]
 
 for d, f, h, t in tuples:
