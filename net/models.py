@@ -27,7 +27,7 @@ class GeomNN(nn.Module):
         self.use_cuda = use_cuda
 
         self.conf_type = config['CONF_TYPE']
-        self.need_derive = self.conf_type not in [ConfType.NONE, ConfType.RDKIT, ConfType.REAL]
+        self.need_derive = self.conf_type not in [ConfType.NONE, ConfType.RDKIT, ConfType.REAL, ConfType.SINGLE_CHANNEL]
         self.need_mp = self.conf_type is not ConfType.ONLY
 
         self.initializer = Initializer(
@@ -86,6 +86,8 @@ class GeomNN(nn.Module):
                 use_cuda=use_cuda,
                 dropout=dropout
             )
+        if self.conf_type == ConfType.SINGLE_CHANNEL:
+            self.conformation_gen = MLP(hv_dim, q_dim, hidden_dims=[hv_dim], use_cuda=use_cuda)
 
     def forward(self, atom_ftr: torch.Tensor, bond_ftr: torch.Tensor, massive: torch.Tensor,
                 mask_matrices: MaskMatrices,
@@ -96,7 +98,7 @@ class GeomNN(nn.Module):
                            List[np.ndarray], List[np.ndarray]]:
         hv_ftr, he_ftr, p_ftr, q_ftr = self.initializer.forward(atom_ftr, bond_ftr, mask_matrices, not self.need_derive)
 
-        if self.conf_type is ConfType.NONE:
+        if self.conf_type in [ConfType.NONE, ConfType.SINGLE_CHANNEL]:
             p_ftr = q_ftr = torch.zeros(size=[atom_ftr.shape[0], 3], dtype=torch.float32)
             if self.use_cuda:
                 p_ftr, q_ftr = p_ftr.cuda(), q_ftr.cuda()
@@ -133,7 +135,10 @@ class GeomNN(nn.Module):
             list_he_ftr.append(he_ftr.cpu().detach().numpy())
 
         fingerprint, global_alignments = self.fingerprint_gen.forward(hv_ftr, mask_matrices, return_global_alignment)
-        conformations.append(q_ftr)
+        if self.conf_type == ConfType.SINGLE_CHANNEL:
+            conformations.append(self.conformation_gen(hv_ftr))
+        else:
+            conformations.append(q_ftr)
         return fingerprint, conformations, list_alignments, global_alignments, list_he_ftr, list_p_ftr, list_q_ftr
 
     @staticmethod

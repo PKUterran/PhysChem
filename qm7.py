@@ -3,8 +3,8 @@ from train.train_qm9 import train_qm9, QMDataset
 
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument('--seed', type=int, default=0)
-parser.add_argument('--pos', type=int, default=0)
+parser.add_argument('--seed', type=int, default=16880611)
+parser.add_argument('--pos', type=int, default=5)
 arg = parser.parse_args()
 seed = arg.seed
 pos = arg.pos
@@ -21,9 +21,12 @@ elif pos == 2:
 elif pos == 3:
     conf_type = ConfType.ONLY
     name = 'QM7-Oconf'
-else:
+elif pos == 4:
     conf_type = ConfType.REAL
     name = 'QM7-real'
+else:
+    conf_type = ConfType.SINGLE_CHANNEL
+    name = 'QM7-single'
 
 train_qm9(
     special_config={

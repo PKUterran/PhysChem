@@ -21,9 +21,12 @@ elif pos == 2:
 elif pos == 3:
     conf_type = ConfType.ONLY
     name = 'QM8-Oconf'
-else:
+elif pos == 4:
     conf_type = ConfType.REAL
     name = 'QM8-real'
+else:
+    conf_type = ConfType.SINGLE_CHANNEL
+    name = 'QM8-single'
 
 train_qm9(
     special_config={

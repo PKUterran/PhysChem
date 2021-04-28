@@ -8,3 +8,4 @@ class ConfType(Enum):
     ONLY = 3,
     NEWTON_RGT = 4,
     REAL = 5,
+    SINGLE_CHANNEL = 6,
