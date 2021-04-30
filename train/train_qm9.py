@@ -157,7 +157,9 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
             fp, pred_cs, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
                                             batch.rdkit_conf if not real_support else batch.conformation)
             pred_p = classifier.forward(fp)
-            if dataset == QMDataset.QM8:
+            if dataset == QMDataset.QM7:
+                p_loss = multi_mae_loss(pred_p, batch.properties)
+            elif dataset == QMDataset.QM8:
                 p_losses = multi_mse_loss(pred_p, batch.properties, explicit=True)
                 p_loss = sum(p_losses * weights)
             else:
@@ -192,7 +194,9 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
             fp, pred_cs, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
                                             batch.rdkit_conf if not real_support else batch.conformation)
             pred_p = classifier.forward(fp)
-            if dataset == QMDataset.QM8:
+            if dataset == QMDataset.QM7:
+                p_loss = multi_mae_loss(pred_p, batch.properties)
+            elif dataset == QMDataset.QM8:
                 p_losses = multi_mse_loss(pred_p, batch.properties, explicit=True)
                 p_loss = sum(p_losses * weights)
             else:

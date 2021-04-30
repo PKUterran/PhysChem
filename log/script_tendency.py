@@ -50,6 +50,7 @@ tuples = [
     # ('QM9', 'QM9-rdkit', False, True),
     # ('QM9', 'QM9-Oconf', False, True),
     # ('QM9', 'QM9-real', False, False),
+    # ('QM9', 'QM9-single', False, False),
     # ('QM9', 'CVGAE-QM9-rdkit', False, True),
     # ('QM9', 'CVGAE-QM9-Xconf', False, True),
     # ('QM9', 'HamEng-QM9', False, True),
@@ -58,18 +59,21 @@ tuples = [
     # ('QM8', 'QM8-Xconf@16880611', False, True),
     # ('QM8', 'QM8-Oconf@16880611', False, True),
     # ('QM8', 'QM8-real@16880611', False, False),
+    # ('QM8', 'QM8-single', False, False),
     # ('QM8', 'CVGAE-QM8-rdkit@16880611', False, True),
     # ('QM8', 'CVGAE-QM8-Xconf@16880611', False, True),
     # ('QM8', 'HamEng@16880611', False, True),
+    # ('QM8', 'AttentiveFP-QM8@16880611', False, False),
     # ('QM7', 'HamEng@16880611', False, True),
     # ('QM7', 'QM7@16880611', False, True),
     # ('QM7', 'QM7-rdkit@16880611', False, True),
-    # ('QM7', 'QM7-Xconf@16880611', False, True),
+    ('QM7', 'QM7-Xconf@16880611', False, True),
     # ('QM7', 'QM7-Oconf@16880611', False, True),
     # ('QM7', 'QM7-real@16880611', False, False),
+    # ('QM7', 'QM7-single', False, False),
     # ('QM7', 'CVGAE-QM7-rdkit@16880611', False, False),
     # ('QM7', 'CVGAE-QM7-Xconf@16880611', False, False),
-    ('QM7', 'AttentiveFP-QM7@16880611', False, False),
+    # ('QM7', 'AttentiveFP-QM7@16880611', False, False),
     #
     # ('Lipop', 'Lipop@16880611', False, False),
     # ('Lipop', 'Lipop-RGT@16880611', False, True),
@@ -91,19 +95,19 @@ tuples = [
     # ('sars', 'sars-RGT@16880611', True, True),
     # ('sars', 'sars-Xconf@16880611', True, True),
 
-    # ('QM9', 'ps-l0', False, True),  # lambda = 1
-    # ('QM9', 'ps-l1', False, True),  # lambda = 10
-    # ('QM9', 'ps-l3', False, True),  # lambda = 1000
-    #
-    # ('QM9', 'ps-p11', False, True),  # iteration=2, tau=1/8
-    # ('QM9', 'ps-p12', False, True),  # iteration=2, tau=1/4
-    # ('QM9', 'ps-p13', False, True),  # iteration=2, tau=1/2
-    # ('QM9', 'ps-p21', False, True),  # iteration=4, tau=1/8
-    # ('QM9', 'QM9', False, True),    # iteration=4, tau=1/4
-    # ('QM9', 'ps-p23', False, True),  # iteration=4, tau=1/2
-    # ('QM9', 'ps-p31', False, True),  # iteration=8, tau=1/8
-    # ('QM9', 'ps-p32', False, True),  # iteration=8, tau=1/4
-    # ('QM9', 'ps-p33', False, True),  # iteration=8, tau=1/2
+    ('QM9', 'ps-l0', False, True),  # lambda = 1
+    ('QM9', 'ps-l1', False, True),  # lambda = 10
+    ('QM9', 'ps-l3', False, True),  # lambda = 1000
+
+    ('QM9', 'ps-p11', False, True),  # iteration=2, tau=1/8
+    ('QM9', 'ps-p12', False, True),  # iteration=2, tau=1/4
+    ('QM9', 'ps-p13', False, True),  # iteration=2, tau=1/2
+    ('QM9', 'ps-p21', False, True),  # iteration=4, tau=1/8
+    ('QM9', 'QM9', False, True),    # iteration=4, tau=1/4
+    ('QM9', 'ps-p23', False, True),  # iteration=4, tau=1/2
+    ('QM9', 'ps-p31', False, True),  # iteration=8, tau=1/8
+    ('QM9', 'ps-p32', False, True),  # iteration=8, tau=1/4
+    ('QM9', 'ps-p33', False, True),  # iteration=8, tau=1/2
 ]
 
 for d, f, h, t in tuples:

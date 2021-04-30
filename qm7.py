@@ -4,7 +4,7 @@ from train.train_qm9 import train_qm9, QMDataset
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--seed', type=int, default=16880611)
-parser.add_argument('--pos', type=int, default=5)
+parser.add_argument('--pos', type=int, default=0)
 arg = parser.parse_args()
 seed = arg.seed
 pos = arg.pos
@@ -37,12 +37,12 @@ train_qm9(
         'INIT_LSTM_LAYERS': 2,
         'INIT_LSTM_O_DIM': 128,
 
-        'HV_DIM': 128,
-        'HE_DIM': 64,
-        'HM_DIM': 256,
-        'MV_DIM': 128,
-        'ME_DIM': 64,
-        'MM_DIM': 256,
+        'HV_DIM': 200,
+        'HE_DIM': 100,
+        'HM_DIM': 300,
+        'MV_DIM': 200,
+        'ME_DIM': 100,
+        'MM_DIM': 300,
         'PQ_DIM': 3,
         'N_LAYER': 2,
         'N_HOP': 1,
@@ -56,14 +56,14 @@ train_qm9(
         'DISSA': 1.0,
         'DROPOUT': 0.5,
 
-        'EPOCH': 200,
-        'BATCH': 40,
-        'PACK': 1,
+        'EPOCH': 100,
+        'BATCH': 10,
+        'PACK': 10,
         'CONF_LOSS': 'H_ADJ3',
         'LAMBDA': 0.1,
         'LR': 1e-4,
-        'GAMMA': 0.99,
-        'DECAY': 1e-5,
+        'GAMMA': 0.95,
+        'DECAY': 1e-3,
 
         'CONF_TYPE': conf_type,
     },

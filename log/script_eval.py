@@ -45,14 +45,17 @@ tuples = [
     ('QM7', 'QM7-single', False),
     # ('QM7', 'CVGAE-QM7-rdkit', False),
     # ('QM7', 'CVGAE-QM7-Xconf', False),
+    ('QM7', 'AttentiveFP-QM7', False),
     # ('QM8', 'HamEng', False),
     # ('QM8', 'QM8', False),
     # ('QM8', 'QM8-rdkit', False),
     # ('QM8', 'QM8-Xconf', False),
     # ('QM8', 'QM8-Oconf', False),
     # ('QM8', 'QM8-real', False),
+    ('QM8', 'QM8-single', False),
     # ('QM8', 'CVGAE-QM8-rdkit', False),
     # ('QM8', 'CVGAE-QM8-Xconf', False),
+    ('QM8', 'AttentiveFP-QM8', False),
 ]
 
 for d, f, h in tuples:
