@@ -3,7 +3,7 @@ from train.AttentiveFP.train_qm9 import train_qm9, QMDataset
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--seed', type=int, default=16880611)
+parser.add_argument('--seed', type=int, default=17760704)
 arg = parser.parse_args()
 seed = arg.seed
 
