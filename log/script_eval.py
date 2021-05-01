@@ -36,15 +36,15 @@ tuples = [
     # ('sars', 'sars', True),
     # ('sars', 'sars-RGT', False),
     # ('sars', 'sars-Xconf', True),
-    # ('QM7', 'HamEng', False),
-    # ('QM7', 'QM7', False),
-    # ('QM7', 'QM7-rdkit', False),
-    # ('QM7', 'QM7-Xconf', False),
-    # ('QM7', 'QM7-Oconf', False),
-    # ('QM7', 'QM7-real', False),
+    ('QM7', 'HamEng', False),
+    ('QM7', 'QM7', False),
+    ('QM7', 'QM7-rdkit', False),
+    ('QM7', 'QM7-Xconf', False),
+    ('QM7', 'QM7-Oconf', False),
+    ('QM7', 'QM7-real', False),
     ('QM7', 'QM7-single', False),
-    # ('QM7', 'CVGAE-QM7-rdkit', False),
-    # ('QM7', 'CVGAE-QM7-Xconf', False),
+    ('QM7', 'CVGAE-QM7-rdkit', False),
+    ('QM7', 'CVGAE-QM7-Xconf', False),
     ('QM7', 'AttentiveFP-QM7', False),
     # ('QM8', 'HamEng', False),
     # ('QM8', 'QM8', False),
@@ -52,16 +52,16 @@ tuples = [
     # ('QM8', 'QM8-Xconf', False),
     # ('QM8', 'QM8-Oconf', False),
     # ('QM8', 'QM8-real', False),
-    ('QM8', 'QM8-single', False),
+    # ('QM8', 'QM8-single', False),
     # ('QM8', 'CVGAE-QM8-rdkit', False),
     # ('QM8', 'CVGAE-QM8-Xconf', False),
-    ('QM8', 'AttentiveFP-QM8', False),
+    # ('QM8', 'AttentiveFP-QM8', False),
 ]
 
 for d, f, h in tuples:
     p_results = []
     c_results = []
-    for seed in DEFAULT_SEEDS:
+    for seed in DEFAULT_SEEDS[:1]:
         try:
             json_path = f'{d}/{f}@{seed}.json'
             with open(json_path) as fp:

@@ -67,7 +67,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
     # normalize properties and cache batches
     mean_p = np.mean(mol_properties, axis=0)
     stddev_p = np.std((mol_properties - mean_p).tolist(), axis=0, ddof=0)
-    weights = torch.tensor(stddev_p ** 2, dtype=torch.float32) * 500
+    weights = torch.tensor(stddev_p, dtype=torch.float32) * 22
     if use_cuda:
         weights = weights.cuda()
     # mad_p = np.array([1.189, 6.299, 0.016, 0.039, 0.040, 202.017,
@@ -160,7 +160,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
             if dataset == QMDataset.QM7:
                 p_loss = multi_mae_loss(pred_p, batch.properties)
             elif dataset == QMDataset.QM8:
-                p_losses = multi_mse_loss(pred_p, batch.properties, explicit=True)
+                p_losses = multi_mae_loss(pred_p, batch.properties, explicit=True)
                 p_loss = sum(p_losses * weights)
             else:
                 p_loss = multi_mse_loss(pred_p, batch.properties)
@@ -197,7 +197,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
             if dataset == QMDataset.QM7:
                 p_loss = multi_mae_loss(pred_p, batch.properties)
             elif dataset == QMDataset.QM8:
-                p_losses = multi_mse_loss(pred_p, batch.properties, explicit=True)
+                p_losses = multi_mae_loss(pred_p, batch.properties, explicit=True)
                 p_loss = sum(p_losses * weights)
             else:
                 p_loss = multi_mse_loss(pred_p, batch.properties)
