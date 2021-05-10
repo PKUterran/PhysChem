@@ -16,8 +16,8 @@ def vis_derive_script():
     # exit()
     vis_derive_with_mols(
         list_mols=[
-            mols[61158],
-            mols[24408],
+            mols[5336],
+            mols[132],
         ],
         tag='QM9',
         special_config={

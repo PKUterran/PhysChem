@@ -19,7 +19,7 @@ def find(smiles: str) -> int:
 
 
 if __name__ == '__main__':
-    print(find('NC(C)C(O)=O'))
+    print(find('CCCCC'))
 
 
 '''
@@ -27,4 +27,7 @@ NC(C)C(O)=O 285 286
 C([C@@H](C(=O)O)N)C(=O)O -1
 N[C@H](C(O)=O)CC(N)=O 61158 61439
 c1c(C=CN2)c2ccc1 24408 24492
+c1ccccc1C#N 5336 5347
+CC(C)CCCCCC 122508 123139
+CCCCC 132 133
 '''
