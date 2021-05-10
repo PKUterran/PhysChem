@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 
 
 def tendency_pc(log: dict, path: str, higher_is_better=False, show_conf=False):
+    if 'ps-p1' in path or 'ps-p21' in path or 'ps-p21' in path:
+        log = log[:250]
+    if 'ps-p11' in path:
+        log = log[:200]
     epochs = [dic['epoch'] for dic in log]
     fig, ax1 = plt.subplots()
     if 'CVGAE' in path or 'HamEng' in path:
@@ -50,7 +54,7 @@ tuples = [
     # ('QM9', 'QM9-rdkit', False, True),
     # ('QM9', 'QM9-Oconf', False, True),
     # ('QM9', 'QM9-real', False, False),
-    # ('QM9', 'QM9-single', False, False),
+    # ('QM9', 'QM9-single', False, True),
     # ('QM9', 'CVGAE-QM9-rdkit', False, True),
     # ('QM9', 'CVGAE-QM9-Xconf', False, True),
     # ('QM9', 'HamEng-QM9', False, True),
@@ -67,7 +71,7 @@ tuples = [
     # ('QM7', 'HamEng@16880611', False, True),
     # ('QM7', 'QM7@16880611', False, True),
     # ('QM7', 'QM7-rdkit@16880611', False, True),
-    ('QM7', 'QM7-Xconf@16880611', False, True),
+    # ('QM7', 'QM7-Xconf@16880611', False, True),
     # ('QM7', 'QM7-Oconf@16880611', False, True),
     # ('QM7', 'QM7-real@16880611', False, False),
     # ('QM7', 'QM7-single', False, False),
@@ -103,7 +107,7 @@ tuples = [
     ('QM9', 'ps-p12', False, True),  # iteration=2, tau=1/4
     ('QM9', 'ps-p13', False, True),  # iteration=2, tau=1/2
     ('QM9', 'ps-p21', False, True),  # iteration=4, tau=1/8
-    ('QM9', 'QM9', False, True),    # iteration=4, tau=1/4
+    ('QM9', 'QM9', False, True),     # iteration=4, tau=1/4
     ('QM9', 'ps-p23', False, True),  # iteration=4, tau=1/2
     ('QM9', 'ps-p31', False, True),  # iteration=8, tau=1/8
     ('QM9', 'ps-p32', False, True),  # iteration=8, tau=1/4

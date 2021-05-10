@@ -7,6 +7,7 @@ from train.utils.seed import DEFAULT_SEEDS
 def eval_p(log: dict, higher_is_better=False) -> float:
     valid_p = [dic['validate_p_metric'] for dic in log]
     test_p = [dic['test_p_metric'] for dic in log]
+    # test_p = [(2 * dic['test_p_metric'] + dic['test_b_metric']) / 3 for dic in log]
     ps = zip(valid_p, test_p)
     ps = sorted(ps, key=lambda x: x[0], reverse=higher_is_better)
     return ps[0][1]
@@ -21,31 +22,31 @@ def eval_c(log: dict, higher_is_better=False) -> float:
 
 
 tuples = [
-    # ('Lipop', 'Lipop', False),
-    # ('Lipop', 'Lipop-RGT', False),
-    # ('Lipop', 'Lipop-Xconf', False),
-    # ('ESOL', 'ESOL', False),
-    # ('ESOL', 'ESOL-RGT', False),
-    # ('ESOL', 'ESOL-Xconf', False),
-    # ('FreeSolv', 'FreeSolv', False),
-    # ('FreeSolv', 'FreeSolv-RGT', False),
-    # ('FreeSolv', 'FreeSolv-Xconf', False),
+    ('Lipop', 'Lipop', False),
+    ('Lipop', 'Lipop-RGT', False),
+    ('Lipop', 'Lipop-Xconf', False),
+    ('ESOL', 'ESOL', False),
+    ('ESOL', 'ESOL-RGT', False),
+    ('ESOL', 'ESOL-Xconf', False),
+    ('FreeSolv', 'FreeSolv', False),
+    ('FreeSolv', 'FreeSolv-RGT', False),
+    ('FreeSolv', 'FreeSolv-Xconf', False),
     # ('TOX21', 'TOX21', True),
     # ('TOX21', 'TOX21-RGT', False),
     # ('TOX21', 'TOX21-Xconf', True),
     # ('sars', 'sars', True),
     # ('sars', 'sars-RGT', False),
     # ('sars', 'sars-Xconf', True),
-    ('QM7', 'HamEng', False),
-    ('QM7', 'QM7', False),
-    ('QM7', 'QM7-rdkit', False),
-    ('QM7', 'QM7-Xconf', False),
-    ('QM7', 'QM7-Oconf', False),
-    ('QM7', 'QM7-real', False),
-    ('QM7', 'QM7-single', False),
-    ('QM7', 'CVGAE-QM7-rdkit', False),
-    ('QM7', 'CVGAE-QM7-Xconf', False),
-    ('QM7', 'AttentiveFP-QM7', False),
+    # ('QM7', 'HamEng', False),
+    # ('QM7', 'QM7', False),
+    # ('QM7', 'QM7-rdkit', False),
+    # ('QM7', 'QM7-Xconf', False),
+    # ('QM7', 'QM7-Oconf', False),
+    # ('QM7', 'QM7-real', False),
+    # ('QM7', 'QM7-single', False),
+    # ('QM7', 'CVGAE-QM7-rdkit', False),
+    # ('QM7', 'CVGAE-QM7-Xconf', False),
+    # ('QM7', 'AttentiveFP-QM7', False),
     # ('QM8', 'HamEng', False),
     # ('QM8', 'QM8', False),
     # ('QM8', 'QM8-rdkit', False),
@@ -61,7 +62,7 @@ tuples = [
 for d, f, h in tuples:
     p_results = []
     c_results = []
-    for seed in DEFAULT_SEEDS[:1]:
+    for seed in DEFAULT_SEEDS:
         try:
             json_path = f'{d}/{f}@{seed}.json'
             with open(json_path) as fp:

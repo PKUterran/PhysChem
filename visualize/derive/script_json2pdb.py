@@ -29,3 +29,4 @@ def convert_json2pdb(input_dir: str, output_dir: str, names: List = None):
 
 if __name__ == '__main__':
     convert_json2pdb('json_smiles', 'pdb_smiles')
+    convert_json2pdb('json', 'pdb')
