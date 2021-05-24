@@ -184,7 +184,7 @@ def train_single_regression(
             list_p_rmse.append(p_rmse.item() * stddev_p[0])
 
         print(f'\t\t\tLOSS: {sum(list_loss) / n_batch}')
-        print(f'\t\t\tMSE: {sum(list_p_mse) / n_batch}')
+        # print(f'\t\t\tMSE: {sum(list_p_mse) / n_batch}')
         print(f'\t\t\tRMSE: {sum(list_p_rmse) / n_batch}')
         logs[-1].update({
             f'{batch_name}_loss': sum(list_loss) / n_batch,
