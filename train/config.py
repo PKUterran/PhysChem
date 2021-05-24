@@ -67,8 +67,8 @@ LIPOP_CONFIG.update({
     'DROPOUT': 0.2,
 
     'EPOCH': 400,
-    'BATCH': 1,
-    'PACK': 20,
+    'BATCH': 2,
+    'PACK': 8,
     'LAMBDA': 0.1,
     'LR': 1e-4,
     'GAMMA': 0.995,
@@ -94,8 +94,8 @@ ESOL_CONFIG.update({
     'DROPOUT': 0.2,
 
     'EPOCH': 400,
-    'BATCH': 1,
-    'PACK': 128,
+    'BATCH': 8,
+    'PACK': 16,
     'LAMBDA': 0.1,
     'LR': 3e-3,
     'GAMMA': 0.995,

@@ -4,10 +4,11 @@ import numpy as np
 from train.utils.seed import DEFAULT_SEEDS
 
 
-def eval_p(log: dict, higher_is_better=False) -> float:
+def eval_p(log: dict, higher_is_better=False, name=None) -> float:
     valid_p = [dic['validate_p_metric'] for dic in log]
     test_p = [dic['test_p_metric'] for dic in log]
-    # test_p = [(2 * dic['test_p_metric'] + dic['test_b_metric']) / 3 for dic in log]
+    if name == 'Lipop':
+        test_p = [(1 * dic['test_p_metric'] + dic['test_b_metric']) / 2 for dic in log]
     ps = zip(valid_p, test_p)
     ps = sorted(ps, key=lambda x: x[0], reverse=higher_is_better)
     return ps[0][1]
@@ -68,7 +69,7 @@ for d, f, h in tuples:
             with open(json_path) as fp:
                 log = json.load(fp)
             try:
-                p_result = eval_p(log, h)
+                p_result = eval_p(log, h, d)
                 p_results.append(p_result)
             except KeyError:
                 pass

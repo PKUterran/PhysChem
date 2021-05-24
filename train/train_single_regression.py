@@ -19,7 +19,7 @@ from net.components import MLP
 from .config import LIPOP_CONFIG, ESOL_CONFIG, FREESOLV_CONFIG
 from .utils.cache_batch import Batch, BatchCache, load_batch_cache, load_encode_mols, batch_cuda_copy
 from .utils.seed import set_seed
-from .utils.loss_functions import mse_loss, rmse_loss, hierarchical_adj3_loss, distance_loss
+from .utils.loss_functions import mae_loss, mse_loss, rmse_loss, hierarchical_adj3_loss, distance_loss
 from .utils.save_log import save_log
 
 
@@ -134,7 +134,7 @@ def train_single_regression(
             fp, pred_cs, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
                                             batch.rdkit_conf)
             pred_p = classifier.forward(fp)
-            p_loss = mse_loss(pred_p, batch.properties)
+            p_loss = mae_loss(pred_p, batch.properties)
             if conf_supervised:
                 c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
                 loss = p_loss + config['LAMBDA'] * c_loss
@@ -167,7 +167,7 @@ def train_single_regression(
             fp, pred_cs, *_ = model.forward(batch.atom_ftr, batch.bond_ftr, batch.massive, batch.mask_matrices,
                                             batch.rdkit_conf)
             pred_p = classifier.forward(fp)
-            p_loss = mse_loss(pred_p, batch.properties)
+            p_loss = mae_loss(pred_p, batch.properties)
             if conf_supervised:
                 c_loss = c_loss_fuc(pred_cs, batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
                 loss = p_loss + config['LAMBDA'] * c_loss
@@ -179,12 +179,12 @@ def train_single_regression(
             list_loss.append(loss.cpu().item())
 
             p_mse = mse_loss(pred_p, batch.properties)
-            p_rmse = rmse_loss(pred_p, batch.properties)
+            p_rmse = mae_loss(pred_p, batch.properties)
             list_p_mse.append(p_mse.item() * stddev_p[0] * stddev_p[0])
             list_p_rmse.append(p_rmse.item() * stddev_p[0])
 
         print(f'\t\t\tLOSS: {sum(list_loss) / n_batch}')
-        # print(f'\t\t\tMSE: {sum(list_p_mse) / n_batch}')
+        print(f'\t\t\tMSE: {sum(list_p_mse) / n_batch}')
         print(f'\t\t\tRMSE: {sum(list_p_rmse) / n_batch}')
         logs[-1].update({
             f'{batch_name}_loss': sum(list_loss) / n_batch,
