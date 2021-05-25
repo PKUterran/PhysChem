@@ -83,10 +83,10 @@ tuples = [
     # ('Lipop', 'Lipop-RGT@16880611', False, True),
     # ('Lipop', 'Lipop-Xconf@16880611', False, False),
     #
-    # ('ESOL', 'ESOL@16880611', False, False),
-    ('ESOL', 'ESOL@16880611-test', False, False),
-    # ('ESOL', 'ESOL-RGT@16880611', False, True),
-    # ('ESOL', 'ESOL-Xconf@16880611', False, False),
+    ('ESOL', 'ESOL@16880611', False, False),
+    # ('ESOL', 'ESOL@16880611-test', False, False),
+    ('ESOL', 'ESOL-RGT@16880611', False, True),
+    ('ESOL', 'ESOL-Xconf@16880611', False, False),
     #
     # ('FreeSolv', 'FreeSolv@16880611', False, False),
     # ('FreeSolv', 'FreeSolv-RGT@16880611', False, True),

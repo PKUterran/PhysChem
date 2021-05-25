@@ -93,7 +93,7 @@ ESOL_CONFIG.update({
     'N_GLOBAL': 2,
     'DROPOUT': 0.2,
 
-    'EPOCH': 400,
+    'EPOCH': 800,
     'BATCH': 8,
     'PACK': 16,
     'LAMBDA': 0.1,

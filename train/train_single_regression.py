@@ -118,6 +118,7 @@ def train_single_regression(
     # train
     epoch = 0
     logs: List[Dict[str, float]] = []
+    p_loss_fuc = mse_loss if dataset == SingleRegressionDataset.FREESOLV else rmse_loss
     c_loss_fuc = hierarchical_adj3_loss
 
     def train(batches: List[Batch]):
