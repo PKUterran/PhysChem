@@ -87,7 +87,11 @@ class GeomNN(nn.Module):
                 dropout=dropout
             )
         if self.conf_type == ConfType.SINGLE_CHANNEL:
-            self.conformation_gen = MLP(hv_dim, q_dim, hidden_dims=[hv_dim], use_cuda=use_cuda)
+            self.conformation_encode = MLP(hv_dim, q_dim, hidden_dims=[hv_dim], use_cuda=use_cuda)
+        if q_dim != 3:
+            self.conformation_gen = MLP(q_dim, 3, use_cuda=use_cuda)
+        else:
+            self.conformation_gen = lambda x: x
 
     def forward(self, atom_ftr: torch.Tensor, bond_ftr: torch.Tensor, massive: torch.Tensor,
                 mask_matrices: MaskMatrices,
@@ -107,7 +111,7 @@ class GeomNN(nn.Module):
             if self.use_cuda:
                 p_ftr = p_ftr.cuda()
 
-        conformations = [q_ftr]
+        conformations = [self.conformation_gen(q_ftr)]
         list_alignments = []
         list_he_ftr = []
         list_p_ftr = []
@@ -122,7 +126,7 @@ class GeomNN(nn.Module):
                     p_ftr, q_ftr = self.drv_kernel.forward(hv_ftr, he_ftr, massive, p_ftr, q_ftr, mask_matrices)
                     if self.dissa < 1.0 - 1e-5:
                         p_ftr *= self.dissa
-                    conformations.append(q_ftr)
+                    conformations.append(self.conformation_gen(q_ftr))
                     if return_derive:
                         list_p_ftr.append(
                             self.decentralized_p_ftr(p_ftr, massive, mask_matrices).cpu().detach().numpy())
@@ -136,9 +140,8 @@ class GeomNN(nn.Module):
 
         fingerprint, global_alignments = self.fingerprint_gen.forward(hv_ftr, mask_matrices, return_global_alignment)
         if self.conf_type == ConfType.SINGLE_CHANNEL:
-            conformations.append(self.conformation_gen(hv_ftr))
-        else:
-            conformations.append(q_ftr)
+            q_ftr = self.conformation_encode(hv_ftr)
+        conformations.append(self.conformation_gen(q_ftr))
         return fingerprint, conformations, list_alignments, global_alignments, list_he_ftr, list_p_ftr, list_q_ftr
 
     @staticmethod
