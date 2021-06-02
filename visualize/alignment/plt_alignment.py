@@ -6,7 +6,7 @@ import rdkit.Chem as Chem
 from mpl_toolkits.mplot3d import Axes3D
 from typing import List, Tuple
 
-blue = [0.35, 0.4, 0.85]
+blue = [0.65, 0.7, 0.95]
 
 ATOM_CONFIG = {
     'C': (6, blue, 's'),

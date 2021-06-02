@@ -83,10 +83,10 @@ tuples = [
     # ('Lipop', 'Lipop-RGT@16880611', False, True),
     # ('Lipop', 'Lipop-Xconf@16880611', False, False),
     #
-    ('ESOL', 'ESOL@16880611', False, False),
+    # ('ESOL', 'ESOL@16880611', False, False),
     # ('ESOL', 'ESOL@16880611-test', False, False),
-    ('ESOL', 'ESOL-RGT@16880611', False, True),
-    ('ESOL', 'ESOL-Xconf@16880611', False, False),
+    # ('ESOL', 'ESOL-RGT@16880611', False, True),
+    # ('ESOL', 'ESOL-Xconf@16880611', False, False),
     #
     # ('FreeSolv', 'FreeSolv@16880611', False, False),
     # ('FreeSolv', 'FreeSolv-RGT@16880611', False, True),
@@ -113,6 +113,12 @@ tuples = [
     # ('QM9', 'ps-p31', False, True),  # iteration=8, tau=1/8
     # ('QM9', 'ps-p32', False, True),  # iteration=8, tau=1/4
     # ('QM9', 'ps-p33', False, True),  # iteration=8, tau=1/2
+
+    ('QM7', 'QM7@16880611', False, True),
+    ('QM7', 'QM7-df16@16880611', False, True),
+    ('QM7', 'QM7-df32@16880611', False, True),
+    ('QM7', 'QM7-df64@16880611', False, True),
+    ('QM7', 'QM7-df128@16880611', False, True),
 ]
 
 for d, f, h, t in tuples:

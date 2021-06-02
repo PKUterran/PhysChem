@@ -9,20 +9,20 @@ from visualize.vis_derive import vis_derive_with_mols, vis_derive_with_smiles
 
 
 def vis_derive_script():
-    mols, _ = load_qm9()
+    # mols, _ = load_qm9()
     # print(len(mols))
     # print(Chem.MolToSmiles(mols[61440]))
     # print(Chem.MolToSmiles(mols[24408]))
     # exit()
-    vis_derive_with_mols(
-        list_mols=[
-            mols[5336],
-            mols[132],
-        ],
-        tag='QM9',
-        special_config={
-
-        },)
+    # vis_derive_with_mols(
+    #     list_mols=[
+    #         mols[5336],
+    #         mols[132],
+    #     ],
+    #     tag='QM9',
+    #     special_config={
+    #
+    #     },)
     # vis_derive_with_smiles(
     #     list_smiles=[
     #         'O=Cc1cc(C#N)ccc1',
@@ -34,16 +34,16 @@ def vis_derive_script():
     #
     #     },
     # )
-    # vis_alignment(
-    #     list_smiles=[
-    #         'c1ccccc1C#N',
-    #         'NC(C)C(O)=O',
-    #     ],
-    #     tag='QM9',
-    #     special_config={
-    #
-    #     },
-    # )
+    vis_alignment(
+        list_smiles=[
+            'c1ccccc1C#N',
+            'OCC(O)=O',
+        ],
+        tag='QM9',
+        special_config={
+
+        },
+    )
 
 
 if __name__ == '__main__':
