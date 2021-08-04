@@ -20,7 +20,8 @@ from .config import QM9_CONFIG
 from .utils.cache_batch import Batch, load_batch_cache, load_encode_mols, batch_cuda_copy
 from .utils.seed import set_seed
 from .utils.loss_functions import multi_mse_loss, multi_mae_loss, adj3_loss, distance_loss, \
-    hierarchical_adj2_loss, hierarchical_adj3_loss, hierarchical_adj4_loss
+    hierarchical_adj2_loss, hierarchical_adj3_loss, hierarchical_adj4_loss, kabsch_rmsd_loss, \
+    hierarchical_mixed_kabsch_adj3_loss
 from .utils.save_log import save_log
 
 MODEL_DICT_DIR = 'train/models'
@@ -136,6 +137,10 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
         c_loss_fuc = hierarchical_adj3_loss
     elif config['CONF_LOSS'] == 'H_ADJ4':
         c_loss_fuc = hierarchical_adj4_loss
+    elif config['CONF_LOSS'] == 'Kabsch':
+        c_loss_fuc = kabsch_rmsd_loss
+    elif config['CONF_LOSS'] == 'H_mixed':
+        c_loss_fuc = hierarchical_mixed_kabsch_adj3_loss
     else:
         assert False, f"Unknown conformation loss function: {config['CONF_LOSS']}"
     try:
@@ -186,6 +191,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
         list_p_multi_mae = []
         list_p_total_mae = []
         list_rsd = []
+        list_kabsch = []
         if use_tqdm:
             batches = tqdm(batches, total=n_batch)
         for batch in batches:
@@ -219,6 +225,9 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
             list_p_multi_mae.append(p_multi_mae.cpu().detach().numpy())
             list_p_total_mae.append(p_total_mae.cpu().item())
             list_rsd.append(rsd.cpu().item())
+            if config['CONF_LOSS'] in ['H_mixed', 'Kabsch']:
+                kabsch = kabsch_rmsd_loss(pred_cs[-1], batch.conformation, batch.mask_matrices, use_cuda=use_cuda)
+                list_kabsch.append(kabsch.cpu().item())
 
         print(f'\t\t\tP LOSS: {sum(list_p_loss) / n_batch}')
         print(f'\t\t\tC LOSS: {sum(list_c_loss) / n_batch}')
@@ -230,6 +239,11 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
             total_mae = sum(list_p_total_mae) / n_batch
         print(f'\t\t\tPROPERTIES TOTAL MAE: {total_mae}')
         print(f'\t\t\tCONFORMATION RS-DL: {sum(list_rsd) / n_batch}')
+        if config['CONF_LOSS'] in ['H_mixed', 'Kabsch']:
+            print(f'\t\t\tKABSCH RMSD: {sum(list_kabsch) / n_batch}')
+            logs[-1].update({
+                f'{batch_name}_kabsch': sum(list_kabsch) / n_batch,
+            })
         logs[-1].update({
             f'{batch_name}_p_loss': sum(list_p_loss) / n_batch,
             f'{batch_name}_c_loss': sum(list_c_loss) / n_batch,
@@ -256,7 +270,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
         m = evaluate(batch_cache.validate_batches, 'validate')
         print('\t\tEvaluating Test:')
         evaluate(batch_cache.test_batches, 'test')
-        scheduler.step(epoch)
+        scheduler.step()
 
         t1 = time.time()
         print('\tProcess Time: {}'.format(int(t1 - t0)))

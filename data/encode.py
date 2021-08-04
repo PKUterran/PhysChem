@@ -157,6 +157,22 @@ def encode_mols(mols: list, return_mask=False
     return ret
 
 
+def encode_mols_generator(mols: list) -> List[Dict[str, np.ndarray]]:
+    for mol in mols:
+        yield {
+            'af': np.stack([atom_features(a) for i, a in enumerate(mol.GetAtoms())]),
+            'bf': np.stack([bond_features(b) for b in mol.GetBonds()]
+                           # + [bond_features(b) for b in mol.GetBonds()]
+                           ) if len(mol.GetBonds()) else np.zeros(shape=[0, 10], dtype=np.int),
+            'us': np.array([b.GetBeginAtomIdx() for b in mol.GetBonds()]
+                           # + [b.GetEndAtomIdx() for b in mol.GetBonds()]
+                           , dtype=np.int),
+            'vs': np.array([b.GetEndAtomIdx() for b in mol.GetBonds()]
+                           # + [b.GetBeginAtomIdx() for b in mol.GetBonds()]
+                           , dtype=np.int)
+        }
+
+
 def get_features_from_smiles(smiles):
     mol = Chem.MolFromSmiles(smiles)
     af = np.stack([atom_features(a) for i, a in enumerate(mol.GetAtoms())])

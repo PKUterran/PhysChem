@@ -7,6 +7,7 @@ from sklearn.metrics import roc_auc_score
 
 from net.utils.MaskMatrices import MaskMatrices
 from net.utils.model_utils import normalize_adj_rc, nonzero
+from .kabsch import kabsch
 
 
 def multi_roc(source: List[np.ndarray], target: np.ndarray) -> Tuple[float, List[float]]:
@@ -216,3 +217,16 @@ def distance_loss(source: torch.Tensor, target: torch.Tensor, mask_matrices: Mas
         return torch.sqrt(torch.sum(((ds - dt) ** 2) * norm_vv))
     else:
         return torch.sum(torch.abs(ds - dt) * norm_vv)
+
+
+def kabsch_rmsd_loss(source: torch.Tensor, target: torch.Tensor, mask_matrices: MaskMatrices,
+                     use_cuda=False) -> torch.Tensor:
+    pos, fit_pos = kabsch(source, target, mask_matrices.mol_vertex_w, use_cuda=use_cuda)
+    return rmse_loss(pos, fit_pos)
+
+
+def hierarchical_mixed_kabsch_adj3_loss(sources: List[torch.Tensor], target: torch.Tensor, mask_matrices: MaskMatrices,
+                                        use_cuda=False) -> torch.Tensor:
+    kabsch_rmsd = kabsch_rmsd_loss(sources[-1], target, mask_matrices, use_cuda=use_cuda)
+    h_adj3 = hierarchical_adj3_loss(sources, target, mask_matrices, use_cuda=use_cuda)
+    return 0.1 * kabsch_rmsd + h_adj3

@@ -1,9 +1,9 @@
-from .local_config import *
-
-GEOM_QM9_RDKIT_SUMMARY_PATH = f'{RDKIT_FOLDER_DIR}/summary_qm9.json'
-GEOM_DRUG_RDKIT_SUMMARY_PATH = f'{RDKIT_FOLDER_DIR}/summary_drug.json'
-GEOM_QM9_RDKIT_PICKLE_DIR = f'{RDKIT_FOLDER_DIR}/qm9'
-GEOM_DRUG_RDKIT_PICKLE_DIR = f'{RDKIT_FOLDER_DIR}/drug'
+# from .local_config import *
+#
+# GEOM_QM9_RDKIT_SUMMARY_PATH = f'{RDKIT_FOLDER_DIR}/summary_qm9.json'
+# GEOM_DRUG_RDKIT_SUMMARY_PATH = f'{RDKIT_FOLDER_DIR}/summary_drug.json'
+# GEOM_QM9_RDKIT_PICKLE_DIR = f'{RDKIT_FOLDER_DIR}/qm9'
+# GEOM_DRUG_RDKIT_PICKLE_DIR = f'{RDKIT_FOLDER_DIR}/drug'
 
 GEOM_QM9_CSV2JSON_PATH = 'data/geom_qm9/csv2json.json'
 GEOM_QM9_CSV_PATH = 'data/geom_qm9/geom_qm9.csv'
