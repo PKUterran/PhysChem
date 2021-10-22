@@ -1,5 +1,9 @@
 # PhysChemNet
 
+**ATTENTION: This project will be no more updated, but it can still be used for reproduction. If you want to reuse our code, please visit [MoleculeClub](https://github.com/PKUterran/MoleculeClub).**
+
+Code for paper [Deep Molecular Representation Learning via Fusing Physical and Chemical Information]() in NeurIPS 2021.
+
 Ways to reproduce:
 
 1. If you want to work on QM9 dataset, please first download datasets of QM9 from [Dataset Collection](http://moleculenet.ai/datasets-1) to `data/QM9`.
