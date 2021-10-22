@@ -2,7 +2,7 @@
 
 **ATTENTION: This project will be no more updated, but it can still be used for reproduction. If you want to reuse our code, please visit [MoleculeClub](https://github.com/PKUterran/MoleculeClub).**
 
-Code for paper [Deep Molecular Representation Learning via Fusing Physical and Chemical Information]() in NeurIPS 2021.
+Code for paper [Deep Molecular Representation Learning via Fusing Physical and Chemical Information](https://openreview.net/forum?id=Uxi7X1EqywV) in NeurIPS 2021.
 
 Ways to reproduce:
 
