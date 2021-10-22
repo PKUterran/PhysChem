@@ -1,4 +1,4 @@
-# PhysChemNet
+# PhysChem
 
 **ATTENTION: This project will be no more updated, but it can still be used for reproduction. If you want to reuse our code, please visit [MoleculeClub](https://github.com/PKUterran/MoleculeClub).**
 
