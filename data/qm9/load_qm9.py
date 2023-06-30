@@ -14,7 +14,7 @@ def dump_qm9():
     indices = [int(m.GetProp("_Name")[4:]) - 1 for m in mols]
     df = pd.read_csv(QM9_CSV_PATH)
     csv: np.ndarray = df.values
-    properties = csv[:, 4: 16].astype(np.float)
+    properties = csv[:, 4: 16].astype(np.float32)
     properties = properties[indices, :]
     with open(QM9_PICKLE_PATH, 'wb+') as fp:
         pickle.dump((mols, properties), fp)

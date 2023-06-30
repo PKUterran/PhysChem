@@ -6,7 +6,7 @@ from rdkit.Chem.rdchem import Mol as Molecule
 
 
 def rdkit_mol_positions(mol: Molecule):
-    position = np.zeros([len(mol.GetAtoms()), 3], np.float)
+    position = np.zeros([len(mol.GetAtoms()), 3], np.float32)
     try:
         AllChem.EmbedMolecule(mol)
         conf = mol.GetConformer()

@@ -24,7 +24,7 @@ def dump_qm8():
     r_indices = []
     for idx in indices:
         r_indices.append(p_indices.index(idx))
-    properties = csv[:, list(range(1, 17))].astype(np.float)
+    properties = csv[:, list(range(1, 17))].astype(np.float32)
     properties = properties[r_indices, :]
 
     with open(QM8_PICKLE_PATH, 'wb+') as fp:

@@ -65,7 +65,7 @@ def train_qm9(special_config: dict = None, dataset=QMDataset.QM9,
     mean_p = np.mean(mol_properties, axis=0)
     stddev_p = np.std((mol_properties - mean_p).tolist(), axis=0, ddof=0)
     # mad_p = np.array([1.189, 6.299, 0.016, 0.039, 0.040, 202.017,
-    #                   0.026, 31.072, 31.072, 31.072, 31.072, 3.204], dtype=np.float)
+    #                   0.026, 31.072, 31.072, 31.072, 31.072, 3.204], dtype=np.float32)
     norm_p = (mol_properties - mean_p) / stddev_p
     print(f'\tmean: {mean_p}')
     print(f'\tstd: {stddev_p}')

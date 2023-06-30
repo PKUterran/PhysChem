@@ -15,7 +15,7 @@ def dump_tox21():
     df = pd.read_csv(TOX21_CSV_PATH)
     csv: np.ndarray = df.values
     smiles = csv[:, 13].astype(np.str)
-    properties = csv[:, : 12].astype(np.float)
+    properties = csv[:, : 12].astype(np.float32)
     mols = [Chem.MolFromSmiles(s) for s in smiles]
     with open(TOX21_PICKLE_PATH, 'wb+') as fp:
         pickle.dump((mols, properties), fp)

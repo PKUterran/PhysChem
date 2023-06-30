@@ -2,8 +2,8 @@ import numpy as np
 import numpy.linalg as npl
 
 
-q = np.array([[1, 2, 3], [2, 4, 5], [3, 1, 6], [5, 8, 4]], dtype=np.float)
-p = np.array([[1, 2, 3], [2, 4, 5], [3, 1, 6], [5, 8, 4], [3, 6, 1]], dtype=np.float)
+q = np.array([[1, 2, 3], [2, 4, 5], [3, 1, 6], [5, 8, 4]], dtype=np.float32)
+p = np.array([[1, 2, 3], [2, 4, 5], [3, 1, 6], [5, 8, 4], [3, 6, 1]], dtype=np.float32)
 q = np.asmatrix(q)
 q1 = q + np.array([1, 0, 1])
 q2 = q @ np.array([[1, 0, 0], [0, 4/5, -3/5], [0, 3/5, 4/5]])

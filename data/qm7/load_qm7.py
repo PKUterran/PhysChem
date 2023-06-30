@@ -15,7 +15,7 @@ def dump_qm7():
     indices = [int(m.GetProp("_Name")[6: 10]) for m in mols]
     df = pd.read_csv(QM7_CSV_PATH)
     csv: np.ndarray = df.values
-    properties = csv[:, 0: 1].astype(np.float)
+    properties = csv[:, 0: 1].astype(np.float32)
     properties = properties[indices, :]
     with open(QM7_PICKLE_PATH, 'wb+') as fp:
         pickle.dump((mols, properties), fp)

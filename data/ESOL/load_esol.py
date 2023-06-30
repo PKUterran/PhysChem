@@ -14,8 +14,8 @@ from data.config import ESOL_CSV_PATH, ESOL_PICKLE_PATH
 def dump_esol():
     df = pd.read_csv(ESOL_CSV_PATH)
     csv: np.ndarray = df.values
-    smiles = csv[:, 9].astype(np.str)
-    properties = csv[:, 8: 9].astype(np.float)
+    smiles = csv[:, 9].astype(object)
+    properties = csv[:, 8: 9].astype(np.float32)
     mols = [Chem.MolFromSmiles(s) for s in smiles]
     with open(ESOL_PICKLE_PATH, 'wb+') as fp:
         pickle.dump((mols, properties), fp)

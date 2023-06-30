@@ -82,7 +82,7 @@ def atom_features(atom,
         except:
             results = results + [False, False] + [atom.HasProp('_ChiralityPossible')]
 
-    return np.array(results, dtype=np.int)
+    return np.array(results, dtype=np.int32)
 
 
 def bond_features(bond):
@@ -98,10 +98,10 @@ def bond_features(bond):
         bond_feats = bond_feats + one_of_k_encoding_unk(
             str(bond.GetStereo()),
             ["STEREONONE", "STEREOANY", "STEREOZ", "STEREOE"])
-    return np.array(bond_feats, dtype=np.int)
+    return np.array(bond_feats, dtype=np.int32)
 
 
-def num_atom_features():
+def num_atom_features() -> int:
     # Return length of feature vector using a very simple molecule.
     m = Chem.MolFromSmiles('CC')
     alist = m.GetAtoms()
@@ -109,7 +109,7 @@ def num_atom_features():
     return len(atom_features(a))
 
 
-def num_bond_features():
+def num_bond_features() -> int:
     # Return length of feature vector using a very simple molecule.
     simple_mol = Chem.MolFromSmiles('CC')
     Chem.SanitizeMol(simple_mol)
@@ -140,13 +140,13 @@ def encode_mols(mols: list, return_mask=False
 
         info['bf'] = np.stack([bond_features(b) for b in mol.GetBonds()]
                               # + [bond_features(b) for b in mol.GetBonds()]
-                              ) if len(mol.GetBonds()) else np.zeros(shape=[0, 10], dtype=np.int)
+                              ) if len(mol.GetBonds()) else np.zeros(shape=[0, 10], dtype=np.int32)
         info['us'] = np.array([b.GetBeginAtomIdx() for b in mol.GetBonds()]
                               # + [b.GetEndAtomIdx() for b in mol.GetBonds()]
-                              , dtype=np.int)
+                              , dtype=np.int32)
         info['vs'] = np.array([b.GetEndAtomIdx() for b in mol.GetBonds()]
                               # + [b.GetBeginAtomIdx() for b in mol.GetBonds()]
-                              , dtype=np.int)
+                              , dtype=np.int32)
         ret.append(info)
         cnt += 1
         if cnt % 10000 == 0:
@@ -163,13 +163,13 @@ def encode_mols_generator(mols: list) -> List[Dict[str, np.ndarray]]:
             'af': np.stack([atom_features(a) for i, a in enumerate(mol.GetAtoms())]),
             'bf': np.stack([bond_features(b) for b in mol.GetBonds()]
                            # + [bond_features(b) for b in mol.GetBonds()]
-                           ) if len(mol.GetBonds()) else np.zeros(shape=[0, 10], dtype=np.int),
+                           ) if len(mol.GetBonds()) else np.zeros(shape=[0, 10], dtype=np.int32),
             'us': np.array([b.GetBeginAtomIdx() for b in mol.GetBonds()]
                            # + [b.GetEndAtomIdx() for b in mol.GetBonds()]
-                           , dtype=np.int),
+                           , dtype=np.int32),
             'vs': np.array([b.GetEndAtomIdx() for b in mol.GetBonds()]
                            # + [b.GetBeginAtomIdx() for b in mol.GetBonds()]
-                           , dtype=np.int)
+                           , dtype=np.int32)
         }
 
 
@@ -177,7 +177,7 @@ def get_features_from_smiles(smiles):
     mol = Chem.MolFromSmiles(smiles)
     af = np.stack([atom_features(a) for i, a in enumerate(mol.GetAtoms())])
     bf = np.stack([bond_features(b) for b in mol.GetBonds()]) \
-        if len(mol.GetBonds()) else np.zeros(shape=[0, 10], dtype=np.int)
-    us = np.array([b.GetBeginAtomIdx() for b in mol.GetBonds()], dtype=np.int)
-    vs = np.array([b.GetEndAtomIdx() for b in mol.GetBonds()], dtype=np.int)
+        if len(mol.GetBonds()) else np.zeros(shape=[0, 10], dtype=np.int32)
+    us = np.array([b.GetBeginAtomIdx() for b in mol.GetBonds()], dtype=np.int32)
+    vs = np.array([b.GetEndAtomIdx() for b in mol.GetBonds()], dtype=np.int32)
     return af, bf, us, vs
