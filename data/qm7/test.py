@@ -5,6 +5,6 @@ QM7_CSV_PATH = 'gdb7.sdf.csv'
 
 df = pd.read_csv(QM7_CSV_PATH)
 csv: np.ndarray = df.values
-properties = csv[:, 0: 1].astype(np.float)
+properties = csv[:, 0: 1].astype(np.float32)
 std = np.std(properties)
 print(std)

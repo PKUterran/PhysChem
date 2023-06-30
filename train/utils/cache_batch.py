@@ -25,7 +25,7 @@ class Batch:
                  rdkit_conf: torch.Tensor = None):
         self.n_atom = atom_ftr.shape[0]
         self.n_bond = bond_ftr.shape[0]
-        self.n_mol = properties.shape[0]
+        self.n_mol = mask_matrices.mol_vertex_w.shape[0]
 
         self.atom_ftr = atom_ftr
         self.bond_ftr = bond_ftr
@@ -113,7 +113,7 @@ class BatchCache:
                 us.extend(self.mols_info[m]['us'] + prev_bonds)
                 vs.extend(self.mols_info[m]['vs'] + prev_bonds)
 
-            properties = self.mol_properties[mask, :].astype(np.float)
+            properties = self.mol_properties[mask, :].astype(np.float32)
             atom_ftr = torch.from_numpy(atom_ftr).type(torch.float32)
             bond_ftr = torch.from_numpy(bond_ftr).type(torch.float32)
             massive = torch.from_numpy(massive).type(torch.float32)
@@ -158,8 +158,8 @@ class BatchCache:
     @staticmethod
     def produce_mask_matrix(n: int, s: list) -> Tuple[np.ndarray, np.ndarray]:
         s = np.array(s)
-        mat = np.full([n, s.shape[0]], 0., dtype=np.int)
-        mask = np.full([n, s.shape[0]], -1e6, dtype=np.int)
+        mat = np.full([n, s.shape[0]], 0., dtype=np.int32)
+        mask = np.full([n, s.shape[0]], -1e6, dtype=np.int32)
         for i in range(n):
             node_edge = s == i
             mat[i, node_edge] = 1
@@ -209,3 +209,37 @@ def load_encode_mols(mols, name: str = None, force_save=False, return_mask=False
             ret = pickle.load(fp)
 
     return ret
+
+
+def produce_batches_from_mols(mols: List[Any]) -> List[Batch]:
+    mols_info = encode_mols(mols)
+    batches = []
+    for mol_info in mols_info:
+        af, bf, us, vs = mol_info['af'], mol_info['bf'], mol_info['us'], mol_info['vs']
+        massive = get_massive_from_atom_features(af)
+        mvw, mvb = BatchCache.produce_mask_matrix(1, [0] * af.shape[0])
+        vew1, veb1 = BatchCache.produce_mask_matrix(af.shape[0], list(us))
+        vew2, veb2 = BatchCache.produce_mask_matrix(af.shape[0], list(vs))
+
+        atom_ftr = torch.from_numpy(af).type(torch.float32)
+        bond_ftr = torch.from_numpy(bf).type(torch.float32)
+        massive = torch.from_numpy(massive).type(torch.float32)
+        mol_vertex_w = torch.from_numpy(mvw).type(torch.float32)
+        mol_vertex_b = torch.from_numpy(mvb).type(torch.float32)
+        vertex_edge_w1 = torch.from_numpy(vew1).type(torch.float32)
+        vertex_edge_b1 = torch.from_numpy(veb1).type(torch.float32)
+        vertex_edge_w2 = torch.from_numpy(vew2).type(torch.float32)
+        vertex_edge_b2 = torch.from_numpy(veb2).type(torch.float32)
+
+        mask_matrices = MaskMatrices(mol_vertex_w, mol_vertex_b,
+                                     vertex_edge_w1, vertex_edge_w2,
+                                     vertex_edge_b1, vertex_edge_b2)
+
+        batches.append(Batch(
+            atom_ftr=atom_ftr,
+            bond_ftr=bond_ftr,
+            massive=massive,
+            mask_matrices=mask_matrices,
+        ))
+
+    return batches

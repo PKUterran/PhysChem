@@ -1,9 +1,41 @@
 import torch
 import numpy as np
+import numpy.linalg as npl
+from typing import Tuple
+
+
+def kabsch_np(pos: np.ndarray, fit_pos: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    p0 = pos
+    q0 = fit_pos
+    p = p0 - np.mean(p0, axis=0)
+    q = q0 - np.mean(q0, axis=0)
+    c = p.T @ q
+    det = npl.det(c)
+    v, s, w = npl.svd(c)
+    rd1 = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=np.float32)
+    rd2 = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -1]], dtype=np.float32)
+    r1 = w @ rd1 @ v.T
+    r2 = w @ rd2 @ v.T
+    p1 = p @ r1
+    p2 = p @ r2
+    nd1 = npl.norm(p1 - q)
+    nd2 = npl.norm(p2 - q)
+    if det > 1e-5:
+        ret_pos = p1
+    elif det < -1e-5:
+        ret_pos = p2
+    else:
+        if nd1 < nd2:
+            ret_pos = p1
+        else:
+            ret_pos = p2
+
+    ret_fit_pos = q
+    return ret_pos, ret_fit_pos
 
 
 def kabsch(pos: torch.Tensor, fit_pos: torch.Tensor, mol_node_matrix: torch.Tensor=None, use_cuda=False) \
-        -> (torch.Tensor, torch.Tensor):
+        -> Tuple[torch.Tensor, torch.Tensor]:
     if mol_node_matrix is None:
         mol_node_matrix = torch.ones([1, pos.shape[0]]).type(torch.float32)
     pos_list = []

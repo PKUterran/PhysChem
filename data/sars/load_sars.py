@@ -14,8 +14,8 @@ from data.config import SARS_CSV_PATH, SARS_PICKLE_PATH
 def dump_sars():
     df = pd.read_csv(SARS_CSV_PATH)
     csv: np.ndarray = df.values
-    smiles = csv[:, 0].astype(np.str)
-    properties = csv[:, 1: 14].astype(np.float)
+    smiles = csv[:, 0].astype(object)
+    properties = csv[:, 1: 14].astype(np.float32)
     mols = [Chem.MolFromSmiles(s) for s in smiles]
     mask = [i for i, m in enumerate(mols) if m is not None]
     mols = [mols[i] for i in mask]

@@ -14,8 +14,8 @@ from data.config import FREESOLV_CSV_PATH, FREESOLV_PICKLE_PATH
 def dump_freesolv():
     df = pd.read_csv(FREESOLV_CSV_PATH)
     csv: np.ndarray = df.values
-    smiles = csv[:, 1].astype(np.str)
-    properties = csv[:, 2: 3].astype(np.float)
+    smiles = csv[:, 1].astype(object)
+    properties = csv[:, 2: 3].astype(np.float32)
     mols = [Chem.MolFromSmiles(s) for s in smiles]
     with open(FREESOLV_PICKLE_PATH, 'wb+') as fp:
         pickle.dump((mols, properties), fp)

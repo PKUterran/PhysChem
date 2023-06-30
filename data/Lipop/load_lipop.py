@@ -14,8 +14,8 @@ from data.config import LIPOP_CSV_PATH, LIPOP_PICKLE_PATH
 def dump_lipop():
     df = pd.read_csv(LIPOP_CSV_PATH)
     csv: np.ndarray = df.values
-    smiles = csv[:, 2].astype(np.str)
-    properties = csv[:, 1: 2].astype(np.float)
+    smiles = csv[:, 2].astype(object)
+    properties = csv[:, 1: 2].astype(np.float32)
     mols = [Chem.MolFromSmiles(s) for s in smiles]
     with open(LIPOP_PICKLE_PATH, 'wb+') as fp:
         pickle.dump((mols, properties), fp)
