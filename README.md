@@ -1,6 +1,6 @@
 # PhysChem
 
-<a href="https://bohrium.dp.tech/notebook/879b6a3a9d394448913ca1ce7de257ec" target="_blank"><img src="https://cdn.dp.tech/bohrium/web/static/images/open-in-bohrium.svg" alt="Open In Bohrium"/></a>
+<a href="https://bohrium.dp.tech/notebook/bfaa924fb6504b548739d61ba71ee516  #PhysChem.ipynb" target="_blank"><img src="https://cdn.dp.tech/bohrium/web/static/images/open-in-bohrium.svg" alt="Open In Bohrium"/></a>
 
 **SEE `PhysChem.ipynb` FOR DETAILED INSTRUCTION**
 
